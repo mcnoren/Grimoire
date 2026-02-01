@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V14 - Local Icons</title>
+    <title>Grimoire V16 - GitHub Ready</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -332,17 +332,25 @@
             document.getElementById('icon-uploader').click();
         }
 
+        // --- NEW CLEANING LOGIC ---
+        // Converts "Fortune Teller" to "FortuneTeller" (No spaces, Keep caps)
+        // Converts "Devil's Advocate" to "DevilsAdvocate" (No punctuation)
+        function cleanName(name) {
+            return name.replace(/[^a-zA-Z0-9]/g, '');
+        }
+
         function handleIconUpload(files) {
             if(!files || files.length === 0) return;
             let count = 0;
             for(let file of files) {
-                // Filename -> slug (remove extension)
-                let name = file.name.split('.')[0].toLowerCase().trim().replace(/ /g, '_').replace(/'/g,'').replace(/-/g,'_');
-                customIconMap[name] = URL.createObjectURL(file);
+                // Take filename "FortuneTeller.png", remove ext "FortuneTeller"
+                let name = file.name.split('.')[0];
+                // Store using "CleanName" as key
+                let key = cleanName(name); 
+                customIconMap[key] = URL.createObjectURL(file);
                 count++;
             }
-            alert(`Loaded ${count} icons. They will now appear in the app.`);
-            // Refresh views
+            alert(`Loaded ${count} icons. App updated.`);
             if(!document.getElementById('screen-setup').classList.contains('hidden')) renderStep1();
             if(!document.getElementById('screen-game').classList.contains('hidden')) {
                 state.players.forEach(p => updateToken(p));
@@ -351,14 +359,15 @@
 
         const getIconUrl = (roleName) => {
             if(!roleName) return null;
-            const slug = roleName.trim().toLowerCase().replace(/'/g, '').replace(/ /g, '_').replace(/-/g, '_');
             
-            // Priority 1: Uploaded Custom Files
-            if(customIconMap[slug]) return customIconMap[slug];
+            // 1. Generate the "Clean" filename: FortuneTeller
+            const clean = cleanName(roleName);
 
-            // Priority 2: Local Folder (./icons/slug.png)
-            // This is the default expectation for local files
-            return `./icons/${slug}.png`;
+            // 2. Check Custom Uploads (Priority)
+            if(customIconMap[clean]) return customIconMap[clean];
+
+            // 3. Check Local Folder: ./icons/FortuneTeller.png
+            return `./icons/${clean}.png`;
         };
 
         const getBadgeHtml = (name, type) => {
@@ -641,7 +650,6 @@
             
             if(rShow) {
                 img.src = getIconUrl(rShow); img.style.display = 'block';
-                // Center fallback logic
                 img.onerror = () => { img.style.display='none'; badge.style.display='flex'; };
                 badge.innerHTML = `<span>${rShow.charAt(0)}</span>`;
                 badge.className = `badge-icon ${type==='Demon'?'b-dem':type==='Minion'?'b-min':type==='Outsider'?'b-out':'b-town'}`;
