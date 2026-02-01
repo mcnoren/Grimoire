@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V13 - Complete</title>
+    <title>Grimoire V14 - Local Icons</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -45,7 +45,8 @@
         .btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
         .btn:disabled { background: #333; color: #555; cursor: not-allowed; transform: none; }
         .btn-red { background: var(--dem-color); }
-        .btn-outline { background: transparent; border: 1px solid var(--border); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: #aaa; }
+        .btn-outline:hover { background: rgba(255,255,255,0.1); color: white; }
 
         /* --- SCREENS --- */
         .screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 10; display: flex; flex-direction: column; }
@@ -111,7 +112,7 @@
             width: 600px; height: 600px; border: 2px dashed #333; border-radius: 50%; pointer-events: none;
         }
 
-        /* Floating Action Buttons */
+        /* FABs */
         .fab-container { position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 50; }
         .fab {
             background: #333; color: white; padding: 10px 20px; border-radius: 30px;
@@ -200,6 +201,8 @@
 </head>
 <body>
 
+    <input type="file" id="icon-uploader" multiple accept="image/*" style="display:none" onchange="handleIconUpload(this.files)">
+
     <div id="screen-splash" class="screen">
         <h1 style="font-size: 4rem; margin-bottom: 10px; text-shadow: 0 0 20px rgba(124,77,255,0.5);">Grimoire</h1>
         <p style="color: var(--text-muted); margin-bottom: 50px;">The Unofficial Companion</p>
@@ -212,7 +215,7 @@
 
     <div id="screen-setup" class="screen setup-screen hidden">
         <div class="top-bar">
-            <div style="display:flex; align-items:center; gap: 30px;">
+            <div style="display:flex; align-items:center; gap: 20px;">
                 <div class="stepper">
                     <button onclick="changeCount(-1)">−</button>
                     <span id="p-count">5</span>
@@ -225,7 +228,11 @@
                     <div class="count-pill" id="req-dem">Dem: 0/1</div>
                 </div>
             </div>
-            <button class="btn" id="btn-next" disabled onclick="gotoSetupStep2()">Next: Prep &rarr;</button>
+            
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-outline" onclick="triggerUpload()">📂 Load Icons</button>
+                <button class="btn" id="btn-next" disabled onclick="gotoSetupStep2()">Next: Prep &rarr;</button>
+            </div>
         </div>
         <div id="role-grid-1" class="grid-scroll-area"></div>
     </div>
@@ -249,6 +256,7 @@
             
             <button class="btn" style="width:100%; background: #333; margin-bottom:10px;" onclick="randomizeRoles()">🎲 Shuffle & Assign</button>
             <button class="btn btn-outline" style="width:100%; color:var(--dem-color); border-color:var(--dem-color);" onclick="showBluffsModal()">👁 Show Bluffs</button>
+            <button class="btn btn-outline" style="width:100%; margin-top:10px;" onclick="triggerUpload()">📂 Load Icons</button>
 
             <div style="margin-top: auto; display:flex; justify-content:space-between; align-items:center;">
                 <span id="phase-disp" style="font-weight:bold; font-size:1.2rem;">Setup</span>
@@ -317,11 +325,40 @@
     </div>
 
     <script>
-        // --- ASSETS ---
+        // --- ASSETS & FILE LOADING ---
+        let customIconMap = {};
+
+        function triggerUpload() {
+            document.getElementById('icon-uploader').click();
+        }
+
+        function handleIconUpload(files) {
+            if(!files || files.length === 0) return;
+            let count = 0;
+            for(let file of files) {
+                // Filename -> slug (remove extension)
+                let name = file.name.split('.')[0].toLowerCase().trim().replace(/ /g, '_').replace(/'/g,'').replace(/-/g,'_');
+                customIconMap[name] = URL.createObjectURL(file);
+                count++;
+            }
+            alert(`Loaded ${count} icons. They will now appear in the app.`);
+            // Refresh views
+            if(!document.getElementById('screen-setup').classList.contains('hidden')) renderStep1();
+            if(!document.getElementById('screen-game').classList.contains('hidden')) {
+                state.players.forEach(p => updateToken(p));
+            }
+        }
+
         const getIconUrl = (roleName) => {
             if(!roleName) return null;
             const slug = roleName.trim().toLowerCase().replace(/'/g, '').replace(/ /g, '_').replace(/-/g, '_');
-            return `https://raw.githubusercontent.com/bra1n/townsquare/develop/src/assets/icons/${slug}.png`;
+            
+            // Priority 1: Uploaded Custom Files
+            if(customIconMap[slug]) return customIconMap[slug];
+
+            // Priority 2: Local Folder (./icons/slug.png)
+            // This is the default expectation for local files
+            return `./icons/${slug}.png`;
         };
 
         const getBadgeHtml = (name, type) => {
@@ -453,7 +490,6 @@
             for(let type in data) {
                 const col = document.createElement('div'); col.className = 'role-col'; col.innerHTML = `<h3>${type}</h3>`;
                 data[type].forEach(r => {
-                    // Filter: Cannot pick if already in play
                     const inPlay = allSel.includes(r.n);
                     const el = createRoleItem(r, type, inPlay);
                     if(inPlay) el.classList.add('disabled');
@@ -471,23 +507,19 @@
                 dHead.style.borderColor = 'var(--out-color)'; dHead.style.color = 'var(--out-color)';
                 con.appendChild(dHead);
 
-                // Render only Townsfolk
                 const col = document.createElement('div'); col.className = 'role-col'; col.style.gridColumn='span 4';
-                // Grid layout for just one col
                 col.style.display='grid'; col.style.gridTemplateColumns='repeat(4, 1fr)'; col.style.gap='20px';
 
                 data.Townsfolk.forEach(r => {
                     const el = createRoleItem(r, 'Townsfolk', false);
                     el.onclick = (e) => { 
                         if(e.target.classList.contains('eye-btn')) return;
-                        // Single select logic
                         document.querySelectorAll('#role-grid-2 .drunk-opt').forEach(x => x.classList.remove('selected'));
                         el.classList.add('selected'); el.classList.add('drunk-opt');
                         state.setupDrunkRole = r.n;
                         document.getElementById('drunk-disp').innerText = r.n;
                         checkStep2Valid();
                     };
-                    // Mark if it was a selection from earlier
                     col.appendChild(el);
                 });
                 con.appendChild(col);
@@ -555,7 +587,6 @@
             p.x = board.offsetWidth/2 - 55; p.y = board.offsetHeight/2 - 55;
             el.style.left = p.x+'px'; el.style.top = p.y+'px';
             el.onmousedown = (e) => startDrag(e, el, p); 
-            // Click to edit (handles locked mode inside function)
             el.onclick = (e) => handleTokenClick(e, p.id); 
             board.appendChild(el);
             document.getElementById('input-name').value = '';
@@ -563,9 +594,6 @@
         }
 
         function handleTokenClick(e, id) {
-            // If locked, single click opens edit. If unlocked, double click opens edit (standard).
-            // But we can simplify: if we are not dragging, open edit.
-            // Using a simple check:
             if(state.locked) openEdit(id);
         }
 
@@ -575,15 +603,14 @@
             const rect = board.getBoundingClientRect();
             const cx = rect.width / 2;
             const cy = rect.height / 2;
-            const r = 250; // Radius matches guide circle roughly
+            const r = 250; 
             
             state.players.forEach((p, i) => {
-                const angle = (i / state.players.length) * 2 * Math.PI - (Math.PI/2); // Start top -90deg
-                p.x = cx + r * Math.cos(angle) - 55; // -55 is half token width
+                const angle = (i / state.players.length) * 2 * Math.PI - (Math.PI/2);
+                p.x = cx + r * Math.cos(angle) - 55;
                 p.y = cy + r * Math.sin(angle) - 55;
                 const el = document.getElementById(`token-${p.id}`);
-                el.style.left = p.x + 'px';
-                el.style.top = p.y + 'px';
+                el.style.left = p.x + 'px'; el.style.top = p.y + 'px';
             });
         }
 
@@ -614,6 +641,7 @@
             
             if(rShow) {
                 img.src = getIconUrl(rShow); img.style.display = 'block';
+                // Center fallback logic
                 img.onerror = () => { img.style.display='none'; badge.style.display='flex'; };
                 badge.innerHTML = `<span>${rShow.charAt(0)}</span>`;
                 badge.className = `badge-icon ${type==='Demon'?'b-dem':type==='Minion'?'b-min':type==='Outsider'?'b-out':'b-town'}`;
