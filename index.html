@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V17 - Local & Lowercase</title>
+    <title>Grimoire V18 - Full Content</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -85,6 +85,7 @@
         .role-item:hover { background: #2c2e35; }
         .role-item.selected { background: var(--accent); border-color: var(--accent-hover); color: white; }
         .role-item.disabled { opacity: 0.3; pointer-events: none; }
+        .role-item.in-play { border-color: var(--town-color); opacity: 0.6; } /* Used in Drunk selector */
         
         .role-left { display: flex; align-items: center; gap: 10px; flex: 1; }
         .setup-icon { width: 30px; height: 30px; object-fit: contain; filter: drop-shadow(0 0 2px rgba(255,255,255,0.2)); flex-shrink: 0; }
@@ -92,7 +93,6 @@
         .eye-btn { padding: 4px; border-radius: 4px; cursor: pointer; opacity: 0.5; font-size: 1.1rem; }
         .eye-btn:hover { opacity: 1; background: rgba(255,255,255,0.2); }
 
-        /* SETUP 2 SPECIFIC */
         .section-header { grid-column: span 4; font-size: 1.2rem; font-weight: bold; margin: 20px 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 5px; color: var(--accent); }
         .counter-sub { font-size: 0.9rem; float: right; color: #fff; }
 
@@ -112,7 +112,6 @@
             width: 600px; height: 600px; border: 2px dashed #333; border-radius: 50%; pointer-events: none;
         }
 
-        /* FABs */
         .fab-container { position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 50; }
         .fab {
             background: #333; color: white; padding: 10px 20px; border-radius: 30px;
@@ -141,6 +140,12 @@
 
         .token-name { font-weight: 700; font-size: 0.85rem; pointer-events: none; margin-top: 5px; text-align: center; line-height: 1.1; max-width: 90%; }
         
+        /* Drunk Icon on Board */
+        .drunk-indicator {
+            position: absolute; top: -5px; right: 25px; font-size: 1.2rem; 
+            filter: drop-shadow(0 0 2px black); z-index: 5;
+        }
+
         .token-ctrl {
             position: absolute; width: 26px; height: 26px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; cursor: pointer;
@@ -151,36 +156,21 @@
         .ctrl-vote { bottom: -10px; left: 50%; transform: translateX(-50%); background: white; border: 3px solid #333; width: 24px; height: 24px; }
         .ctrl-vote.used { background: #444; border-color: #666; }
 
-        .token-reminders {
-            position: absolute; top: -10px; width: 140%; display: flex; justify-content: center; flex-wrap: wrap; gap: 2px; pointer-events: none;
-        }
-        .reminder-tag {
-            background: var(--rem-color); color: #000; font-size: 0.6rem; font-weight: bold; 
-            padding: 2px 6px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); white-space: nowrap;
-        }
+        .token-reminders { position: absolute; top: -10px; width: 140%; display: flex; justify-content: center; flex-wrap: wrap; gap: 2px; pointer-events: none; }
+        .reminder-tag { background: var(--rem-color); color: #000; font-size: 0.6rem; font-weight: bold; padding: 2px 6px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); white-space: nowrap; }
 
         body.edit-mode .ctrl-del { display: flex; }
         body.edit-mode .token { animation: shake 0.3s infinite; }
         @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(1deg); } 75% { transform: rotate(-1deg); } }
 
         /* MODALS */
-        .modal-overlay { 
-            position: fixed; inset: 0; background: #000; z-index: 9999; 
-            display: flex; align-items: center; justify-content: center; 
-        }
-        
-        .card-view {
-            width: 90vw; max-width: 450px; background: #eceff1; color: #111;
-            border-radius: 20px; padding: 40px 20px; text-align: center;
-            box-shadow: 0 0 60px rgba(124, 77, 255, 0.4); border: 8px solid #222;
-            display: flex; flex-direction: column; align-items: center;
-        }
+        .modal-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .card-view { width: 90vw; max-width: 450px; background: #eceff1; color: #111; border-radius: 20px; padding: 40px 20px; text-align: center; box-shadow: 0 0 60px rgba(124, 77, 255, 0.4); border: 8px solid #222; display: flex; flex-direction: column; align-items: center; }
         .card-img-lg { width: 30vh; max-width: 180px; height: auto; object-fit: contain; margin: 0 auto 20px auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); display: block; }
         .card-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 5px; text-transform: uppercase; font-family: serif; line-height: 1; }
         .card-type { font-size: 1rem; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; }
         .card-desc { font-size: 1.2rem; line-height: 1.4; font-style: italic; margin-bottom: 30px; }
         
-        /* Edit Modal */
         .edit-box { background: var(--bg-panel); padding: 30px; border-radius: 12px; width: 350px; z-index: 10000; }
         #modal-edit { background: rgba(0,0,0,0.8); }
         .reminder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
@@ -227,18 +217,25 @@
                 </div>
             </div>
             
-            <button class="btn" id="btn-next" disabled onclick="gotoSetupStep2()">Next: Prep &rarr;</button>
+            <button class="btn" id="btn-next" disabled onclick="handleStep1Next()">Next &rarr;</button>
         </div>
         <div id="role-grid-1" class="grid-scroll-area"></div>
     </div>
 
-    <div id="screen-setup-2" class="screen setup-screen hidden">
+    <div id="screen-setup-drunk" class="screen setup-screen hidden">
         <div class="top-bar">
-            <h2>Game Prep</h2>
+            <h2>Select Drunk's Fake Role</h2>
+            <button class="btn" id="btn-drunk-confirm" disabled onclick="gotoSetupBluffs()">Confirm &rarr;</button>
+        </div>
+        <div id="role-grid-drunk" class="grid-scroll-area"></div>
+    </div>
+
+    <div id="screen-setup-bluffs" class="screen setup-screen hidden">
+        <div class="top-bar">
+            <h2>Select 3 Demon Bluffs <span id="bluff-counter" style="margin-left:10px; opacity:0.7;">0/3</span></h2>
             <button class="btn" id="btn-enter" disabled onclick="enterGame()">Enter Town Square &rarr;</button>
         </div>
-        
-        <div id="role-grid-2" class="grid-scroll-area"></div>
+        <div id="role-grid-bluffs" class="grid-scroll-area"></div>
     </div>
 
     <div id="screen-game" class="screen hidden">
@@ -319,26 +316,18 @@
     </div>
 
     <script>
-        // --- LOCAL ASSET LOGIC ---
-        
-        // Convert "Fortune Teller" to "fortuneteller"
-        // Lowercase, no punctuation, no spaces.
+        // --- ASSETS ---
+        function cleanName(name) { return name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(); }
         function getIconUrl(roleName) {
             if(!roleName) return null;
-            const clean = roleName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-            // Strict local path
-            return `./icons/${clean}.png`;
+            return `./icons/${cleanName(roleName)}.png`;
         }
-
         const getBadgeHtml = (name, type) => {
-            let cClass = 'b-town';
-            if(type === 'Outsider') cClass = 'b-out';
-            if(type === 'Minion') cClass = 'b-min';
-            if(type === 'Demon') cClass = 'b-dem';
+            let cClass = 'b-town'; if(type==='Outsider') cClass='b-out'; if(type==='Minion') cClass='b-min'; if(type==='Demon') cClass='b-dem';
             return `<div class="badge-icon ${cClass}"><span>${name ? name.charAt(0) : '?'}</span></div>`;
         };
 
-        // --- DATA ---
+        // --- DATA (FULL CONTENT) ---
         const roles = {
             TB: {
                 Townsfolk: [
@@ -371,12 +360,78 @@
                 Demon: [
                     {n:"Imp",d:"Each night*, choose a player: they die. If you kill yourself this way, a Minion becomes the Imp."}
                 ]
+            },
+            BM: {
+                Townsfolk: [
+                    {n:"Grandmother",d:"Start knowing a good player is the Demon? No. Start knowing a specific good player (your Grandchild). If they die by Demon, you die too."},
+                    {n:"Sailor",d:"Each night, choose a player: either you or they are drunk. You can't die."},
+                    {n:"Chambermaid",d:"Each night, choose 2 alive players (not yourself): learn how many woke tonight."},
+                    {n:"Exorcist",d:"Each night*, choose a player (not yourself): the Demon doesn't wake tonight if you chose them."},
+                    {n:"Innkeeper",d:"Each night*, choose 2 players: they are safe from the Demon. One is drunk."},
+                    {n:"Gambler",d:"Each night*, choose a player & guess their character: if you guess wrong, you die."},
+                    {n:"Gossip",d:"Each day, make a public statement. If true, a player dies tonight."},
+                    {n:"Courtier",d:"Once per game, at night, choose a character: they are drunk for 3 nights & days."},
+                    {n:"Professor",d:"Once per game, at night*, choose a dead player: if they are a Townsfolk, they are resurrected."},
+                    {n:"Minstrel",d:"When a Minion dies by execution, all other players (except Travellers) are drunk until tomorrow dusk."},
+                    {n:"Tea Lady",d:"If both your alive neighbors are good, they can't die."},
+                    {n:"Pacifist",d:"Executed good players might not die."},
+                    {n:"Fool",d:"The first time you die (except by execution), you don't die."}
+                ],
+                Outsider: [
+                    {n:"Tinker",d:"You might die at any time."},
+                    {n:"Moonchild",d:"When you die, choose a player: they die tonight."},
+                    {n:"Goon",d:"Each night, the 1st player to choose you with their ability is drunk until dusk. You become their alignment."},
+                    {n:"Lunatic",d:"You think you are a Demon, but you are not. The Demon knows who you are."}
+                ],
+                Minion: [
+                    {n:"Godfather",d:"Start knowing which Outsiders are in play. If 1 died today, choose a player: they die.", mod:"+1 Outsider"},
+                    {n:"Devils Advocate",d:"Each night, choose a living player: if executed tomorrow, they don't die."},
+                    {n:"Assassin",d:"Once per game, at night*, choose a player: they die (no protection)."},
+                    {n:"Mastermind",d:"If the Demon dies by execution (game ends), play 1 more day. If a player is then executed, their team loses."}
+                ],
+                Demon: [
+                    {n:"Zombuul",d:"Each night*, if no one died today, choose a player: they die. 1st time you die, you live but register as dead."},
+                    {n:"Pukka",d:"Each night, choose a player: they are poisoned. The previously poisoned player dies."},
+                    {n:"Shabaloth",d:"Each night*, choose 2 players: they die. A dead player you chose might be resurrected."},
+                    {n:"Po",d:"Each night*, choose a player: they die. If you chose no one last night, choose 3 players."}
+                ]
+            },
+            SV: {
+                Townsfolk: [
+                    {n:"Clockmaker",d:"Start knowing how many steps from the Demon to its nearest Minion."},
+                    {n:"Dreamer",d:"Each night, choose a player (not yourself/Traveller): learn 1 good and 1 evil character, 1 is true."},
+                    {n:"Snake Charmer",d:"Each night, choose a player: if they are the Demon, you become the Demon and they become the Snake Charmer."},
+                    {n:"Mathematician",d:"Each night, learn how many players' abilities malfunctioned tonight."},
+                    {n:"Flowergirl",d:"Each night, learn if the Demon voted today."},
+                    {n:"Town Crier",d:"Each night, learn if a Minion nominated today."},
+                    {n:"Oracle",d:"Each night, learn how many dead players are evil."},
+                    {n:"Savant",d:"Each day, visit the Storyteller to learn 2 things: 1 is true, 1 is false."},
+                    {n:"Seamstress",d:"Once per game, at night, choose 2 players: learn if they are the same alignment."},
+                    {n:"Philosopher",d:"Once per game, at night, choose a good character: gain that ability. If in play, they are drunk."},
+                    {n:"Artist",d:"Once per game, during the day, privately ask the Storyteller any Yes/No question."},
+                    {n:"Juggler",d:"1st day, guess up to 5 players' characters. Tonight, learn how many were correct."},
+                    {n:"Sage",d:"If the Demon kills you, you learn that 1 of 2 players is the Demon."}
+                ],
+                Outsider: [
+                    {n:"Mutant",d:"If you are 'mad' about being an Outsider, you might be executed."},
+                    {n:"Sweetheart",d:"When you die, 1 player is drunk from now on."},
+                    {n:"Barber",d:"If you die, the Demon chooses 2 players to swap characters."},
+                    {n:"Klutz",d:"When you learn you died, choose a living player: if they are evil, your team loses."}
+                ],
+                Minion: [
+                    {n:"Witch",d:"Each night, choose a player: if they nominate tomorrow, they die."},
+                    {n:"Cerebus",d:"Each night, choose a player & a character: they are 'mad' they are that character tomorrow or might be executed."},
+                    {n:"Pit-Hag",d:"Each night*, choose a player & a character: they become that character. If already in play, they are drunk."},
+                    {n:"Evil Twin",d:"You & an opposing player know each other. If the good player is executed, evil wins. Good can't win if you both live."}
+                ],
+                Demon: [
+                    {n:"Fang Gu",d:"Each night*, choose a player: they die. The 1st Outsider you choose becomes an evil Fang Gu & you die.", mod:"+1 Outsider"},
+                    {n:"Vortox",d:"Each night*, choose a player: they die. Townsfolk abilities yield false info. If no one is executed, evil wins."},
+                    {n:"No Dashii",d:"Each night*, choose a player: they die. Your 2 Townsfolk neighbors are poisoned."},
+                    {n:"Vigormortis",d:"Each night*, choose a player: they die. Minions you kill keep abilities & poison 1 neighbor."}
+                ]
             }
         };
-
-        const mock = (n, m) => ({n, d:"Description not available in demo.", mod: m});
-        roles.BM = { Townsfolk: ["Grandmother","Sailor","Chambermaid","Exorcist","Innkeeper","Gambler","Gossip","Courtier","Professor","Minstrel","Tea Lady","Pacifist","Fool"].map(n=>mock(n)), Outsider: ["Tinker","Moonchild","Goon","Lunatic"].map(n=>mock(n)), Minion: ["Godfather","Devil's Advocate","Assassin","Mastermind"].map((n,i)=>mock(n, i===0?"+1 Outsider":null)), Demon: ["Zombuul","Pukka","Shabaloth","Po"].map(n=>mock(n)) };
-        roles.SV = { Townsfolk: ["Clockmaker","Dreamer","Snake Charmer","Mathematician","Flowergirl","Town Crier","Oracle","Savant","Seamstress","Philosopher","Artist","Juggler","Sage"].map(n=>mock(n)), Outsider: ["Mutant","Sweetheart","Barber","Klutz"].map(n=>mock(n)), Minion: ["Witch","Cerebus","Pit-Hag","Evil Twin"].map(n=>mock(n)), Demon: ["Fang Gu","Vortox","No Dashii","Vigormortis"].map(n=>mock(n)) };
 
         let state = { script: 'TB', count: 5, sel: { Townsfolk:[], Outsider:[], Minion:[], Demon:[] }, players: [], locked: true, phase: 0, setupDrunkRole: "", bluffs: [] };
         const baseDist = { 5:[3,0,1,1], 6:[3,1,1,1], 7:[5,0,1,1], 8:[5,1,1,1], 9:[5,2,1,1], 10:[7,0,2,1], 11:[7,1,2,1], 12:[7,2,2,1], 13:[9,0,3,1], 14:[9,1,3,1], 15:[9,2,3,1] };
@@ -422,6 +477,9 @@
             let req = [...(baseDist[state.count] || [3,0,1,1])];
             if(state.sel.Minion.includes("Baron")) { req[0]-=2; req[1]+=2; }
             if(state.sel.Minion.includes("Godfather")) { req[0]-=1; req[1]+=1; }
+            if(state.sel.Demon.includes("Fang Gu")) { req[0]-=1; req[1]+=1; } // Added Fang Gu logic
+            // Note: Balloonist adds +1 Outsider if used as a Traveller/Fabled character mechanic usually, but if treating as Townsfolk modifier:
+            // if(state.sel.Townsfolk.includes("Balloonist")) { req[0]-=1; req[1]+=1; } 
             
             const okT = checkCat('req-town', state.sel.Townsfolk.length, req[0]);
             const okO = checkCat('req-out', state.sel.Outsider.length, req[1]);
@@ -438,61 +496,81 @@
             else { el.classList.add('invalid'); el.classList.remove('valid'); return false; }
         }
 
-        // --- SETUP STEP 2 (BLUFFS/DRUNK) ---
-        function gotoSetupStep2() {
-            document.getElementById('screen-setup').classList.add('hidden');
-            document.getElementById('screen-setup-2').classList.remove('hidden');
-            renderStep2();
+        function handleStep1Next() {
+            if(state.sel.Outsider.includes("Drunk")) {
+                gotoDrunkSetup();
+            } else {
+                gotoSetupBluffs();
+            }
         }
 
-        function renderStep2() {
-            const con = document.getElementById('role-grid-2'); con.innerHTML = '';
-            const data = roles[state.script];
-            const allSel = []; 
-            ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allSel.push(...state.sel[t]));
+        // --- SETUP STEP 2 (DRUNK) ---
+        function gotoDrunkSetup() {
+            document.getElementById('screen-setup').classList.add('hidden');
+            document.getElementById('screen-setup-drunk').classList.remove('hidden');
+            const con = document.getElementById('role-grid-drunk'); con.innerHTML = '';
+            
+            const allSel = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allSel.push(...state.sel[t]));
+            
+            // Only show Townsfolk to mimic
+            const col = document.createElement('div'); col.className = 'role-col'; col.style.gridColumn='span 4';
+            col.style.display='grid'; col.style.gridTemplateColumns='repeat(4, 1fr)'; col.style.gap='20px';
+            
+            roles[state.script].Townsfolk.forEach(r => {
+                const inPlay = allSel.includes(r.n);
+                const el = createRoleItem(r, 'Townsfolk', false);
+                if(inPlay) {
+                    el.classList.add('in-play');
+                    el.querySelector('span').innerText += " (In Play)";
+                }
+                
+                el.onclick = (e) => {
+                    if(e.target.classList.contains('eye-btn')) return;
+                    document.querySelectorAll('#role-grid-drunk .selected').forEach(x => x.classList.remove('selected'));
+                    el.classList.add('selected');
+                    state.setupDrunkRole = r.n;
+                    document.getElementById('btn-drunk-confirm').disabled = false;
+                };
+                col.appendChild(el);
+            });
+            con.appendChild(col);
+        }
 
-            // 1. BLUFFS SECTION
-            const bHead = document.createElement('div'); bHead.className='section-header'; 
-            bHead.innerHTML = 'Select 3 Demon Bluffs <span class="counter-sub" id="bluff-counter">0/3</span>';
-            con.appendChild(bHead);
-
-            for(let type in data) {
+        // --- SETUP STEP 3 (BLUFFS) ---
+        function gotoSetupBluffs() {
+            document.getElementById('screen-setup').classList.add('hidden');
+            document.getElementById('screen-setup-drunk').classList.add('hidden');
+            document.getElementById('screen-setup-bluffs').classList.remove('hidden');
+            
+            const con = document.getElementById('role-grid-bluffs'); con.innerHTML = '';
+            const allSel = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allSel.push(...state.sel[t]));
+            
+            for(let type in roles[state.script]) {
                 const col = document.createElement('div'); col.className = 'role-col'; col.innerHTML = `<h3>${type}</h3>`;
-                data[type].forEach(r => {
+                roles[state.script][type].forEach(r => {
                     const inPlay = allSel.includes(r.n);
                     const el = createRoleItem(r, type, inPlay);
                     if(inPlay) el.classList.add('disabled');
                     
-                    el.onclick = (e) => { if(!e.target.classList.contains('eye-btn') && !inPlay) toggleBluff(r.n, el); };
-                    col.appendChild(el);
-                });
-                con.appendChild(col);
-            }
-
-            // 2. DRUNK SECTION (Only if Drunk selected)
-            if(state.sel.Outsider.includes("Drunk")) {
-                const dHead = document.createElement('div'); dHead.className='section-header';
-                dHead.innerHTML = 'Select Drunk\'s Fake Identity <span class="counter-sub" style="color:var(--out-color)" id="drunk-disp">None</span>';
-                dHead.style.borderColor = 'var(--out-color)'; dHead.style.color = 'var(--out-color)';
-                con.appendChild(dHead);
-
-                const col = document.createElement('div'); col.className = 'role-col'; col.style.gridColumn='span 4';
-                col.style.display='grid'; col.style.gridTemplateColumns='repeat(4, 1fr)'; col.style.gap='20px';
-
-                data.Townsfolk.forEach(r => {
-                    const el = createRoleItem(r, 'Townsfolk', false);
-                    el.onclick = (e) => { 
-                        if(e.target.classList.contains('eye-btn')) return;
-                        document.querySelectorAll('#role-grid-2 .drunk-opt').forEach(x => x.classList.remove('selected'));
-                        el.classList.add('selected'); el.classList.add('drunk-opt');
-                        state.setupDrunkRole = r.n;
-                        document.getElementById('drunk-disp').innerText = r.n;
-                        checkStep2Valid();
+                    el.onclick = (e) => {
+                        if(e.target.classList.contains('eye-btn') || inPlay) return;
+                        toggleBluff(r.n, el);
                     };
                     col.appendChild(el);
                 });
                 con.appendChild(col);
             }
+        }
+
+        function toggleBluff(name, el) {
+            const i = state.bluffs.indexOf(name);
+            if(i > -1) { state.bluffs.splice(i, 1); el.classList.remove('selected'); }
+            else {
+                if(state.bluffs.length >= 3) return;
+                state.bluffs.push(name); el.classList.add('selected');
+            }
+            document.getElementById('bluff-counter').innerText = `${state.bluffs.length}/3`;
+            document.getElementById('btn-enter').disabled = (state.bluffs.length !== 3);
         }
 
         function createRoleItem(r, type, disabled) {
@@ -509,26 +587,8 @@
             return el;
         }
 
-        function toggleBluff(name, el) {
-            const i = state.bluffs.indexOf(name);
-            if(i > -1) { state.bluffs.splice(i, 1); el.classList.remove('selected'); }
-            else {
-                if(state.bluffs.length >= 3) return; // Max 3
-                state.bluffs.push(name); el.classList.add('selected');
-            }
-            document.getElementById('bluff-counter').innerText = `${state.bluffs.length}/3`;
-            checkStep2Valid();
-        }
-
-        function checkStep2Valid() {
-            const drunkNeeded = state.sel.Outsider.includes("Drunk");
-            const drunkOk = !drunkNeeded || state.setupDrunkRole !== "";
-            const bluffsOk = state.bluffs.length === 3;
-            document.getElementById('btn-enter').disabled = !(drunkOk && bluffsOk);
-        }
-
         function enterGame() {
-            document.getElementById('screen-setup-2').classList.add('hidden');
+            document.getElementById('screen-setup-bluffs').classList.add('hidden');
             document.getElementById('screen-game').classList.remove('hidden');
             log("Welcome to Ravenswood Bluff.");
         }
@@ -543,6 +603,7 @@
             
             const el = document.createElement('div'); el.id = `token-${p.id}`; el.className = 'token good draggable';
             el.innerHTML = `
+                <div class="drunk-indicator" style="display:none">🍺</div>
                 <div class="token-reminders"></div>
                 <div class="token-icon-wrap">
                     <img class="token-img" src="" style="display:none">
@@ -562,22 +623,16 @@
             updateToken(p);
         }
 
-        function handleTokenClick(e, id) {
-            if(state.locked) openEdit(id);
-        }
+        function handleTokenClick(e, id) { if(state.locked) openEdit(id); }
 
         function distributePlayers() {
             if(state.players.length === 0) return;
             const board = document.getElementById('game-board');
             const rect = board.getBoundingClientRect();
-            const cx = rect.width / 2;
-            const cy = rect.height / 2;
-            const r = 250; 
-            
+            const cx = rect.width / 2; const cy = rect.height / 2; const r = 250; 
             state.players.forEach((p, i) => {
                 const angle = (i / state.players.length) * 2 * Math.PI - (Math.PI/2);
-                p.x = cx + r * Math.cos(angle) - 55;
-                p.y = cy + r * Math.sin(angle) - 55;
+                p.x = cx + r * Math.cos(angle) - 55; p.y = cy + r * Math.sin(angle) - 55;
                 const el = document.getElementById(`token-${p.id}`);
                 el.style.left = p.x + 'px'; el.style.top = p.y + 'px';
             });
@@ -600,22 +655,26 @@
         function updateToken(p) {
             const el = document.getElementById(`token-${p.id}`);
             el.className = `token ${p.align} ${p.dead?'dead':''} ${!state.locked?'draggable':''}`;
-            const wrap = el.querySelector('.token-icon-wrap');
             
+            // Icon Logic
             const rShow = (p.role === "Drunk" && p.fake) ? p.fake : p.role;
             const type = getRoleType(rShow) || 'Townsfolk';
             
-            const img = wrap.querySelector('.token-img');
-            const badge = wrap.querySelector('.badge-icon');
+            const img = el.querySelector('.token-img');
+            const badge = el.querySelector('.badge-icon');
             
             if(rShow) {
                 img.src = getIconUrl(rShow); img.style.display = 'block';
-                // Center fallback logic
                 img.onerror = () => { img.style.display='none'; badge.style.display='flex'; };
                 badge.innerHTML = `<span>${rShow.charAt(0)}</span>`;
                 badge.className = `badge-icon ${type==='Demon'?'b-dem':type==='Minion'?'b-min':type==='Outsider'?'b-out':'b-town'}`;
             } else { img.style.display = 'none'; badge.style.display = 'none'; }
 
+            // Drunk Indicator
+            const dk = el.querySelector('.drunk-indicator');
+            dk.style.display = (p.role === "Drunk") ? 'block' : 'none';
+
+            // Vote
             const oldV = el.querySelector('.ctrl-vote'); if(oldV) oldV.remove();
             if(p.dead) {
                 const v = document.createElement('div'); v.className = 'token-ctrl ctrl-vote';
@@ -675,11 +734,7 @@
             if(!p.reminders.includes(txt)) p.reminders.push(txt);
             updateToken(p);
         }
-        function clearRem() {
-            const p = state.players.find(x=>x.id===editId);
-            p.reminders = [];
-            updateToken(p);
-        }
+        function clearRem() { const p = state.players.find(x=>x.id===editId); p.reminders = []; updateToken(p); }
 
         function showCard(e, name, type) {
             if(e) e.stopPropagation();
