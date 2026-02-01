@@ -3,254 +3,494 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unofficial Grimoire Helper</title>
+    <title>Grimoire Companion - Advanced</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
+            --panel-bg: #2d2d2d;
             --text-color: #e0e0e0;
-            --accent: #b94e48; /* Red for evil/death */
-            --good: #48b96e;   /* Green for good */
-            --card-bg: #2d2d2d;
+            --accent-red: #d32f2f; /* Evil */
+            --accent-green: #388e3c; /* Good */
+            --accent-blue: #1976d2; /* UI Elements */
+            --dead-gray: #616161;
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Sidebar (Controls & Log) --- */
+        #sidebar {
+            width: 320px;
+            background: var(--panel-bg);
             padding: 20px;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            border-right: 1px solid #444;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+            z-index: 100;
         }
 
-        h1 { margin-bottom: 10px; }
-
-        /* Setup Area */
-        #setup {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: var(--card-bg);
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        input, select, button {
-            padding: 8px;
-            margin: 5px;
-            border-radius: 4px;
-            border: none;
-        }
-
+        h2, h3 { margin-top: 0; }
+        
         button {
-            background-color: #4a90e2;
+            background: var(--accent-blue);
             color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
+            margin-bottom: 5px;
+            transition: background 0.2s;
+        }
+        button:hover { filter: brightness(1.1); }
+        button.secondary { background: #555; }
+        button.danger { background: var(--accent-red); }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            background: #444;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
 
-        button:hover { background-color: #357abd; }
+        #game-log {
+            flex-grow: 1;
+            background: #111;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            border: 1px solid #444;
+        }
 
-        /* The Town Square (Circle Layout) */
+        .log-entry { margin-bottom: 6px; border-bottom: 1px solid #333; padding-bottom: 4px; }
+        .log-phase { color: #fbc02d; font-weight: bold; margin-top: 10px; display: block; }
+        .log-death { color: var(--accent-red); }
+
+        /* --- Main Area (Town Square) --- */
+        #main-area {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, #2a2a2a 0%, #1a1a1a 80%);
+        }
+
+        #phase-display {
+            position: absolute;
+            top: 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
         #town-square {
             position: relative;
             width: 600px;
             height: 600px;
-            border: 2px dashed #444;
+            border: 4px dashed #444;
             border-radius: 50%;
-            margin-top: 20px;
         }
 
+        /* --- Player Token --- */
         .player-token {
             position: absolute;
-            width: 100px;
-            height: 100px;
-            background: var(--card-bg);
-            border: 2px solid #555;
+            width: 110px;
+            height: 110px;
+            background: #333;
+            border: 3px solid #777;
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: transform 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        .player-token:hover {
-            transform: scale(1.1);
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
             z-index: 10;
         }
 
-        .player-token.dead {
-            border-color: var(--accent);
-            opacity: 0.6;
-        }
+        .player-token:active { cursor: grabbing; }
+        .player-token.dragging { opacity: 0.5; }
 
-        .player-token.dead::after {
-            content: "DEAD";
-            position: absolute;
-            color: var(--accent);
-            font-weight: bold;
-            font-size: 1.2rem;
-            transform: rotate(-15deg);
-        }
-
-        .token-name { font-weight: bold; margin-bottom: 2px; }
-        .token-role { font-size: 0.75rem; color: #aaa; }
+        /* Alignments */
+        .player-token.good { border-color: var(--accent-green); background: #1b3a1e; }
+        .player-token.evil { border-color: var(--accent-red); background: #3e1b1b; }
         
-        .shroud-icon {
+        /* Death State */
+        .player-token.dead {
+            filter: grayscale(100%);
+            opacity: 0.7;
+            border-style: dotted;
+        }
+        
+        .shroud {
             position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 15px;
-            height: 15px;
-            background: var(--accent);
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
             border-radius: 50%;
-            display: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: red;
+            font-weight: bold;
+            font-size: 1.5rem;
+            transform: rotate(-15deg);
+            pointer-events: none;
         }
 
-        .vote-token {
+        /* Ghost Vote */
+        .ghost-vote {
             position: absolute;
             bottom: -10px;
-            width: 20px;
-            height: 20px;
-            background: gold;
-            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            background: #fff;
             border: 2px solid #333;
-            display: none; /* Show if they have a ghost vote */
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .ghost-vote.used {
+            background: #555;
+            border-color: #888;
         }
 
-        /* Controls / Context Menu */
-        #controls {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-        }
+        .token-name { font-weight: bold; font-size: 0.95rem; pointer-events: none; }
+        .token-role { font-size: 0.75rem; opacity: 0.8; pointer-events: none; margin-top: 2px;}
 
-        .hidden { display: none; }
+        /* --- Modals --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
 
     </style>
 </head>
 <body>
 
-    <h1>Grimoire Assistant</h1>
+    <div id="sidebar">
+        <h2>Grimoire</h2>
+        
+        <input type="text" id="newPlayerName" placeholder="New Player Name..." onkeypress="handleEnter(event)">
+        <button onclick="addPlayer()">+ Add Player</button>
+        <hr style="width:100%; border-color:#444;">
+        
+        <button onclick="advancePhase()" id="phaseBtn">Start Game (Night 1)</button>
+        <button onclick="exportLog()" class="secondary">Copy Summary</button>
 
-    <div id="setup">
-        <h3>Add Players</h3>
-        <input type="text" id="playerName" placeholder="Player Name (e.g., Alex)" onkeypress="handleEnter(event)">
-        <button onclick="addPlayer()">Add Player</button>
-        <br>
-        <small>Add players, then they will appear in the circle below.</small>
+        <h3>Game Log</h3>
+        <div id="game-log">
+            <div class="log-entry" style="color:#888;">Add players to begin...</div>
+        </div>
     </div>
 
-    <div id="town-square"></div>
+    <div id="main-area">
+        <div id="phase-display">Setup</div>
+        <div id="town-square"></div>
+    </div>
+
+    <div id="editorModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Edit Player</h3>
+            
+            <label>Role:</label>
+            <select id="roleSelect">
+                <option value="Unknown">Unknown</option>
+                <optgroup label="Townsfolk">
+                    <option value="Washerwoman">Washerwoman</option>
+                    <option value="Librarian">Librarian</option>
+                    <option value="Investigator">Investigator</option>
+                    <option value="Chef">Chef</option>
+                    <option value="Empath">Empath</option>
+                    <option value="Fortune Teller">Fortune Teller</option>
+                    <option value="Undertaker">Undertaker</option>
+                    <option value="Monk">Monk</option>
+                    <option value="Ravenkeeper">Ravenkeeper</option>
+                    <option value="Virgin">Virgin</option>
+                    <option value="Slayer">Slayer</option>
+                    <option value="Soldier">Soldier</option>
+                    <option value="Mayor">Mayor</option>
+                </optgroup>
+                <optgroup label="Outsiders">
+                    <option value="Butler">Butler</option>
+                    <option value="Drunk">Drunk</option>
+                    <option value="Recluse">Recluse</option>
+                    <option value="Saint">Saint</option>
+                </optgroup>
+                <optgroup label="Minions">
+                    <option value="Poisoner">Poisoner</option>
+                    <option value="Spy">Spy</option>
+                    <option value="Scarlet Woman">Scarlet Woman</option>
+                    <option value="Baron">Baron</option>
+                </optgroup>
+                <optgroup label="Demons">
+                    <option value="Imp">Imp</option>
+                </optgroup>
+            </select>
+
+            <label>Alignment:</label>
+            <select id="alignSelect">
+                <option value="good">Good (Green)</option>
+                <option value="evil">Evil (Red)</option>
+            </select>
+
+            <div class="modal-buttons">
+                <button onclick="savePlayerEdit()">Save</button>
+                <button onclick="killPlayerPrompt()" class="danger" id="killBtn">Kill/Execute</button>
+                <button onclick="closeModal()" class="secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // State
+        // --- DATA STATE ---
         let players = [];
-        
-        // Placeholder Role List (User acts as database)
-        // In a real app, you would populate this with the script JSON
-        const roles = [
-            "Townsfolk", "Outsider", "Minion", "Demon", 
-            "Washerwoman", "Librarian", "Investigator", "Chef",
-            "Empath", "Fortune Teller", "Undertaker", "Monk",
-            "Ravenkeeper", "Virgin", "Slayer", "Soldier", "Mayor",
-            "Butler", "Drunk", "Recluse", "Saint",
-            "Poisoner", "Spy", "Scarlet Woman", "Baron",
-            "Imp"
-        ];
+        let phaseIndex = 0; // 0=Setup, 1=Night 1, 2=Day 1, etc.
+        let editingPlayerIndex = null;
+        let dragSrcIndex = null;
 
-        function handleEnter(e) {
-            if (e.key === 'Enter') addPlayer();
-        }
+        const phases = ["Setup", "Night 1", "Day 1", "Night 2", "Day 2", "Night 3", "Day 3", "Night 4", "Day 4", "Night 5", "Day 5"]; // Simplified sequence
+
+        // --- CORE FUNCTIONS ---
+
+        function handleEnter(e) { if(e.key === 'Enter') addPlayer(); }
 
         function addPlayer() {
-            const input = document.getElementById('playerName');
+            const input = document.getElementById('newPlayerName');
             const name = input.value.trim();
             if (!name) return;
 
             players.push({
-                id: Date.now(),
                 name: name,
                 role: "Unknown",
+                alignment: "good", // Default
                 isDead: false,
-                hasGhostVote: true
+                ghostVoteUsed: false
             });
 
             input.value = '';
             renderTown();
-        }
-
-        function toggleLife(index) {
-            players[index].isDead = !players[index].isDead;
-            // If dead, they get a ghost vote automatically in this logic
-            renderTown();
-        }
-
-        function changeRole(index) {
-            let newRole = prompt(`Assign role for ${players[index].name}:\n(Type the role name)`, players[index].role);
-            if (newRole) {
-                players[index].role = newRole;
-                renderTown();
-            }
+            log(`Added player: ${name}`);
         }
 
         function renderTown() {
             const square = document.getElementById('town-square');
-            square.innerHTML = ''; // Clear board
-
+            square.innerHTML = '';
+            
             const total = players.length;
-            const radius = 250; // Distance from center
+            const radius = 250;
             const centerX = 300;
             const centerY = 300;
 
             players.forEach((p, index) => {
                 const el = document.createElement('div');
-                el.className = `player-token ${p.isDead ? 'dead' : ''}`;
+                el.className = `player-token ${p.alignment} ${p.isDead ? 'dead' : ''}`;
+                el.draggable = true;
                 
-                // Calculate Position in a circle
-                const angle = (index / total) * 2 * Math.PI - (Math.PI / 2); // Start at top
-                const x = centerX + radius * Math.cos(angle) - 50; // -50 centers the 100px div
-                const y = centerY + radius * Math.sin(angle) - 50;
-
+                // Position logic
+                const angle = (index / total) * 2 * Math.PI - (Math.PI / 2);
+                const x = centerX + radius * Math.cos(angle) - 55; 
+                const y = centerY + radius * Math.sin(angle) - 55;
                 el.style.left = `${x}px`;
                 el.style.top = `${y}px`;
 
                 // Content
-                el.innerHTML = `
+                let html = `
                     <div class="token-name">${p.name}</div>
                     <div class="token-role">${p.role}</div>
-                    ${p.isDead && p.hasGhostVote ? '<div class="vote-token" title="Ghost Vote Available"></div>' : ''}
                 `;
-
-                // Interactions
-                // Left click: Toggle Life
-                el.onclick = (e) => {
-                    if(e.ctrlKey || e.metaKey) {
-                        // Ctrl+Click to toggle Ghost Vote usage if dead
-                        if(p.isDead) {
-                            p.hasGhostVote = !p.hasGhostVote;
-                            renderTown();
-                        }
-                    } else {
-                        toggleLife(index);
-                    }
-                };
                 
-                // Right click: Change Role
-                el.oncontextmenu = (e) => {
-                    e.preventDefault();
-                    changeRole(index);
-                };
+                if (p.isDead) {
+                    html += `<div class="shroud">DEAD</div>`;
+                    // Ghost Vote Bubble
+                    const voteClass = p.ghostVoteUsed ? 'used' : '';
+                    const voteTitle = p.ghostVoteUsed ? 'Vote Spent' : 'Ghost Vote Available';
+                    html += `<div class="ghost-vote ${voteClass}" title="${voteTitle}" onclick="toggleGhostVote(event, ${index})"></div>`;
+                }
+
+                el.innerHTML = html;
+
+                // Events
+                el.onclick = () => openEditor(index);
+                
+                // Drag and Drop (Swap logic)
+                el.addEventListener('dragstart', (e) => {
+                    dragSrcIndex = index;
+                    el.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                
+                el.addEventListener('dragend', () => {
+                    el.classList.remove('dragging');
+                    dragSrcIndex = null;
+                });
+
+                el.addEventListener('dragover', (e) => {
+                    e.preventDefault(); // Necessary to allow dropping
+                    return false;
+                });
+
+                el.addEventListener('drop', (e) => {
+                    e.stopPropagation();
+                    if (dragSrcIndex !== null && dragSrcIndex !== index) {
+                        // Swap players in array
+                        const temp = players[dragSrcIndex];
+                        players[dragSrcIndex] = players[index];
+                        players[index] = temp;
+                        renderTown();
+                    }
+                    return false;
+                });
 
                 square.appendChild(el);
             });
         }
+
+        // --- GAME LOGIC ---
+
+        function advancePhase() {
+            phaseIndex++;
+            if (phaseIndex >= phases.length) {
+                const dayNum = Math.ceil(phaseIndex/2);
+                const isNight = phaseIndex % 2 !== 0;
+                phases.push(isNight ? `Night ${dayNum}` : `Day ${dayNum}`);
+            }
+            
+            const currentPhase = phases[phaseIndex];
+            document.getElementById('phase-display').innerText = currentPhase;
+            document.getElementById('phaseBtn').innerText = "Next Phase";
+            
+            // Log divider
+            const logEntry = document.createElement('span');
+            logEntry.className = 'log-phase';
+            logEntry.innerText = `--- ${currentPhase} ---`;
+            document.getElementById('game-log').appendChild(logEntry);
+            
+            // Scroll to bottom
+            const logDiv = document.getElementById('game-log');
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function log(msg, type='') {
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.innerText = msg;
+            const logContainer = document.getElementById('game-log');
+            logContainer.appendChild(div);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function exportLog() {
+            const text = document.getElementById('game-log').innerText;
+            navigator.clipboard.writeText(text);
+            alert("Game Log copied to clipboard!");
+        }
+
+        // --- EDITOR MODAL ---
+
+        function openEditor(index) {
+            editingPlayerIndex = index;
+            const p = players[index];
+            
+            document.getElementById('modalTitle').innerText = `Edit: ${p.name}`;
+            document.getElementById('roleSelect').value = p.role;
+            document.getElementById('alignSelect').value = p.alignment;
+            
+            // Change Kill button text if already dead
+            const killBtn = document.getElementById('killBtn');
+            if (p.isDead) {
+                killBtn.innerText = "Revive";
+                killBtn.className = "secondary";
+            } else {
+                killBtn.innerText = "Kill / Execute";
+                killBtn.className = "danger";
+            }
+
+            document.getElementById('editorModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('editorModal').style.display = 'none';
+            editingPlayerIndex = null;
+        }
+
+        function savePlayerEdit() {
+            if (editingPlayerIndex === null) return;
+            
+            const p = players[editingPlayerIndex];
+            p.role = document.getElementById('roleSelect').value;
+            p.alignment = document.getElementById('alignSelect').value;
+            
+            renderTown();
+            closeModal();
+        }
+
+        function killPlayerPrompt() {
+            if (editingPlayerIndex === null) return;
+            const p = players[editingPlayerIndex];
+
+            if (p.isDead) {
+                // Revive logic
+                p.isDead = false;
+                log(`${p.name} was revived.`);
+            } else {
+                // Kill logic
+                const reason = prompt("Cause of death?\n(e.g., Demon, Execution, Gunner)", "Execution");
+                if (reason) {
+                    p.isDead = true;
+                    const phase = phases[phaseIndex] || "Setup";
+                    log(`${phase}: ${p.name} (${p.role}) died by ${reason}.`, 'log-death');
+                }
+            }
+            renderTown();
+            closeModal();
+        }
+
+        function toggleGhostVote(e, index) {
+            e.stopPropagation(); // Don't open modal
+            const p = players[index];
+            if (!p.isDead) return;
+
+            p.ghostVoteUsed = !p.ghostVoteUsed;
+            renderTown();
+            
+            if (p.ghostVoteUsed) log(`${p.name} used their Ghost Vote.`);
+            else log(`${p.name} reclaimed their Ghost Vote.`);
+        }
+
     </script>
 </body>
 </html>
