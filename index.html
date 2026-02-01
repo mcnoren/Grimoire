@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grimoire Companion V5</title>
+    <title>Grimoire V6 - Complete</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
             --bg-panel: #1a1b20;
-            --accent: #7c4dff; /* Deep Purple */
+            --accent: #7c4dff;
             --accent-hover: #651fff;
             --text-main: #eceff1;
             --text-muted: #90a4ae;
@@ -21,7 +21,7 @@
         * { box-sizing: border-box; user-select: none; }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
             margin: 0;
@@ -30,90 +30,91 @@
             overflow: hidden;
         }
 
-        /* --- BUTTONS & INPUTS --- */
-        .btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
-        .btn:disabled { background: #333; color: #555; cursor: not-allowed; transform: none; }
-        .btn-icon { padding: 8px; border-radius: 50%; width: 36px; height: 36px; }
-        
-        /* --- SCREENS --- */
-        .screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 10; display: flex; flex-direction: column; }
+        /* UTILS */
         .hidden { display: none !important; }
+        .btn {
+            background: var(--accent); color: white; border: none; padding: 10px 16px;
+            border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn:hover:not(:disabled) { background: var(--accent-hover); }
+        .btn:disabled { background: #333; color: #555; cursor: not-allowed; }
+        .btn-red { background: var(--evil); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); }
+        .btn-outline:hover { background: rgba(255,255,255,0.05); }
 
-        /* --- SPLASH SCREEN --- */
+        /* PRIVACY OVERLAY */
+        #privacy-screen {
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        #privacy-screen h1 { color: #333; font-size: 3rem; text-transform: uppercase; letter-spacing: 5px; }
+
+        /* SCREEN LAYOUTS */
+        .screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 10; display: flex; flex-direction: column; }
+
+        /* SPLASH */
         #screen-splash { align-items: center; justify-content: center; z-index: 50; }
         .script-container { display: flex; gap: 20px; margin-top: 40px; }
         .script-card {
-            background: var(--bg-panel);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 30px;
-            width: 240px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
+            background: var(--bg-panel); border: 2px solid var(--border); border-radius: 12px;
+            padding: 30px; width: 240px; text-align: center; cursor: pointer; transition: 0.2s;
         }
         .script-card:hover { border-color: var(--accent); transform: scale(1.05); }
-        .script-card h3 { margin: 0 0 10px 0; font-size: 1.4rem; }
-        .script-card p { color: var(--text-muted); margin: 0; font-size: 0.9rem; }
 
-        /* --- SETUP SCREEN --- */
-        #screen-setup { padding: 30px; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+        /* SETUP */
+        #screen-setup { padding: 20px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
         
-        /* Custom Stepper */
-        .stepper { display: flex; align-items: center; background: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; }
-        .stepper button { background: transparent; border: none; color: var(--text-main); font-size: 1.2rem; padding: 10px 15px; cursor: pointer; }
-        .stepper button:hover { background: rgba(255,255,255,0.1); }
-        .stepper span { font-size: 1.5rem; font-weight: bold; padding: 0 15px; min-width: 50px; text-align: center; }
+        .stepper { display: flex; align-items: center; background: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border); }
+        .stepper button { background: transparent; border: none; color: var(--text-main); font-size: 1.2rem; padding: 5px 15px; cursor: pointer; }
+        .stepper span { font-size: 1.2rem; font-weight: bold; padding: 0 10px; min-width: 40px; text-align: center; }
 
-        .counts-display { display: flex; gap: 15px; }
-        .count-pill { background: var(--bg-panel); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); font-size: 0.9rem; font-weight: bold; }
+        .counts-display { display: flex; gap: 10px; }
+        .count-pill { background: var(--bg-panel); padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); font-size: 0.8rem; font-weight: bold; }
         .count-pill.valid { color: var(--good); border-color: var(--good); }
         .count-pill.invalid { color: var(--evil); border-color: var(--evil); }
 
-        #role-selection { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; flex-grow: 1; overflow-y: auto; padding-right: 10px; }
-        .role-col h3 { text-align: center; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        #role-grid-container { flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding-bottom: 20px; }
+        .role-col h3 { text-align: center; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-top:0;}
         .role-item { 
-            padding: 10px; margin-bottom: 6px; background: #23242a; border-radius: 6px; cursor: pointer; border: 1px solid transparent; transition: 0.1s; display: flex; justify-content: space-between;
+            padding: 8px; margin-bottom: 4px; background: #23242a; border-radius: 4px; cursor: pointer; 
+            border: 1px solid transparent; font-size: 0.9rem; display: flex; justify-content: space-between;
         }
-        .role-item:hover { background: #2c2d35; }
         .role-item.selected { background: var(--accent); border-color: var(--accent-hover); color: white; }
-        .modifier-tag { font-size: 0.7rem; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; }
+        .modifier-tag { font-size: 0.65rem; background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 4px; }
 
-        /* --- GAME SCREEN --- */
+        #bluff-section { height: 100px; border-top: 1px solid var(--border); padding-top: 10px; display: flex; gap: 20px; align-items: center; }
+        .bluff-select { flex-grow: 1; background: var(--bg-panel); color: white; padding: 10px; border: 1px solid var(--border); border-radius: 6px; }
+
+        /* GAME SCREEN */
         #screen-game { display: flex; flex-direction: row; }
-        #sidebar { width: 320px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; z-index: 100; }
+        
+        /* TOP CONTROLS (Floating) */
+        #top-controls {
+            position: absolute; top: 15px; left: 15px; z-index: 200;
+            display: flex; gap: 10px;
+        }
+
+        #sidebar { width: 300px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 15px; z-index: 100; padding-top: 60px; /* Space for top buttons */ }
         
         #game-board { flex-grow: 1; position: relative; background: radial-gradient(circle at center, #1a1b20 0%, #0f0f13 100%); overflow: hidden; }
-        
-        /* Town Circle Visual */
         #town-circle-guide {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 600px; height: 600px; border: 2px dashed #333; border-radius: 50%; pointer-events: none;
         }
 
-        /* Player Token */
+        /* TOKEN */
         .token {
             position: absolute; width: 100px; height: 100px; 
             background: #25262c; border: 3px solid #555; border-radius: 50%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5); cursor: grab; z-index: 20;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 20;
+            transition: border-color 0.2s;
         }
-        .token:active { cursor: grabbing; z-index: 100; box-shadow: 0 8px 20px rgba(0,0,0,0.7); }
+        .token.draggable { cursor: grab; }
+        .token.draggable:active { cursor: grabbing; z-index: 100; }
         
         .token.good { border-color: var(--good); background: #1e3020; }
         .token.evil { border-color: var(--evil); background: #351a1a; }
@@ -122,24 +123,25 @@
         .token-name { font-weight: 700; font-size: 0.9rem; pointer-events: none; margin-bottom: 2px; }
         .token-role { font-size: 0.75rem; color: #ccc; pointer-events: none; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* Token Controls */
+        /* Controls on Token */
         .token-ctrl {
             position: absolute; width: 24px; height: 24px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             box-shadow: 0 2px 5px rgba(0,0,0,0.5); transition: 0.2s;
         }
-        .token-ctrl:hover { transform: scale(1.1); }
-        
-        /* Eye Icon (Show Card) */
-        .ctrl-eye { top: -5px; right: -5px; background: var(--accent); color: white; border: 2px solid var(--bg-dark); font-size: 14px; }
-        
-        /* Ghost Vote */
+        .ctrl-eye { top: -5px; right: -5px; background: var(--accent); color: white; font-size: 14px; }
+        .ctrl-del { top: -5px; left: -5px; background: var(--evil); color: white; font-size: 14px; display: none; } /* Hidden by default */
         .ctrl-vote { bottom: -8px; left: 50%; transform: translateX(-50%); background: white; border: 2px solid #333; width: 20px; height: 20px; }
         .ctrl-vote.used { background: #444; border-color: #666; }
 
-        /* --- FULL SCREEN CARD MODAL --- */
+        /* Edit Mode Styles */
+        body.edit-mode .ctrl-del { display: flex; }
+        body.edit-mode .token { animation: shake 0.3s infinite; }
+        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(1deg); } 75% { transform: rotate(-1deg); } }
+
+        /* CARD MODAL */
         #card-modal { 
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 500; 
             display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
         .card-view {
@@ -152,51 +154,40 @@
         .card-type { font-size: 1rem; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
         .card-desc { font-size: 1.1rem; line-height: 1.5; font-style: italic; }
 
-        /* --- LOG & MISC --- */
-        #game-log { flex-grow: 1; background: #111; border-radius: 6px; padding: 10px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; color: #888; margin-top: 15px; border: 1px solid var(--border); }
-        .log-line { margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 2px; }
-        .phase-header { color: var(--warn); font-weight: bold; margin: 10px 0; display: block; }
-        
-        /* Editor Modal */
-        #edit-modal { background: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
+        /* EDIT MODAL */
+        #edit-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 300; display: flex; align-items: center; justify-content: center; }
         .modal-box { background: var(--bg-panel); padding: 25px; border-radius: 12px; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .modal-box h3 { margin-top: 0; }
-        select, input[type="text"] { width: 100%; padding: 10px; margin-bottom: 15px; background: #2c2e35; border: 1px solid #444; color: white; border-radius: 4px; }
+        select, input[type="text"] { width: 100%; padding: 10px; margin-bottom: 10px; background: #2c2e35; border: 1px solid #444; color: white; border-radius: 4px; }
+        
+        .bluff-list { margin-top: 15px; font-size: 0.85rem; color: #888; border-top: 1px solid #333; padding-top: 10px; }
+        .bluff-item { color: var(--evil); font-weight: bold; margin-left: 5px; }
 
     </style>
 </head>
 <body>
 
+    <div id="privacy-screen" class="hidden" onclick="togglePrivacy()">
+        <h1>Grimoire Hidden</h1>
+        <div style="position:absolute; bottom:50px; color:#555;">Click anywhere to reveal</div>
+    </div>
+
     <div id="screen-splash" class="screen">
-        <h1 style="font-size: 3rem; margin-bottom: 0;">Grimoire V5</h1>
+        <h1 style="font-size: 3rem; margin-bottom: 0;">Grimoire V6</h1>
         <p style="color: var(--text-muted);">The Unofficial Companion App</p>
-        
         <div class="script-container">
-            <div class="script-card" onclick="initSetup('TB')">
-                <h3>Trouble Brewing</h3>
-                <p>Beginner Friendly<br>Basic Deduction</p>
-            </div>
-            <div class="script-card" onclick="initSetup('BM')">
-                <h3>Bad Moon Rising</h3>
-                <p>Death Focused<br>Gambling & Chaos</p>
-            </div>
-            <div class="script-card" onclick="initSetup('SV')">
-                <h3>Sects & Violets</h3>
-                <p>Information Overload<br>Madness Mechanics</p>
-            </div>
+            <div class="script-card" onclick="initSetup('TB')"><h3>Trouble Brewing</h3></div>
+            <div class="script-card" onclick="initSetup('BM')"><h3>Bad Moon Rising</h3></div>
+            <div class="script-card" onclick="initSetup('SV')"><h3>Sects & Violets</h3></div>
         </div>
     </div>
 
     <div id="screen-setup" class="screen hidden">
         <div class="top-bar">
             <div style="display:flex; align-items:center; gap: 20px;">
-                <div>
-                    <label style="font-size: 0.8rem; color: var(--text-muted); display:block; margin-bottom:5px;">PLAYERS</label>
-                    <div class="stepper">
-                        <button onclick="changePlayerCount(-1)">−</button>
-                        <span id="p-count">5</span>
-                        <button onclick="changePlayerCount(1)">+</button>
-                    </div>
+                <div class="stepper">
+                    <button onclick="changePlayerCount(-1)">−</button>
+                    <span id="p-count">5</span>
+                    <button onclick="changePlayerCount(1)">+</button>
                 </div>
                 <div class="counts-display">
                     <div class="count-pill" id="req-town">Town: 0/3</div>
@@ -205,61 +196,82 @@
                     <div class="count-pill" id="req-dem">Dem: 0/1</div>
                 </div>
             </div>
-            <button class="btn" id="btn-start" disabled onclick="enterGame()">
-                ENTER TOWN SQUARE &rarr;
-            </button>
+            <button class="btn" id="btn-start" disabled onclick="enterGame()">ENTER TOWN SQUARE &rarr;</button>
         </div>
         
-        <div id="role-selection"></div>
+        <div id="role-grid-container"></div>
+        
+        <div id="bluff-section">
+            <label style="font-weight:bold; color:var(--evil);">Demon Bluffs:</label>
+            <select id="bluff-1" class="bluff-select"><option value="">-- Bluff 1 --</option></select>
+            <select id="bluff-2" class="bluff-select"><option value="">-- Bluff 2 --</option></select>
+            <select id="bluff-3" class="bluff-select"><option value="">-- Bluff 3 --</option></select>
+        </div>
     </div>
 
     <div id="screen-game" class="screen hidden">
+        
+        <div id="top-controls">
+            <button class="btn" id="btn-lock" onclick="toggleLock()">🔒 Locked</button>
+            <button class="btn btn-outline" onclick="togglePrivacy()">👁️ Hide Screen</button>
+        </div>
+
         <div id="sidebar">
-            <h3 style="margin-top:0;">Grimoire Controls</h3>
-            
             <input type="text" id="input-name" placeholder="New Player Name..." onkeypress="if(event.key==='Enter') addPlayer()">
-            <button class="btn" onclick="addPlayer()">+ Add Player</button>
+            <button class="btn" onclick="addPlayer()" style="margin-top:5px;">+ Add Player</button>
             
-            <div style="margin: 15px 0; border-top: 1px solid var(--border); padding-top: 15px;">
-                <button class="btn" style="width:100%; background: #444;" onclick="randomizeRoles()">
-                     🎲 Shuffle & Assign Roles
-                </button>
+            <div style="margin: 15px 0;">
+                <button class="btn" style="width:100%; background: #444;" onclick="randomizeRoles()">🎲 Shuffle & Assign</button>
+            </div>
+
+            <div class="bluff-list">
+                <div>Demon Bluffs:</div>
+                <div id="sidebar-bluffs" style="margin-top:5px;"></div>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-                <div id="phase-display" style="font-weight: bold; font-size: 1.2rem;">Setup</div>
-                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="advancePhase()">Next Phase</button>
+                <div id="phase-display" style="font-weight: bold; font-size: 1.1rem;">Setup</div>
+                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="advancePhase()">Next</button>
             </div>
             
-            <div id="game-log"></div>
+            <div id="game-log" style="margin-top:10px; flex-grow:1; background:#111; padding:5px; font-size:0.8rem; overflow-y:auto; border:1px solid #333; height: 100px;"></div>
         </div>
 
         <div id="game-board">
             <div id="town-circle-guide"></div>
-            </div>
-    </div>
-
-    <div id="card-modal" class="hidden" onclick="this.classList.add('hidden')">
-        <div class="card-view" onclick="event.stopPropagation()"> <div class="card-title" id="card-view-name">IMP</div>
-            <div class="card-type" id="card-view-type">DEMON</div>
-            <div class="card-desc" id="card-view-desc">Each night*, choose a player: they die. If you kill yourself this way, a Minion becomes the Imp.</div>
-            <div style="margin-top: 20px; font-size: 0.8rem; color: #666;">(Click anywhere to close)</div>
         </div>
     </div>
 
-    <div id="edit-modal" class="screen hidden">
+    <div id="card-modal" class="hidden" onclick="this.classList.add('hidden')">
+        <div class="card-view" onclick="event.stopPropagation()">
+            <div class="card-title" id="card-view-name">IMP</div>
+            <div class="card-type" id="card-view-type">DEMON</div>
+            <div class="card-desc" id="card-view-desc">...</div>
+            <div style="margin-top: 20px; font-size: 0.8rem; color: #666;">(Tap to close)</div>
+        </div>
+    </div>
+
+    <div id="edit-modal" class="hidden">
         <div class="modal-box">
             <h3>Edit Player</h3>
-            <label>Role</label>
-            <select id="edit-role"></select>
+            
+            <label>Real Role</label>
+            <select id="edit-role" onchange="checkDrunk()"></select>
+            
+            <div id="drunk-container" class="hidden" style="margin-bottom:10px; border-left: 3px solid var(--warn); padding-left:10px;">
+                <label style="color:var(--warn);">Think they are?</label>
+                <select id="edit-drunk-role"></select>
+            </div>
+
             <label>Alignment</label>
             <select id="edit-align">
                 <option value="good">Good</option>
                 <option value="evil">Evil</option>
             </select>
+            
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button class="btn" onclick="saveEdit()">Save</button>
-                <button class="btn" style="background:var(--evil);" id="btn-kill" onclick="toggleLife()">Kill</button>
+                <button class="btn btn-red" id="btn-kill" onclick="toggleLife()">Kill</button>
                 <button class="btn" style="background:#555;" onclick="document.getElementById('edit-modal').classList.add('hidden')">Cancel</button>
             </div>
         </div>
@@ -269,380 +281,369 @@
         // --- DATA ---
         const scripts = {
             TB: {
-                Townsfolk: [
-                    {n:"Washerwoman", d:"Start knowing 1 of 2 players is a specific Townsfolk."},
-                    {n:"Librarian", d:"Start knowing 1 of 2 players is a specific Outsider."},
-                    {n:"Investigator", d:"Start knowing 1 of 2 players is a specific Minion."},
-                    {n:"Chef", d:"Start knowing how many pairs of evil players are neighbors."},
-                    {n:"Empath", d:"Each night, learn how many of your 2 alive neighbors are evil."},
-                    {n:"Fortune Teller", d:"Each night, choose 2 players: learn if either is a Demon."},
-                    {n:"Undertaker", d:"Each night, learn which character died by execution today."},
-                    {n:"Monk", d:"Each night, choose a player (not yourself): they are safe from the Demon tonight."},
-                    {n:"Ravenkeeper", d:"If you die at night, you are woken to choose a player: you learn their character."},
-                    {n:"Virgin", d:"The 1st time you are nominated by a Townsfolk, you are executed if the nominee is a Townsfolk."},
-                    {n:"Slayer", d:"Once per game, during the day, publicly choose a player: if they are the Demon, they die."},
-                    {n:"Soldier", d:"You are safe from the Demon."},
-                    {n:"Mayor", d:"If no one dies by execution, you might win. If you die at night, another player might die instead."}
-                ],
-                Outsider: [
-                    {n:"Butler", d:"Each night, choose a player (not yourself): tomorrow, you may only vote if they vote too."},
-                    {n:"Drunk", d:"You do not know you are the Drunk. You think you are a Townsfolk, but you are not."},
-                    {n:"Recluse", d:"You might register as evil & as a Minion or Demon, even if dead."},
-                    {n:"Saint", d:"If you die by execution, your team loses."}
-                ],
-                Minion: [
-                    {n:"Poisoner", d:"Each night, choose a player: they are poisoned tonight and tomorrow day."},
-                    {n:"Spy", d:"Each night, you see the Grimoire. You might register as good & as a Townsfolk or Outsider."},
-                    {n:"Scarlet Woman", d:"If there are 5 or more players alive & the Demon dies, you become the Demon."},
-                    {n:"Baron", d:"There are extra Outsiders in play. [+2 Outsiders]"}
-                ],
-                Demon: [
-                    {n:"Imp", d:"Each night*, choose a player: they die. If you kill yourself this way, a Minion becomes the Imp."}
-                ]
+                Townsfolk: [ "Washerwoman", "Librarian", "Investigator", "Chef", "Empath", "Fortune Teller", "Undertaker", "Monk", "Ravenkeeper", "Virgin", "Slayer", "Soldier", "Mayor" ],
+                Outsider: [ "Butler", "Drunk", "Recluse", "Saint" ],
+                Minion: [ "Poisoner", "Spy", "Scarlet Woman", "Baron" ],
+                Demon: [ "Imp" ]
+            },
+            BM: {
+                Townsfolk: ["Grandmother", "Sailor", "Chambermaid", "Exorcist", "Innkeeper", "Gambler", "Gossip", "Courtier", "Professor", "Minstrel", "Tea Lady", "Pacifist", "Fool"],
+                Outsider: ["Tinker", "Moonchild", "Goon", "Lunatic"],
+                Minion: ["Godfather", "Devil's Advocate", "Assassin", "Mastermind"],
+                Demon: ["Zombuul", "Pukka", "Shabaloth", "Po"]
+            },
+            SV: {
+                Townsfolk: ["Clockmaker", "Dreamer", "Snake Charmer", "Mathematician", "Flowergirl", "Town Crier", "Oracle", "Savant", "Seamstress", "Philosopher", "Artist", "Juggler", "Sage"],
+                Outsider: ["Mutant", "Sweetheart", "Barber", "Klutz"],
+                Minion: ["Witch", "Cerebus", "Pit-Hag", "Evil Twin"],
+                Demon: ["Fang Gu", "Vortox", "No Dashii", "Vigormortis"]
             }
-            // Add other scripts here following same structure if needed
         };
 
-        // Fallback simple lists for BM/SV for this demo
-        const simpleList = (arr) => arr.map(s => ({n:s, d:"Ability description placeholder."}));
-        scripts.BM = {
-            Townsfolk: simpleList(["Grandmother", "Sailor", "Chambermaid", "Exorcist", "Innkeeper", "Gambler", "Gossip", "Courtier", "Professor", "Minstrel", "Tea Lady", "Pacifist", "Fool"]),
-            Outsider: simpleList(["Tinker", "Moonchild", "Goon", "Lunatic"]),
-            Minion: simpleList(["Godfather", "Devil's Advocate", "Assassin", "Mastermind"]),
-            Demon: simpleList(["Zombuul", "Pukka", "Shabaloth", "Po"])
-        };
-        scripts.SV = {
-            Townsfolk: simpleList(["Clockmaker", "Dreamer", "Snake Charmer", "Mathematician", "Flowergirl", "Town Crier", "Oracle", "Savant", "Seamstress", "Philosopher", "Artist", "Juggler", "Sage"]),
-            Outsider: simpleList(["Mutant", "Sweetheart", "Barber", "Klutz"]),
-            Minion: simpleList(["Witch", "Cerebus", "Pit-Hag", "Evil Twin"]),
-            Demon: simpleList(["Fang Gu", "Vortox", "No Dashii", "Vigormortis"])
-        };
-
-        // Add special data for modifiers
-        scripts.BM.Minion[0].d = "Start knowing which Outsiders are in play. If 1 died today, choose a player: they die. [+1 Outsider]"; // Godfather
-
-        // Base distribution table
-        const baseDist = {
-            5: [3,0,1,1], 6: [3,1,1,1], 7: [5,0,1,1], 8: [5,1,1,1], 9: [5,2,1,1],
-            10: [7,0,2,1], 11: [7,1,2,1], 12: [7,2,2,1], 13: [9,0,3,1], 14: [9,1,3,1], 15: [9,2,3,1]
-        };
+        const baseDist = { 5: [3,0,1,1], 6: [3,1,1,1], 7: [5,0,1,1], 8: [5,1,1,1], 9: [5,2,1,1], 10: [7,0,2,1], 11: [7,1,2,1], 12: [7,2,2,1], 13: [9,0,3,1], 14: [9,1,3,1], 15: [9,2,3,1] };
 
         // --- STATE ---
-        let appState = {
-            script: 'TB',
-            playerCount: 5,
-            selected: { Townsfolk:[], Outsider:[], Minion:[], Demon:[] },
+        let app = {
+            script: 'TB', count: 5, 
+            sel: { Townsfolk:[], Outsider:[], Minion:[], Demon:[] },
+            bluffs: [null, null, null],
             players: [],
-            phaseIdx: 0
+            phase: 0,
+            locked: true, // Default locked
+            editId: null
         };
 
-        // --- SETUP LOGIC ---
+        // --- SETUP ---
         function initSetup(code) {
-            appState.script = code;
+            app.script = code;
             document.getElementById('screen-splash').classList.add('hidden');
             document.getElementById('screen-setup').classList.remove('hidden');
-            renderSetupGrid();
+            renderRoleGrid();
+            updateBluffDropdowns();
             updateCalc();
         }
 
-        function changePlayerCount(delta) {
-            let n = appState.playerCount + delta;
-            if(n < 5) n = 5; 
-            if(n > 15) n = 15;
-            appState.playerCount = n;
+        function changePlayerCount(d) {
+            let n = app.count + d;
+            if(n<5) n=5; if(n>15) n=15;
+            app.count = n;
             document.getElementById('p-count').innerText = n;
             updateCalc();
         }
 
-        function renderSetupGrid() {
-            const container = document.getElementById('role-selection');
-            container.innerHTML = '';
-            const data = scripts[appState.script];
-
+        function renderRoleGrid() {
+            const con = document.getElementById('role-grid-container');
+            con.innerHTML = '';
+            const data = scripts[app.script];
             for(let type in data) {
                 const col = document.createElement('div');
                 col.className = 'role-col';
                 col.innerHTML = `<h3>${type}</h3>`;
-                
-                data[type].forEach(roleObj => {
-                    const div = document.createElement('div');
-                    div.className = 'role-item';
-                    div.innerHTML = `<span>${roleObj.n}</span>`;
-                    
-                    // Add modifier tags
-                    if(roleObj.n === "Baron") div.innerHTML += `<span class="modifier-tag">+2 Out</span>`;
-                    if(roleObj.n === "Godfather") div.innerHTML += `<span class="modifier-tag">+1 Out</span>`;
-
-                    div.onclick = () => toggleRole(type, roleObj.n, div);
-                    col.appendChild(div);
+                data[type].forEach(r => {
+                    const d = document.createElement('div');
+                    d.className = 'role-item';
+                    d.innerHTML = `<span>${r}</span>`;
+                    if(r==="Baron") d.innerHTML+=`<span class="modifier-tag">+2 Out</span>`;
+                    if(r==="Godfather") d.innerHTML+=`<span class="modifier-tag">+1 Out</span>`;
+                    d.onclick = () => toggleRole(type, r, d);
+                    col.appendChild(d);
                 });
-                container.appendChild(col);
+                con.appendChild(col);
             }
         }
 
-        function toggleRole(type, name, el) {
-            const list = appState.selected[type];
-            const idx = list.indexOf(name);
-            if(idx > -1) {
-                list.splice(idx, 1);
-                el.classList.remove('selected');
-            } else {
-                list.push(name);
-                el.classList.add('selected');
-            }
+        function toggleRole(type, r, el) {
+            const list = app.sel[type];
+            const i = list.indexOf(r);
+            if(i>-1) { list.splice(i,1); el.classList.remove('selected'); }
+            else { list.push(r); el.classList.add('selected'); }
             updateCalc();
         }
 
         function updateCalc() {
-            // 1. Get Base
-            let req = [...(baseDist[appState.playerCount] || [3,0,1,1])]; // [Town, Out, Min, Dem]
-            
-            // 2. Apply Modifiers
-            // Baron check
-            if(appState.selected.Minion.includes("Baron")) {
-                req[0] -= 2; // -Town
-                req[1] += 2; // +Out
-            }
-            // Godfather check (only if script is BM or custom)
-            if(appState.selected.Minion.includes("Godfather")) {
-                req[0] -= 1;
-                req[1] += 1;
-            }
+            let r = [...(baseDist[app.count] || [3,0,1,1])];
+            if(app.sel.Minion.includes("Baron")) { r[0]-=2; r[1]+=2; }
+            if(app.sel.Minion.includes("Godfather")) { r[0]-=1; r[1]+=1; }
 
-            // 3. Update UI
             const setUI = (id, cur, max) => {
                 const el = document.getElementById(id);
-                // Map array index to string label
-                const label = id.split('-')[1].charAt(0).toUpperCase() + id.split('-')[1].slice(1);
-                el.innerText = `${label}: ${cur}/${max}`;
-                el.className = `count-pill ${cur === max ? 'valid' : 'invalid'}`;
-                return cur === max;
+                const l = id.split('-')[1];
+                el.innerText = `${l.charAt(0).toUpperCase()+l.slice(1)}: ${cur}/${max}`;
+                el.className = `count-pill ${cur===max ? 'valid' : 'invalid'}`;
+                return cur===max;
             };
+            
+            const ok = setUI('req-town', app.sel.Townsfolk.length, r[0]) &&
+                       setUI('req-out', app.sel.Outsider.length, r[1]) &&
+                       setUI('req-min', app.sel.Minion.length, r[2]) &&
+                       setUI('req-dem', app.sel.Demon.length, r[3]);
 
-            const v1 = setUI('req-town', appState.selected.Townsfolk.length, req[0]);
-            const v2 = setUI('req-out', appState.selected.Outsider.length, req[1]);
-            const v3 = setUI('req-min', appState.selected.Minion.length, req[2]);
-            const v4 = setUI('req-dem', appState.selected.Demon.length, req[3]);
+            document.getElementById('btn-start').disabled = !ok;
+        }
 
-            document.getElementById('btn-start').disabled = !(v1 && v2 && v3 && v4);
+        function updateBluffDropdowns() {
+            const allRoles = [];
+            const data = scripts[app.script];
+            ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allRoles.push(...data[t]));
+            
+            const opts = '<option value="">-- None --</option>' + allRoles.map(r => `<option value="${r}">${r}</option>`).join('');
+            ['bluff-1','bluff-2','bluff-3'].forEach(id => document.getElementById(id).innerHTML = opts);
         }
 
         function enterGame() {
+            app.bluffs = [
+                document.getElementById('bluff-1').value,
+                document.getElementById('bluff-2').value,
+                document.getElementById('bluff-3').value
+            ].filter(x=>x);
+
+            // Populate Sidebar Bluffs
+            const bDiv = document.getElementById('sidebar-bluffs');
+            bDiv.innerHTML = app.bluffs.map(b => `<span class="bluff-item">${b}</span>`).join(', ');
+
             document.getElementById('screen-setup').classList.add('hidden');
             document.getElementById('screen-game').classList.remove('hidden');
-            log("Welcome to Ravenswood Bluff.");
         }
 
-        // --- GAMEPLAY & DRAGGING ---
-        let dragTarget = null;
-        let dragOffset = {x:0, y:0};
+        // --- GAME CONTROLS ---
+
+        function toggleLock() {
+            app.locked = !app.locked;
+            const btn = document.getElementById('btn-lock');
+            const body = document.body;
+            
+            if(app.locked) {
+                btn.innerText = "🔒 Locked";
+                btn.classList.remove('btn-red');
+                body.classList.remove('edit-mode');
+            } else {
+                btn.innerText = "🔓 Edit Mode";
+                btn.classList.add('btn-red');
+                body.classList.add('edit-mode');
+            }
+            renderBoard(); // Re-render to update drag handlers
+        }
+
+        function togglePrivacy() {
+            document.getElementById('privacy-screen').classList.toggle('hidden');
+        }
+
+        // --- PLAYERS & DRAGGING ---
+        let dragItem=null, offX=0, offY=0;
 
         function addPlayer() {
-            const input = document.getElementById('input-name');
-            const name = input.value.trim();
-            if(!name) return;
+            const n = document.getElementById('input-name').value.trim();
+            if(!n) return;
+            const p = { id: Date.now(), name: n, role: "", fakeRole: "", align: "good", dead: false, x: 0, y: 0 };
+            app.players.push(p);
+            document.getElementById('input-name').value = '';
             
-            const id = Date.now();
-            const p = { id, name, role: "Unknown", align: "good", dead: false, ghostUsed: false };
-            appState.players.push(p);
-
-            // Create Token
-            const el = document.createElement('div');
-            el.className = 'token good';
-            el.id = `token-${id}`;
-            el.style.left = `calc(50% - 50px)`; // Center spawn
-            el.style.top = `calc(50% - 50px)`;
-            
-            el.innerHTML = `
-                <div class="token-name">${name}</div>
-                <div class="token-role" id="role-text-${id}"></div>
-                <div class="token-ctrl ctrl-eye" title="View Card" onmousedown="viewCard(event, ${id})">👁</div>
-            `;
-            
-            el.onmousedown = (e) => startDrag(e, el);
-            el.ondblclick = () => openEdit(id);
-            
-            document.getElementById('game-board').appendChild(el);
-            input.value = '';
-            log(`Added ${name}.`);
+            const el = createToken(p);
+            // Center spawn
+            const board = document.getElementById('game-board');
+            p.x = board.offsetWidth/2 - 50;
+            p.y = board.offsetHeight/2 - 50;
+            el.style.left = p.x+'px'; el.style.top = p.y+'px';
+            board.appendChild(el);
         }
 
-        function startDrag(e, el) {
-            // Ignore if clicking controls
-            if(e.target.classList.contains('token-ctrl')) return;
+        function createToken(p) {
+            const el = document.createElement('div');
+            el.id = `token-${p.id}`;
+            updateTokenClass(el, p);
+            el.innerHTML = `
+                <div class="token-name">${p.name}</div>
+                <div class="token-role" id="role-${p.id}">${p.role}</div>
+                <div class="token-ctrl ctrl-eye" onmousedown="viewCard(event, ${p.id})">👁</div>
+                <div class="token-ctrl ctrl-del" onmousedown="deletePlayer(event, ${p.id})">✕</div>
+            `;
+            el.onmousedown = (e) => startDrag(e, el, p);
+            el.ondblclick = () => openEdit(p.id);
+            return el;
+        }
 
-            dragTarget = el;
-            const rect = el.getBoundingClientRect();
-            
-            // Calculate offset from the Top-Left of the element to the mouse
-            dragOffset.x = e.clientX - rect.left;
-            dragOffset.y = e.clientY - rect.top;
-            
+        function updateTokenClass(el, p) {
+            el.className = `token ${p.align} ${p.dead?'dead':''} ${!app.locked?'draggable':''}`;
+        }
+
+        function startDrag(e, el, p) {
+            if(app.locked || e.target.classList.contains('token-ctrl')) return;
+            dragItem = el;
+            const r = el.getBoundingClientRect();
+            offX = e.clientX - r.left;
+            offY = e.clientY - r.top;
             document.addEventListener('mousemove', onDrag);
             document.addEventListener('mouseup', stopDrag);
         }
 
         function onDrag(e) {
-            if(!dragTarget) return;
-            const board = document.getElementById('game-board');
-            const boardRect = board.getBoundingClientRect();
-            
-            // Calculate new position relative to board
-            let newX = e.clientX - boardRect.left - dragOffset.x;
-            let newY = e.clientY - boardRect.top - dragOffset.y;
-
-            dragTarget.style.left = newX + 'px';
-            dragTarget.style.top = newY + 'px';
+            if(!dragItem) return;
+            const board = document.getElementById('game-board').getBoundingClientRect();
+            let x = e.clientX - board.left - offX;
+            let y = e.clientY - board.top - offY;
+            dragItem.style.left = x+'px';
+            dragItem.style.top = y+'px';
         }
 
         function stopDrag() {
-            dragTarget = null;
+            dragItem = null;
             document.removeEventListener('mousemove', onDrag);
             document.removeEventListener('mouseup', stopDrag);
         }
 
-        // --- FEATURES ---
-        
-        function randomizeRoles() {
-            if(appState.players.length === 0) return alert("Add players first!");
-            
-            // Gather all selected roles
-            let pool = [];
-            ['Townsfolk', 'Outsider', 'Minion', 'Demon'].forEach(t => {
-                pool = pool.concat(appState.selected[t]);
+        function renderBoard() {
+            const board = document.getElementById('game-board');
+            // Update classes only to preserve position
+            app.players.forEach(p => {
+                const el = document.getElementById(`token-${p.id}`);
+                if(el) updateTokenClass(el, p);
             });
+        }
 
-            if(pool.length !== appState.players.length) {
-                // Allow shuffle even if mismatch, but warn
-                if(!confirm(`You have ${pool.length} roles and ${appState.players.length} players. Shuffle anyway?`)) return;
-            }
+        function deletePlayer(e, id) {
+            e.stopPropagation();
+            if(!confirm("Remove player?")) return;
+            app.players = app.players.filter(x => x.id !== id);
+            document.getElementById(`token-${id}`).remove();
+        }
 
+        // --- ROLES & EDITING ---
+
+        function randomizeRoles() {
+            let pool = [];
+            ['Townsfolk','Outsider','Minion','Demon'].forEach(t => pool.push(...app.sel[t]));
+            
             // Shuffle
-            for (let i = pool.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [pool[i], pool[j]] = [pool[j], pool[i]];
-            }
+            for(let i=pool.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
 
-            // Assign
-            appState.players.forEach((p, index) => {
-                if(pool[index]) {
-                    p.role = pool[index];
-                    // Auto set alignment based on type
-                    const rType = getRoleType(p.role);
-                    p.align = (rType === 'Demon' || rType === 'Minion') ? 'evil' : 'good';
+            app.players.forEach((p, i) => {
+                if(pool[i]) {
+                    p.role = pool[i];
+                    p.fakeRole = ""; // Reset
+                    // Auto Alignment
+                    p.align = (['Minion','Demon'].includes(getRoleType(p.role))) ? 'evil' : 'good';
                     updateTokenUI(p);
                 }
             });
-            log("Roles shuffled and assigned.");
+            log("Roles Shuffled.");
         }
 
-        function getRoleType(roleName) {
-            // Helper to find type
-            const data = scripts[appState.script];
-            if(data.Townsfolk.find(r => r.n === roleName)) return 'Townsfolk';
-            if(data.Outsider.find(r => r.n === roleName)) return 'Outsider';
-            if(data.Minion.find(r => r.n === roleName)) return 'Minion';
-            if(data.Demon.find(r => r.n === roleName)) return 'Demon';
+        function getRoleType(r) {
+            const d = scripts[app.script];
+            if(d.Townsfolk.includes(r)) return 'Townsfolk';
+            if(d.Outsider.includes(r)) return 'Outsider';
+            if(d.Minion.includes(r)) return 'Minion';
+            if(d.Demon.includes(r)) return 'Demon';
             return 'Unknown';
         }
 
-        function viewCard(e, id) {
-            e.stopPropagation(); // prevent drag
-            const p = appState.players.find(x => x.id === id);
-            if(!p.role || p.role === "Unknown") return alert("Assign a role first.");
-
-            const type = getRoleType(p.role);
-            const data = scripts[appState.script][type].find(r => r.n === p.role);
-
-            document.getElementById('card-view-name').innerText = p.role;
-            document.getElementById('card-view-type').innerText = type;
-            document.getElementById('card-view-desc').innerText = data ? data.d : "No description available.";
-            
-            document.getElementById('card-modal').classList.remove('hidden');
-        }
-
-        // --- EDITING ---
-        let editId = null;
         function openEdit(id) {
-            editId = id;
-            const p = appState.players.find(x => x.id === id);
-            const modal = document.getElementById('edit-modal');
+            app.editId = id;
+            const p = app.players.find(x => x.id === id);
             
-            // Populate Dropdown
-            const sel = document.getElementById('edit-role');
-            sel.innerHTML = '<option value="">-- None --</option>';
-            // Add all selected roles to dropdown
-            ['Townsfolk', 'Outsider', 'Minion', 'Demon'].forEach(t => {
-                const grp = document.createElement('optgroup');
-                grp.label = t;
-                appState.selected[t].forEach(r => {
-                    const opt = document.createElement('option');
-                    opt.value = r;
-                    opt.innerText = r;
-                    grp.appendChild(opt);
+            // Populate Roles
+            const s = document.getElementById('edit-role');
+            s.innerHTML = '<option value="">-- None --</option>';
+            ['Townsfolk','Outsider','Minion','Demon'].forEach(t => {
+                const g = document.createElement('optgroup'); g.label=t;
+                app.sel[t].forEach(r => {
+                    const o = document.createElement('option'); o.value=r; o.innerText=r; g.appendChild(o);
                 });
-                sel.appendChild(grp);
+                s.appendChild(g);
             });
+            s.value = p.role;
 
-            sel.value = p.role;
+            // Populate Drunk Dropdown (Fake role) - All Townsfolk
+            const dS = document.getElementById('edit-drunk-role');
+            dS.innerHTML = '<option value="">-- None --</option>';
+            scripts[app.script].Townsfolk.forEach(r => {
+                const o = document.createElement('option'); o.value=r; o.innerText=r; dS.appendChild(o);
+            });
+            dS.value = p.fakeRole;
+
             document.getElementById('edit-align').value = p.align;
             document.getElementById('btn-kill').innerText = p.dead ? "Revive" : "Kill";
-            modal.classList.remove('hidden');
+            
+            checkDrunk(); // Show/Hide Drunk field
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function checkDrunk() {
+            const val = document.getElementById('edit-role').value;
+            const div = document.getElementById('drunk-container');
+            if(val === "Drunk") div.classList.remove('hidden');
+            else div.classList.add('hidden');
         }
 
         function saveEdit() {
-            const p = appState.players.find(x => x.id === editId);
+            const p = app.players.find(x => x.id === app.editId);
             p.role = document.getElementById('edit-role').value;
+            p.fakeRole = document.getElementById('edit-drunk-role').value;
             p.align = document.getElementById('edit-align').value;
             updateTokenUI(p);
             document.getElementById('edit-modal').classList.add('hidden');
         }
 
         function toggleLife() {
-            const p = appState.players.find(x => x.id === editId);
+            const p = app.players.find(x => x.id === app.editId);
             p.dead = !p.dead;
             updateTokenUI(p);
-            log(`${p.name} is now ${p.dead ? 'Dead' : 'Alive'}.`);
+            log(`${p.name} is ${p.dead?'Dead':'Alive'}`);
             document.getElementById('edit-modal').classList.add('hidden');
         }
 
         function updateTokenUI(p) {
             const el = document.getElementById(`token-${p.id}`);
-            el.className = `token ${p.align} ${p.dead ? 'dead' : ''}`;
-            document.getElementById(`role-text-${p.id}`).innerText = p.role;
+            updateTokenClass(el, p);
+            
+            // Drunk Logic
+            let roleTxt = p.role;
+            if(p.role === "Drunk" && p.fakeRole) {
+                roleTxt = `Drunk (${p.fakeRole})`;
+            }
+            el.querySelector('.token-role').innerText = roleTxt;
 
-            // Ghost vote logic
-            const oldVote = el.querySelector('.ctrl-vote');
-            if(oldVote) oldVote.remove();
-
+            // Ghost Vote
+            const old = el.querySelector('.ctrl-vote');
+            if(old) old.remove();
             if(p.dead) {
-                const gv = document.createElement('div');
-                gv.className = `token-ctrl ctrl-vote ${p.ghostUsed ? 'used' : ''}`;
-                gv.onmousedown = (e) => {
+                const g = document.createElement('div');
+                g.className = 'token-ctrl ctrl-vote';
+                g.onmousedown = (e) => {
                     e.stopPropagation();
-                    p.ghostUsed = !p.ghostUsed;
-                    gv.className = `token-ctrl ctrl-vote ${p.ghostUsed ? 'used' : ''}`;
-                    log(`${p.name} ${p.ghostUsed ? 'spent' : 'recovered'} ghost vote.`);
-                }
-                el.appendChild(gv);
+                    g.classList.toggle('used');
+                    log(`${p.name} used vote`);
+                };
+                el.appendChild(g);
             }
         }
 
-        function log(msg) {
-            const d = document.createElement('div');
-            d.className = 'log-line';
-            d.innerText = msg;
-            document.getElementById('game-log').prepend(d);
+        function viewCard(e, id) {
+            e.stopPropagation();
+            const p = app.players.find(x => x.id === id);
+            let rToShow = p.role;
+            
+            // IF DRUNK, SHOW FAKE ROLE
+            if(p.role === "Drunk" && p.fakeRole) rToShow = p.fakeRole;
+            if(!rToShow) return;
+
+            const type = getRoleType(rToShow);
+            document.getElementById('card-view-name').innerText = rToShow;
+            document.getElementById('card-view-type').innerText = type;
+            document.getElementById('card-view-desc').innerText = "Ability description here..."; // Placeholder as full text isn't in script array
+            document.getElementById('card-modal').classList.remove('hidden');
         }
 
+        function log(t) {
+            const d = document.createElement('div'); d.innerText = t;
+            document.getElementById('game-log').prepend(d);
+        }
+        
         function advancePhase() {
-            const phases = ["Night", "Day"];
-            appState.phaseIdx++;
-            const num = Math.ceil(appState.phaseIdx / 2);
-            const isNight = appState.phaseIdx % 2 !== 0;
-            const pName = `${isNight ? 'Night' : 'Day'} ${num}`;
-            document.getElementById('phase-display').innerText = pName;
-            log(`--- ${pName} ---`);
+            app.phase++;
+            const t = (app.phase%2!==0)?`Night ${Math.ceil(app.phase/2)}`:`Day ${Math.ceil(app.phase/2)}`;
+            document.getElementById('phase-display').innerText = t;
+            log(`--- ${t} ---`);
         }
 
     </script>
