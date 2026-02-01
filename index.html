@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V12 - Complete</title>
+    <title>Grimoire V13 - Complete</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -19,7 +19,7 @@
             --out-color: #2be9e9;
             --min-color: #e9952b;
             --dem-color: #e92b2b;
-            --rem-color: #ffd700; /* Gold for reminders */
+            --rem-color: #ffd700;
         }
 
         * { box-sizing: border-box; user-select: none; }
@@ -59,8 +59,8 @@
         }
         .script-card:hover { border-color: var(--accent); transform: scale(1.05); background: #25252d; }
 
-        /* SETUP 1 (ROLES) */
-        #screen-setup { padding: 20px 40px; }
+        /* SETUP SHARED */
+        .setup-screen { padding: 20px 40px; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
         
         .stepper { display: flex; align-items: center; background: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; }
@@ -72,7 +72,8 @@
         .count-pill.valid { color: var(--town-color); border-color: var(--town-color); }
         .count-pill.invalid { color: var(--dem-color); border-color: var(--dem-color); opacity: 0.6; }
 
-        #role-grid-container { flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding-bottom: 20px; }
+        /* GRID SYSTEM */
+        .grid-scroll-area { flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding-bottom: 20px; }
         .role-col h3 { text-align: center; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 10px; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; }
         
         .role-item { 
@@ -82,6 +83,7 @@
         }
         .role-item:hover { background: #2c2e35; }
         .role-item.selected { background: var(--accent); border-color: var(--accent-hover); color: white; }
+        .role-item.disabled { opacity: 0.3; pointer-events: none; }
         
         .role-left { display: flex; align-items: center; gap: 10px; flex: 1; }
         .setup-icon { width: 30px; height: 30px; object-fit: contain; filter: drop-shadow(0 0 2px rgba(255,255,255,0.2)); flex-shrink: 0; }
@@ -89,12 +91,9 @@
         .eye-btn { padding: 4px; border-radius: 4px; cursor: pointer; opacity: 0.5; font-size: 1.1rem; }
         .eye-btn:hover { opacity: 1; background: rgba(255,255,255,0.2); }
 
-        /* SETUP 2 (DETAILS) */
-        #screen-setup-2 { align-items: center; justify-content: center; padding: 40px; }
-        .detail-card { background: var(--bg-panel); padding: 40px; border-radius: 20px; width: 100%; max-width: 500px; text-align: center; border: 1px solid var(--border); }
-        .config-group { margin-bottom: 30px; text-align: left; }
-        .config-group label { display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: bold; }
-        select { background: #111; color: white; padding: 12px; border: 1px solid var(--border); border-radius: 8px; width: 100%; margin-bottom: 10px; font-size: 1rem; }
+        /* SETUP 2 SPECIFIC */
+        .section-header { grid-column: span 4; font-size: 1.2rem; font-weight: bold; margin: 20px 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 5px; color: var(--accent); }
+        .counter-sub { font-size: 0.9rem; float: right; color: #fff; }
 
         /* GAME SCREEN */
         #screen-game { display: flex; flex-direction: row; }
@@ -112,13 +111,15 @@
             width: 600px; height: 600px; border: 2px dashed #333; border-radius: 50%; pointer-events: none;
         }
 
-        #fab-lock {
-            position: absolute; top: 20px; left: 20px;
+        /* Floating Action Buttons */
+        .fab-container { position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 50; }
+        .fab {
             background: #333; color: white; padding: 10px 20px; border-radius: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); cursor: pointer; z-index: 50;
-            display: flex; align-items: center; gap: 8px; font-weight: bold; border: 1px solid #555;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: bold; border: 1px solid #555;
         }
-        #fab-lock.editing { background: var(--dem-color); border-color: var(--dem-color); }
+        .fab:hover { background: #444; }
+        .fab.active { background: var(--dem-color); border-color: var(--dem-color); }
 
         /* PLAYER TOKEN */
         .token {
@@ -126,7 +127,7 @@
             background: #25262c; border: 3px solid #555; border-radius: 50%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.6); z-index: 20;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, transform 0.2s;
         }
         .token.draggable { cursor: grab; }
         .token.draggable:active { cursor: grabbing; z-index: 100; transform: scale(1.05); }
@@ -149,7 +150,6 @@
         .ctrl-vote { bottom: -10px; left: 50%; transform: translateX(-50%); background: white; border: 3px solid #333; width: 24px; height: 24px; }
         .ctrl-vote.used { background: #444; border-color: #666; }
 
-        /* REMINDER TOKENS */
         .token-reminders {
             position: absolute; top: -10px; width: 140%; display: flex; justify-content: center; flex-wrap: wrap; gap: 2px; pointer-events: none;
         }
@@ -185,8 +185,8 @@
         .reminder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
         .rem-btn { background: #333; border: 1px solid #444; color: #ccc; padding: 5px; font-size: 0.8rem; cursor: pointer; border-radius: 4px; }
         .rem-btn:hover { background: #444; color: white; }
+        select { background: #111; color: white; padding: 10px; border: 1px solid var(--border); border-radius: 6px; width: 100%; margin-bottom: 10px; }
 
-        /* Multi Card View (Bluffs) */
         .multi-card-container { display: flex; gap: 10px; overflow-x: auto; max-width: 100%; padding: 10px; }
         .mini-card { background: #eceff1; color: #111; padding: 15px; border-radius: 8px; width: 220px; text-align: center; flex-shrink: 0; }
 
@@ -210,7 +210,7 @@
         </div>
     </div>
 
-    <div id="screen-setup" class="screen hidden">
+    <div id="screen-setup" class="screen setup-screen hidden">
         <div class="top-bar">
             <div style="display:flex; align-items:center; gap: 30px;">
                 <div class="stepper">
@@ -227,28 +227,16 @@
             </div>
             <button class="btn" id="btn-next" disabled onclick="gotoSetupStep2()">Next: Prep &rarr;</button>
         </div>
-        <div id="role-grid-container"></div>
+        <div id="role-grid-1" class="grid-scroll-area"></div>
     </div>
 
-    <div id="screen-setup-2" class="screen hidden">
-        <div class="detail-card">
-            <h2 style="margin-top:0;">Grimoire Prep</h2>
-            
-            <div class="config-group">
-                <label style="color:var(--dem-color);">SELECT 3 DEMON BLUFFS</label>
-                <div id="bluff-warn" style="color:var(--dem-color); font-size:0.8rem; display:none; margin-bottom:5px;">Error: Bluffs must be unique and not in play.</div>
-                <select id="bluff-1" onchange="validateBluffs()"></select>
-                <select id="bluff-2" onchange="validateBluffs()"></select>
-                <select id="bluff-3" onchange="validateBluffs()"></select>
-            </div>
-
-            <div class="config-group hidden" id="setup-drunk-box">
-                <label style="color:var(--out-color);">THE DRUNK THINKS THEY ARE:</label>
-                <select id="setup-drunk-role"></select>
-            </div>
-
-            <button class="btn" style="width:100%; padding: 15px;" id="btn-enter" disabled onclick="enterGame()">Enter Town Square</button>
+    <div id="screen-setup-2" class="screen setup-screen hidden">
+        <div class="top-bar">
+            <h2>Game Prep</h2>
+            <button class="btn" id="btn-enter" disabled onclick="enterGame()">Enter Town Square &rarr;</button>
         </div>
+        
+        <div id="role-grid-2" class="grid-scroll-area"></div>
     </div>
 
     <div id="screen-game" class="screen hidden">
@@ -271,7 +259,13 @@
 
         <div id="game-board">
             <div id="town-circle-guide"></div>
-            <div id="fab-lock" onclick="toggleLock()"><span>🔒 Locked</span></div>
+            
+            <div class="fab-container">
+                <div class="fab" id="fab-lock" onclick="toggleLock()"><span>🔒 Locked</span></div>
+                <div class="fab" title="Distribute Evenly" onclick="distributePlayers()">
+                    <span style="font-size:1.2rem;">↻</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -305,7 +299,7 @@
             
             <label style="display:block; color:#888; margin:10px 0 5px;">Reminder Tokens</label>
             <div class="reminder-grid">
-                <button class="rem-btn" onclick="addRem('Is the Demon')">Is Demon</button>
+                <button class="rem-btn" onclick="addRem('Is Demon')">Is Demon</button>
                 <button class="rem-btn" onclick="addRem('Safe')">Safe</button>
                 <button class="rem-btn" onclick="addRem('Poisoned')">Poisoned</button>
                 <button class="rem-btn" onclick="addRem('Drunk')">Drunk</button>
@@ -378,7 +372,7 @@
         roles.BM = { Townsfolk: ["Grandmother","Sailor","Chambermaid","Exorcist","Innkeeper","Gambler","Gossip","Courtier","Professor","Minstrel","Tea Lady","Pacifist","Fool"].map(n=>mock(n)), Outsider: ["Tinker","Moonchild","Goon","Lunatic"].map(n=>mock(n)), Minion: ["Godfather","Devil's Advocate","Assassin","Mastermind"].map((n,i)=>mock(n, i===0?"+1 Outsider":null)), Demon: ["Zombuul","Pukka","Shabaloth","Po"].map(n=>mock(n)) };
         roles.SV = { Townsfolk: ["Clockmaker","Dreamer","Snake Charmer","Mathematician","Flowergirl","Town Crier","Oracle","Savant","Seamstress","Philosopher","Artist","Juggler","Sage"].map(n=>mock(n)), Outsider: ["Mutant","Sweetheart","Barber","Klutz"].map(n=>mock(n)), Minion: ["Witch","Cerebus","Pit-Hag","Evil Twin"].map(n=>mock(n)), Demon: ["Fang Gu","Vortox","No Dashii","Vigormortis"].map(n=>mock(n)) };
 
-        let state = { script: 'TB', count: 5, sel: { Townsfolk:[], Outsider:[], Minion:[], Demon:[] }, players: [], locked: true, phase: 0, setupDrunkRole: "" };
+        let state = { script: 'TB', count: 5, sel: { Townsfolk:[], Outsider:[], Minion:[], Demon:[] }, players: [], locked: true, phase: 0, setupDrunkRole: "", bluffs: [] };
         const baseDist = { 5:[3,0,1,1], 6:[3,1,1,1], 7:[5,0,1,1], 8:[5,1,1,1], 9:[5,2,1,1], 10:[7,0,2,1], 11:[7,1,2,1], 12:[7,2,2,1], 13:[9,0,3,1], 14:[9,1,3,1], 15:[9,2,3,1] };
 
         // --- INIT ---
@@ -386,7 +380,7 @@
             state.script = s;
             document.getElementById('screen-splash').classList.add('hidden');
             document.getElementById('screen-setup').classList.remove('hidden');
-            renderGrid();
+            renderStep1();
             updateCalc();
         }
 
@@ -396,30 +390,21 @@
             document.getElementById('p-count').innerText = n; updateCalc();
         }
 
-        function renderGrid() {
-            const con = document.getElementById('role-grid-container'); con.innerHTML = '';
+        function renderStep1() {
+            const con = document.getElementById('role-grid-1'); con.innerHTML = '';
             const data = roles[state.script];
             for(let type in data) {
                 const col = document.createElement('div'); col.className = 'role-col'; col.innerHTML = `<h3>${type}</h3>`;
                 data[type].forEach(r => {
-                    const el = document.createElement('div'); el.className = 'role-item';
-                    const url = getIconUrl(r.n);
-                    const modHtml = r.mod ? `<span class="mod-text">[${r.mod}]</span>` : '';
-                    el.innerHTML = `
-                        <div class="role-left">
-                            <img src="${url}" class="setup-icon" onerror="this.style.opacity=0.3">
-                            <span>${r.n}${modHtml}</span>
-                        </div>
-                        <div class="eye-btn" onclick="showCard(event, '${r.n}', '${type}')">👁</div>
-                    `;
-                    el.onclick = (e) => { if(!e.target.classList.contains('eye-btn')) toggleRole(type, r.n, el); };
+                    const el = createRoleItem(r, type, false);
+                    el.onclick = (e) => { if(!e.target.classList.contains('eye-btn')) toggleRoleStep1(type, r.n, el); };
                     col.appendChild(el);
                 });
                 con.appendChild(col);
             }
         }
 
-        function toggleRole(type, name, el) {
+        function toggleRoleStep1(type, name, el) {
             const list = state.sel[type];
             const i = list.indexOf(name);
             if(i > -1) { list.splice(i, 1); el.classList.remove('selected'); } 
@@ -439,7 +424,7 @@
             
             document.getElementById('btn-next').disabled = !(okT && okO && okM && okD);
         }
-
+        
         function checkCat(id, cur, req) {
             const el = document.getElementById(id); const lbl = id.split('-')[1];
             el.innerText = `${lbl.toUpperCase()}: ${cur}/${req}`;
@@ -447,45 +432,101 @@
             else { el.classList.add('invalid'); el.classList.remove('valid'); return false; }
         }
 
-        // --- SETUP STEP 2 ---
+        // --- SETUP STEP 2 (BLUFFS/DRUNK) ---
         function gotoSetupStep2() {
             document.getElementById('screen-setup').classList.add('hidden');
             document.getElementById('screen-setup-2').classList.remove('hidden');
-            populateBluffs();
-            
-            // Handle Drunk
-            const dBox = document.getElementById('setup-drunk-box');
+            renderStep2();
+        }
+
+        function renderStep2() {
+            const con = document.getElementById('role-grid-2'); con.innerHTML = '';
+            const data = roles[state.script];
+            const allSel = []; 
+            ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allSel.push(...state.sel[t]));
+
+            // 1. BLUFFS SECTION
+            const bHead = document.createElement('div'); bHead.className='section-header'; 
+            bHead.innerHTML = 'Select 3 Demon Bluffs <span class="counter-sub" id="bluff-counter">0/3</span>';
+            con.appendChild(bHead);
+
+            for(let type in data) {
+                const col = document.createElement('div'); col.className = 'role-col'; col.innerHTML = `<h3>${type}</h3>`;
+                data[type].forEach(r => {
+                    // Filter: Cannot pick if already in play
+                    const inPlay = allSel.includes(r.n);
+                    const el = createRoleItem(r, type, inPlay);
+                    if(inPlay) el.classList.add('disabled');
+                    
+                    el.onclick = (e) => { if(!e.target.classList.contains('eye-btn') && !inPlay) toggleBluff(r.n, el); };
+                    col.appendChild(el);
+                });
+                con.appendChild(col);
+            }
+
+            // 2. DRUNK SECTION (Only if Drunk selected)
             if(state.sel.Outsider.includes("Drunk")) {
-                dBox.classList.remove('hidden');
-                const sel = document.getElementById('setup-drunk-role');
-                sel.innerHTML = '';
-                roles[state.script].Townsfolk.forEach(r => sel.innerHTML += `<option value="${r.n}">${r.n}</option>`);
-            } else { dBox.classList.add('hidden'); }
+                const dHead = document.createElement('div'); dHead.className='section-header';
+                dHead.innerHTML = 'Select Drunk\'s Fake Identity <span class="counter-sub" style="color:var(--out-color)" id="drunk-disp">None</span>';
+                dHead.style.borderColor = 'var(--out-color)'; dHead.style.color = 'var(--out-color)';
+                con.appendChild(dHead);
+
+                // Render only Townsfolk
+                const col = document.createElement('div'); col.className = 'role-col'; col.style.gridColumn='span 4';
+                // Grid layout for just one col
+                col.style.display='grid'; col.style.gridTemplateColumns='repeat(4, 1fr)'; col.style.gap='20px';
+
+                data.Townsfolk.forEach(r => {
+                    const el = createRoleItem(r, 'Townsfolk', false);
+                    el.onclick = (e) => { 
+                        if(e.target.classList.contains('eye-btn')) return;
+                        // Single select logic
+                        document.querySelectorAll('#role-grid-2 .drunk-opt').forEach(x => x.classList.remove('selected'));
+                        el.classList.add('selected'); el.classList.add('drunk-opt');
+                        state.setupDrunkRole = r.n;
+                        document.getElementById('drunk-disp').innerText = r.n;
+                        checkStep2Valid();
+                    };
+                    // Mark if it was a selection from earlier
+                    col.appendChild(el);
+                });
+                con.appendChild(col);
+            }
         }
 
-        function populateBluffs() {
-            const all = []; const d = roles[state.script];
-            ['Townsfolk','Outsider','Minion','Demon'].forEach(t => all.push(...d[t]));
-            const h = '<option value="">-- Select Bluff --</option>' + all.map(r => `<option value="${r.n}">${r.n}</option>`).join('');
-            ['bluff-1','bluff-2','bluff-3'].forEach(id => document.getElementById(id).innerHTML = h);
+        function createRoleItem(r, type, disabled) {
+            const el = document.createElement('div'); el.className = 'role-item';
+            const url = getIconUrl(r.n);
+            const modHtml = r.mod ? `<span class="mod-text">[${r.mod}]</span>` : '';
+            el.innerHTML = `
+                <div class="role-left">
+                    <img src="${url}" class="setup-icon" onerror="this.style.opacity=0.3">
+                    <span style="${disabled?'text-decoration:line-through':''}">${r.n}${modHtml}</span>
+                </div>
+                <div class="eye-btn" onclick="showCard(event, '${r.n}', '${type}')">👁</div>
+            `;
+            return el;
         }
 
-        function validateBluffs() {
-            const bluffs = [document.getElementById('bluff-1').value, document.getElementById('bluff-2').value, document.getElementById('bluff-3').value].filter(x=>x);
-            let conflict = false;
-            let allSel = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allSel.push(...state.sel[t]));
-            bluffs.forEach(b => { if(allSel.includes(b)) conflict = true; });
-            if(new Set(bluffs).size !== bluffs.length) conflict = true;
-            
-            document.getElementById('bluff-warn').style.display = conflict ? 'block' : 'none';
-            // Enable enter button if 3 unique bluffs selected and valid
-            const valid = (!conflict && bluffs.length === 3);
-            document.getElementById('btn-enter').disabled = !valid;
+        function toggleBluff(name, el) {
+            const i = state.bluffs.indexOf(name);
+            if(i > -1) { state.bluffs.splice(i, 1); el.classList.remove('selected'); }
+            else {
+                if(state.bluffs.length >= 3) return; // Max 3
+                state.bluffs.push(name); el.classList.add('selected');
+            }
+            document.getElementById('bluff-counter').innerText = `${state.bluffs.length}/3`;
+            checkStep2Valid();
+        }
+
+        function checkStep2Valid() {
+            const drunkNeeded = state.sel.Outsider.includes("Drunk");
+            const drunkOk = !drunkNeeded || state.setupDrunkRole !== "";
+            const bluffsOk = state.bluffs.length === 3;
+            document.getElementById('btn-enter').disabled = !(drunkOk && bluffsOk);
         }
 
         function enterGame() {
-            state.setupDrunkRole = document.getElementById('setup-drunk-role').value;
-            state.bluffs = [document.getElementById('bluff-1').value, document.getElementById('bluff-2').value, document.getElementById('bluff-3').value];
             document.getElementById('screen-setup-2').classList.add('hidden');
             document.getElementById('screen-game').classList.remove('hidden');
             log("Welcome to Ravenswood Bluff.");
@@ -513,10 +554,37 @@
             const board = document.getElementById('game-board');
             p.x = board.offsetWidth/2 - 55; p.y = board.offsetHeight/2 - 55;
             el.style.left = p.x+'px'; el.style.top = p.y+'px';
-            el.onmousedown = (e) => startDrag(e, el, p); el.ondblclick = () => openEdit(p.id);
+            el.onmousedown = (e) => startDrag(e, el, p); 
+            // Click to edit (handles locked mode inside function)
+            el.onclick = (e) => handleTokenClick(e, p.id); 
             board.appendChild(el);
             document.getElementById('input-name').value = '';
             updateToken(p);
+        }
+
+        function handleTokenClick(e, id) {
+            // If locked, single click opens edit. If unlocked, double click opens edit (standard).
+            // But we can simplify: if we are not dragging, open edit.
+            // Using a simple check:
+            if(state.locked) openEdit(id);
+        }
+
+        function distributePlayers() {
+            if(state.players.length === 0) return;
+            const board = document.getElementById('game-board');
+            const rect = board.getBoundingClientRect();
+            const cx = rect.width / 2;
+            const cy = rect.height / 2;
+            const r = 250; // Radius matches guide circle roughly
+            
+            state.players.forEach((p, i) => {
+                const angle = (i / state.players.length) * 2 * Math.PI - (Math.PI/2); // Start top -90deg
+                p.x = cx + r * Math.cos(angle) - 55; // -55 is half token width
+                p.y = cy + r * Math.sin(angle) - 55;
+                const el = document.getElementById(`token-${p.id}`);
+                el.style.left = p.x + 'px';
+                el.style.top = p.y + 'px';
+            });
         }
 
         function randomizeRoles() {
@@ -558,7 +626,6 @@
                 el.appendChild(v);
             }
 
-            // Update Reminders
             const remCont = el.querySelector('.token-reminders');
             remCont.innerHTML = p.reminders.map(r => `<div class="reminder-tag">${r}</div>`).join('');
         }
