@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grimoire Companion - Advanced</title>
+    <title>Grimoire Companion - Complete</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
             --panel-bg: #2d2d2d;
             --text-color: #e0e0e0;
-            --accent-red: #d32f2f; /* Evil */
-            --accent-green: #388e3c; /* Good */
-            --accent-blue: #1976d2; /* UI Elements */
-            --dead-gray: #616161;
+            --accent-red: #d32f2f;
+            --accent-green: #388e3c;
+            --accent-blue: #1976d2;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -25,9 +24,42 @@
             overflow: hidden;
         }
 
-        /* --- Sidebar (Controls & Log) --- */
+        /* --- SPLASH SCREEN --- */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #111;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .script-card {
+            background: #333;
+            width: 300px;
+            padding: 20px;
+            margin: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            border: 2px solid #555;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .script-card:hover {
+            transform: scale(1.05);
+            border-color: var(--accent-blue);
+            background: #444;
+        }
+
+        .script-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 5px; }
+        .script-desc { font-size: 0.9rem; color: #aaa; }
+
+        /* --- SIDEBAR --- */
         #sidebar {
-            width: 320px;
+            width: 300px;
             background: var(--panel-bg);
             padding: 20px;
             display: flex;
@@ -37,26 +69,9 @@
             z-index: 100;
         }
 
-        h2, h3 { margin-top: 0; }
-        
-        button {
-            background: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-bottom: 5px;
-            transition: background 0.2s;
-        }
-        button:hover { filter: brightness(1.1); }
-        button.secondary { background: #555; }
-        button.danger { background: var(--accent-red); }
-
-        input, select {
+        input, select, button {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             margin-bottom: 10px;
             background: #444;
             border: 1px solid #555;
@@ -65,6 +80,12 @@
             box-sizing: border-box;
         }
 
+        button { background: var(--accent-blue); border: none; font-weight: bold; cursor: pointer; }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; }
+        button:hover:not(:disabled) { filter: brightness(1.1); }
+        button.secondary { background: #555; }
+        button.danger { background: var(--accent-red); }
+
         #game-log {
             flex-grow: 1;
             background: #111;
@@ -72,47 +93,43 @@
             border-radius: 4px;
             overflow-y: auto;
             font-family: monospace;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             margin-top: 10px;
             border: 1px solid #444;
         }
 
-        .log-entry { margin-bottom: 6px; border-bottom: 1px solid #333; padding-bottom: 4px; }
-        .log-phase { color: #fbc02d; font-weight: bold; margin-top: 10px; display: block; }
-        .log-death { color: var(--accent-red); }
-
-        /* --- Main Area (Town Square) --- */
+        /* --- MAIN AREA --- */
         #main-area {
             flex-grow: 1;
             position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             background: radial-gradient(circle, #2a2a2a 0%, #1a1a1a 80%);
+            overflow: hidden; /* Prevent scrollbars from dragging elements out */
         }
 
         #phase-display {
             position: absolute;
             top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             font-size: 2rem;
             font-weight: bold;
             color: #fff;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            pointer-events: none;
         }
 
+        /* The container for tokens */
         #town-square {
+            width: 100%;
+            height: 100%;
             position: relative;
-            width: 600px;
-            height: 600px;
-            border: 4px dashed #444;
-            border-radius: 50%;
         }
 
-        /* --- Player Token --- */
+        /* --- PLAYER TOKEN --- */
         .player-token {
             position: absolute;
-            width: 110px;
-            height: 110px;
+            width: 100px;
+            height: 100px;
             background: #333;
             border: 3px solid #777;
             border-radius: 50%;
@@ -121,21 +138,16 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            cursor: grab;
+            cursor: move; /* Indicates dragging */
             user-select: none;
-            transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 4px 8px rgba(0,0,0,0.4);
             z-index: 10;
         }
 
-        .player-token:active { cursor: grabbing; }
-        .player-token.dragging { opacity: 0.5; }
-
-        /* Alignments */
+        .player-token:active { z-index: 100; box-shadow: 0 8px 16px rgba(0,0,0,0.6); }
         .player-token.good { border-color: var(--accent-green); background: #1b3a1e; }
         .player-token.evil { border-color: var(--accent-red); background: #3e1b1b; }
         
-        /* Death State */
         .player-token.dead {
             filter: grayscale(100%);
             opacity: 0.7;
@@ -144,46 +156,37 @@
         
         .shroud {
             position: absolute;
+            top: 35%;
             width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             color: red;
             font-weight: bold;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             transform: rotate(-15deg);
             pointer-events: none;
+            text-shadow: 1px 1px 0 #000;
         }
 
-        /* Ghost Vote */
         .ghost-vote {
             position: absolute;
-            bottom: -10px;
-            width: 24px;
-            height: 24px;
+            bottom: -5px;
+            width: 20px;
+            height: 20px;
             background: #fff;
             border: 2px solid #333;
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
-        .ghost-vote.used {
-            background: #555;
-            border-color: #888;
-        }
+        .ghost-vote.used { background: #555; border-color: #888; }
 
-        .token-name { font-weight: bold; font-size: 0.95rem; pointer-events: none; }
-        .token-role { font-size: 0.75rem; opacity: 0.8; pointer-events: none; margin-top: 2px;}
+        .token-name { font-weight: bold; font-size: 0.9rem; pointer-events: none; margin-bottom: 2px;}
+        .token-role { font-size: 0.7rem; opacity: 0.9; pointer-events: none; max-width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 
-        /* --- Modals --- */
+        /* --- MODAL --- */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
             z-index: 200;
             justify-content: center;
             align-items: center;
@@ -193,7 +196,6 @@
             padding: 20px;
             border-radius: 8px;
             width: 300px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
         .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
 
@@ -201,20 +203,39 @@
 </head>
 <body>
 
-    <div id="sidebar">
-        <h2>Grimoire</h2>
+    <div id="splash-screen">
+        <h1 style="margin-bottom: 30px;">Select Your Script</h1>
         
-        <input type="text" id="newPlayerName" placeholder="New Player Name..." onkeypress="handleEnter(event)">
+        <div class="script-card" onclick="selectScript('TB')">
+            <div class="script-title">Trouble Brewing</div>
+            <div class="script-desc">Beginner friendly. Some drunkenness and poisoning.</div>
+        </div>
+        
+        <div class="script-card" onclick="selectScript('BM')">
+            <div class="script-title">Bad Moon Rising</div>
+            <div class="script-desc">Death focused. Gambling and multiple kills per night.</div>
+        </div>
+        
+        <div class="script-card" onclick="selectScript('SV')">
+            <div class="script-title">Sects & Violets</div>
+            <div class="script-desc">Crazy information. Madness and changing alignments.</div>
+        </div>
+    </div>
+
+    <div id="sidebar">
+        <h3>Grimoire Setup</h3>
+        
+        <input type="text" id="newPlayerName" placeholder="Player Name" onkeypress="handleEnter(event)">
         <button onclick="addPlayer()">+ Add Player</button>
         <hr style="width:100%; border-color:#444;">
         
-        <button onclick="advancePhase()" id="phaseBtn">Start Game (Night 1)</button>
-        <button onclick="exportLog()" class="secondary">Copy Summary</button>
+        <button onclick="startGame()" id="startBtn" disabled>Start Game</button>
+        <div id="validation-msg" style="color:#fbc02d; font-size:0.8rem; margin-bottom:10px; text-align:center;">Add players to begin</div>
 
-        <h3>Game Log</h3>
-        <div id="game-log">
-            <div class="log-entry" style="color:#888;">Add players to begin...</div>
-        </div>
+        <button onclick="advancePhase()" id="phaseBtn" class="secondary" style="display:none;">Next Phase</button>
+        
+        <h4 style="margin-bottom:5px;">Log</h4>
+        <div id="game-log"></div>
     </div>
 
     <div id="main-area">
@@ -225,272 +246,299 @@
     <div id="editorModal" class="modal">
         <div class="modal-content">
             <h3 id="modalTitle">Edit Player</h3>
-            
             <label>Role:</label>
-            <select id="roleSelect">
-                <option value="Unknown">Unknown</option>
-                <optgroup label="Townsfolk">
-                    <option value="Washerwoman">Washerwoman</option>
-                    <option value="Librarian">Librarian</option>
-                    <option value="Investigator">Investigator</option>
-                    <option value="Chef">Chef</option>
-                    <option value="Empath">Empath</option>
-                    <option value="Fortune Teller">Fortune Teller</option>
-                    <option value="Undertaker">Undertaker</option>
-                    <option value="Monk">Monk</option>
-                    <option value="Ravenkeeper">Ravenkeeper</option>
-                    <option value="Virgin">Virgin</option>
-                    <option value="Slayer">Slayer</option>
-                    <option value="Soldier">Soldier</option>
-                    <option value="Mayor">Mayor</option>
-                </optgroup>
-                <optgroup label="Outsiders">
-                    <option value="Butler">Butler</option>
-                    <option value="Drunk">Drunk</option>
-                    <option value="Recluse">Recluse</option>
-                    <option value="Saint">Saint</option>
-                </optgroup>
-                <optgroup label="Minions">
-                    <option value="Poisoner">Poisoner</option>
-                    <option value="Spy">Spy</option>
-                    <option value="Scarlet Woman">Scarlet Woman</option>
-                    <option value="Baron">Baron</option>
-                </optgroup>
-                <optgroup label="Demons">
-                    <option value="Imp">Imp</option>
-                </optgroup>
-            </select>
-
+            <select id="roleSelect"></select>
             <label>Alignment:</label>
             <select id="alignSelect">
-                <option value="good">Good (Green)</option>
-                <option value="evil">Evil (Red)</option>
+                <option value="good">Good</option>
+                <option value="evil">Evil</option>
             </select>
-
             <div class="modal-buttons">
                 <button onclick="savePlayerEdit()">Save</button>
-                <button onclick="killPlayerPrompt()" class="danger" id="killBtn">Kill/Execute</button>
+                <button onclick="killPlayerPrompt()" class="danger" id="killBtn">Kill</button>
                 <button onclick="closeModal()" class="secondary">Cancel</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- DATA STATE ---
+        // --- DATA: SCRIPTS ---
+        const scriptData = {
+            TB: {
+                townsfolk: ["Washerwoman", "Librarian", "Investigator", "Chef", "Empath", "Fortune Teller", "Undertaker", "Monk", "Ravenkeeper", "Virgin", "Slayer", "Soldier", "Mayor"],
+                outsiders: ["Butler", "Drunk", "Recluse", "Saint"],
+                minions: ["Poisoner", "Spy", "Scarlet Woman", "Baron"],
+                demons: ["Imp"]
+            },
+            BM: {
+                townsfolk: ["Grandmother", "Sailor", "Chambermaid", "Exorcist", "Innkeeper", "Gambler", "Gossip", "Courtier", "Professor", "Minstrel", "Tea Lady", "Pacifist", "Fool"],
+                outsiders: ["Tinker", "Moonchild", "Goon", "Lunatic"],
+                minions: ["Godfather", "Devil's Advocate", "Assassin", "Mastermind"],
+                demons: ["Zombuul", "Pukka", "Shabaloth", "Po"]
+            },
+            SV: {
+                townsfolk: ["Clockmaker", "Dreamer", "Snake Charmer", "Mathematician", "Flowergirl", "Town Crier", "Oracle", "Savant", "Seamstress", "Philosopher", "Artist", "Juggler", "Sage"],
+                outsiders: ["Mutant", "Sweetheart", "Barber", "Klutz"],
+                minions: ["Witch", "Cerebus", "Pit-Hag", "Evil Twin"],
+                demons: ["Fang Gu", "Vortox", "No Dashii", "Vigormortis"]
+            }
+        };
+
+        // --- STATE ---
+        let currentScript = null;
         let players = [];
-        let phaseIndex = 0; // 0=Setup, 1=Night 1, 2=Day 1, etc.
-        let editingPlayerIndex = null;
-        let dragSrcIndex = null;
+        let gameStarted = false;
+        let phaseIndex = 0;
+        let editingId = null;
+        let uniqueIdCounter = 0;
+        const phases = ["Night 1", "Day 1", "Night 2", "Day 2", "Night 3", "Day 3", "Night 4", "Day 4"];
 
-        const phases = ["Setup", "Night 1", "Day 1", "Night 2", "Day 2", "Night 3", "Day 3", "Night 4", "Day 4", "Night 5", "Day 5"]; // Simplified sequence
-
-        // --- CORE FUNCTIONS ---
+        // --- SETUP ---
+        function selectScript(code) {
+            currentScript = scriptData[code];
+            document.getElementById('splash-screen').style.display = 'none';
+            log(`Script loaded: ${code === 'TB' ? 'Trouble Brewing' : code === 'BM' ? 'Bad Moon Rising' : 'Sects & Violets'}`);
+        }
 
         function handleEnter(e) { if(e.key === 'Enter') addPlayer(); }
 
         function addPlayer() {
-            const input = document.getElementById('newPlayerName');
-            const name = input.value.trim();
+            const name = document.getElementById('newPlayerName').value.trim();
             if (!name) return;
 
-            players.push({
+            // Random position near center but slightly scattered
+            const startX = (window.innerWidth / 2) - 150 + (Math.random() * 100); 
+            const startY = (window.innerHeight / 2) - 50 + (Math.random() * 100);
+
+            const player = {
+                id: uniqueIdCounter++,
                 name: name,
-                role: "Unknown",
-                alignment: "good", // Default
+                role: "",
+                alignment: "good",
                 isDead: false,
-                ghostVoteUsed: false
-            });
+                ghostVoteUsed: false,
+                x: startX,
+                y: startY
+            };
 
-            input.value = '';
-            renderTown();
-            log(`Added player: ${name}`);
-        }
-
-        function renderTown() {
-            const square = document.getElementById('town-square');
-            square.innerHTML = '';
+            players.push(player);
+            document.getElementById('newPlayerName').value = '';
             
-            const total = players.length;
-            const radius = 250;
-            const centerX = 300;
-            const centerY = 300;
-
-            players.forEach((p, index) => {
-                const el = document.createElement('div');
-                el.className = `player-token ${p.alignment} ${p.isDead ? 'dead' : ''}`;
-                el.draggable = true;
-                
-                // Position logic
-                const angle = (index / total) * 2 * Math.PI - (Math.PI / 2);
-                const x = centerX + radius * Math.cos(angle) - 55; 
-                const y = centerY + radius * Math.sin(angle) - 55;
-                el.style.left = `${x}px`;
-                el.style.top = `${y}px`;
-
-                // Content
-                let html = `
-                    <div class="token-name">${p.name}</div>
-                    <div class="token-role">${p.role}</div>
-                `;
-                
-                if (p.isDead) {
-                    html += `<div class="shroud">DEAD</div>`;
-                    // Ghost Vote Bubble
-                    const voteClass = p.ghostVoteUsed ? 'used' : '';
-                    const voteTitle = p.ghostVoteUsed ? 'Vote Spent' : 'Ghost Vote Available';
-                    html += `<div class="ghost-vote ${voteClass}" title="${voteTitle}" onclick="toggleGhostVote(event, ${index})"></div>`;
-                }
-
-                el.innerHTML = html;
-
-                // Events
-                el.onclick = () => openEditor(index);
-                
-                // Drag and Drop (Swap logic)
-                el.addEventListener('dragstart', (e) => {
-                    dragSrcIndex = index;
-                    el.classList.add('dragging');
-                    e.dataTransfer.effectAllowed = 'move';
-                });
-                
-                el.addEventListener('dragend', () => {
-                    el.classList.remove('dragging');
-                    dragSrcIndex = null;
-                });
-
-                el.addEventListener('dragover', (e) => {
-                    e.preventDefault(); // Necessary to allow dropping
-                    return false;
-                });
-
-                el.addEventListener('drop', (e) => {
-                    e.stopPropagation();
-                    if (dragSrcIndex !== null && dragSrcIndex !== index) {
-                        // Swap players in array
-                        const temp = players[dragSrcIndex];
-                        players[dragSrcIndex] = players[index];
-                        players[index] = temp;
-                        renderTown();
-                    }
-                    return false;
-                });
-
-                square.appendChild(el);
-            });
+            createPlayerToken(player);
+            validateStart();
         }
 
-        // --- GAME LOGIC ---
+        // --- DOM GENERATION ---
+        function createPlayerToken(p) {
+            const el = document.createElement('div');
+            el.id = `p-${p.id}`;
+            el.className = `player-token ${p.alignment}`;
+            el.style.left = p.x + 'px';
+            el.style.top = p.y + 'px';
+            
+            updateTokenVisuals(el, p);
+
+            // Events
+            el.onmousedown = (e) => startDrag(e, p.id);
+            // Double click opens editor
+            el.ondblclick = () => openEditor(p.id);
+
+            document.getElementById('town-square').appendChild(el);
+        }
+
+        function updateTokenVisuals(el, p) {
+            el.className = `player-token ${p.alignment} ${p.isDead ? 'dead' : ''}`;
+            
+            let html = `
+                <div class="token-name">${p.name}</div>
+                <div class="token-role">${p.role || "Assign Role"}</div>
+            `;
+            
+            if (p.isDead) {
+                html += `<div class="shroud">DEAD</div>`;
+                const vClass = p.ghostVoteUsed ? 'used' : '';
+                html += `<div class="ghost-vote ${vClass}" onmousedown="toggleGhostVote(event, ${p.id})"></div>`;
+            }
+            el.innerHTML = html;
+        }
+
+        // --- DRAG LOGIC (FREE FORM) ---
+        let dragItem = null;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        function startDrag(e, id) {
+            // Prevent drag if clicking the ghost vote button
+            if(e.target.classList.contains('ghost-vote')) return;
+
+            dragItem = document.getElementById(`p-${id}`);
+            const rect = dragItem.getBoundingClientRect();
+            
+            // Calculate offset so the token doesn't snap to mouse corner
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function onDrag(e) {
+            if (!dragItem) return;
+            
+            // Convert page coordinates to simple Left/Top
+            // (We subtract sidebar width if sidebar is on left, but here we used position:absolute in a flex container, 
+            // so we must account for container offset if we were strictly relative. 
+            // However, fixed/absolute mix is tricky. Simplest approach for full screen app:)
+            
+            let newX = e.clientX - offsetX;
+            let newY = e.clientY - offsetY;
+
+            dragItem.style.left = newX + 'px';
+            dragItem.style.top = newY + 'px';
+        }
+
+        function stopDrag(e) {
+            if (dragItem) {
+                // Save coordinates to data model
+                const id = parseInt(dragItem.id.split('-')[1]);
+                const p = players.find(x => x.id === id);
+                p.x = parseInt(dragItem.style.left);
+                p.y = parseInt(dragItem.style.top);
+            }
+            dragItem = null;
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        // --- GAME FLOW & VALIDATION ---
+        function validateStart() {
+            const btn = document.getElementById('startBtn');
+            const msg = document.getElementById('validation-msg');
+
+            if (gameStarted) return; // Validation irrelevant if game active
+
+            const unassigned = players.filter(p => p.role === "").length;
+            const total = players.length;
+
+            if (total < 5) {
+                btn.disabled = true;
+                msg.innerText = `Need ${5 - total} more players (Min 5)`;
+            } else if (unassigned > 0) {
+                btn.disabled = true;
+                msg.innerText = `${unassigned} player(s) need roles`;
+            } else {
+                btn.disabled = false;
+                msg.innerText = "Ready to Begin!";
+                msg.style.color = "#48b96e";
+            }
+        }
+
+        function startGame() {
+            gameStarted = true;
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('validation-msg').style.display = 'none';
+            document.getElementById('phaseBtn').style.display = 'inline-block';
+            
+            document.getElementById('phase-display').innerText = "Night 1";
+            log("--- Game Started: Night 1 ---");
+        }
 
         function advancePhase() {
             phaseIndex++;
             if (phaseIndex >= phases.length) {
-                const dayNum = Math.ceil(phaseIndex/2);
-                const isNight = phaseIndex % 2 !== 0;
+                const dayNum = Math.ceil((phaseIndex + 1)/2);
+                const isNight = (phaseIndex % 2) === 0;
                 phases.push(isNight ? `Night ${dayNum}` : `Day ${dayNum}`);
             }
-            
-            const currentPhase = phases[phaseIndex];
-            document.getElementById('phase-display').innerText = currentPhase;
-            document.getElementById('phaseBtn').innerText = "Next Phase";
-            
-            // Log divider
-            const logEntry = document.createElement('span');
-            logEntry.className = 'log-phase';
-            logEntry.innerText = `--- ${currentPhase} ---`;
-            document.getElementById('game-log').appendChild(logEntry);
-            
-            // Scroll to bottom
-            const logDiv = document.getElementById('game-log');
-            logDiv.scrollTop = logDiv.scrollHeight;
+            const pName = phases[phaseIndex];
+            document.getElementById('phase-display').innerText = pName;
+            log(`--- Phase: ${pName} ---`);
         }
 
-        function log(msg, type='') {
+        function log(txt) {
             const div = document.createElement('div');
-            div.className = `log-entry ${type}`;
-            div.innerText = msg;
-            const logContainer = document.getElementById('game-log');
-            logContainer.appendChild(div);
-            logContainer.scrollTop = logContainer.scrollHeight;
+            div.innerText = txt;
+            div.style.marginBottom = "4px";
+            div.style.borderBottom = "1px solid #333";
+            const con = document.getElementById('game-log');
+            con.appendChild(div);
+            con.scrollTop = con.scrollHeight;
         }
 
-        function exportLog() {
-            const text = document.getElementById('game-log').innerText;
-            navigator.clipboard.writeText(text);
-            alert("Game Log copied to clipboard!");
-        }
-
-        // --- EDITOR MODAL ---
-
-        function openEditor(index) {
-            editingPlayerIndex = index;
-            const p = players[index];
+        // --- EDITOR ---
+        function openEditor(id) {
+            editingId = id;
+            const p = players.find(x => x.id === id);
             
-            document.getElementById('modalTitle').innerText = `Edit: ${p.name}`;
-            document.getElementById('roleSelect').value = p.role;
+            // Populate Dropdown based on Script
+            const select = document.getElementById('roleSelect');
+            select.innerHTML = '<option value="">-- Select Role --</option>';
+            
+            const addGroup = (label, arr) => {
+                const grp = document.createElement('optgroup');
+                grp.label = label;
+                arr.forEach(r => {
+                    const opt = document.createElement('option');
+                    opt.value = r;
+                    opt.innerText = r;
+                    grp.appendChild(opt);
+                });
+                select.appendChild(grp);
+            };
+
+            addGroup("Townsfolk", currentScript.townsfolk);
+            addGroup("Outsiders", currentScript.outsiders);
+            addGroup("Minions", currentScript.minions);
+            addGroup("Demons", currentScript.demons);
+
+            // Set Values
+            select.value = p.role;
             document.getElementById('alignSelect').value = p.alignment;
-            
-            // Change Kill button text if already dead
-            const killBtn = document.getElementById('killBtn');
-            if (p.isDead) {
-                killBtn.innerText = "Revive";
-                killBtn.className = "secondary";
-            } else {
-                killBtn.innerText = "Kill / Execute";
-                killBtn.className = "danger";
-            }
+            document.getElementById('killBtn').innerText = p.isDead ? "Revive" : "Kill";
 
             document.getElementById('editorModal').style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('editorModal').style.display = 'none';
-            editingPlayerIndex = null;
-        }
-
         function savePlayerEdit() {
-            if (editingPlayerIndex === null) return;
+            const p = players.find(x => x.id === editingId);
+            const rSelect = document.getElementById('roleSelect');
             
-            const p = players[editingPlayerIndex];
-            p.role = document.getElementById('roleSelect').value;
+            p.role = rSelect.value;
             p.alignment = document.getElementById('alignSelect').value;
+
+            // Re-render visuals
+            const el = document.getElementById(`p-${p.id}`);
+            updateTokenVisuals(el, p);
             
-            renderTown();
+            validateStart();
             closeModal();
         }
 
         function killPlayerPrompt() {
-            if (editingPlayerIndex === null) return;
-            const p = players[editingPlayerIndex];
-
-            if (p.isDead) {
-                // Revive logic
-                p.isDead = false;
-                log(`${p.name} was revived.`);
-            } else {
-                // Kill logic
-                const reason = prompt("Cause of death?\n(e.g., Demon, Execution, Gunner)", "Execution");
-                if (reason) {
-                    p.isDead = true;
-                    const phase = phases[phaseIndex] || "Setup";
-                    log(`${phase}: ${p.name} (${p.role}) died by ${reason}.`, 'log-death');
-                }
-            }
-            renderTown();
+            const p = players.find(x => x.id === editingId);
+            p.isDead = !p.isDead;
+            
+            log(`${p.name} is now ${p.isDead ? "Dead" : "Alive"}.`);
+            
+            const el = document.getElementById(`p-${p.id}`);
+            updateTokenVisuals(el, p);
             closeModal();
         }
 
-        function toggleGhostVote(e, index) {
-            e.stopPropagation(); // Don't open modal
-            const p = players[index];
-            if (!p.isDead) return;
-
+        function toggleGhostVote(e, id) {
+            e.stopPropagation(); // stop dragging
+            const p = players.find(x => x.id === id);
             p.ghostVoteUsed = !p.ghostVoteUsed;
-            renderTown();
+            log(`${p.name} ${p.ghostVoteUsed ? "spent" : "regained"} ghost vote.`);
             
-            if (p.ghostVoteUsed) log(`${p.name} used their Ghost Vote.`);
-            else log(`${p.name} reclaimed their Ghost Vote.`);
+            const el = document.getElementById(`p-${p.id}`);
+            updateTokenVisuals(el, p);
         }
 
+        function closeModal() {
+            document.getElementById('editorModal').style.display = 'none';
+            editingId = null;
+        }
     </script>
 </body>
 </html>
