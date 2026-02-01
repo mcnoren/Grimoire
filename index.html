@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V18 - Full Content</title>
+    <title>Grimoire V19 - Smart Tags</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -20,6 +20,7 @@
             --min-color: #e9952b;
             --dem-color: #e92b2b;
             --rem-color: #ffd700;
+            --active-btn: #4caf50; /* Green for active tags */
         }
 
         * { box-sizing: border-box; user-select: none; }
@@ -85,7 +86,7 @@
         .role-item:hover { background: #2c2e35; }
         .role-item.selected { background: var(--accent); border-color: var(--accent-hover); color: white; }
         .role-item.disabled { opacity: 0.3; pointer-events: none; }
-        .role-item.in-play { border-color: var(--town-color); opacity: 0.6; } /* Used in Drunk selector */
+        .role-item.in-play { border-color: var(--town-color); opacity: 0.6; }
         
         .role-left { display: flex; align-items: center; gap: 10px; flex: 1; }
         .setup-icon { width: 30px; height: 30px; object-fit: contain; filter: drop-shadow(0 0 2px rgba(255,255,255,0.2)); flex-shrink: 0; }
@@ -140,12 +141,6 @@
 
         .token-name { font-weight: 700; font-size: 0.85rem; pointer-events: none; margin-top: 5px; text-align: center; line-height: 1.1; max-width: 90%; }
         
-        /* Drunk Icon on Board */
-        .drunk-indicator {
-            position: absolute; top: -5px; right: 25px; font-size: 1.2rem; 
-            filter: drop-shadow(0 0 2px black); z-index: 5;
-        }
-
         .token-ctrl {
             position: absolute; width: 26px; height: 26px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; cursor: pointer;
@@ -173,9 +168,17 @@
         
         .edit-box { background: var(--bg-panel); padding: 30px; border-radius: 12px; width: 350px; z-index: 10000; }
         #modal-edit { background: rgba(0,0,0,0.8); }
-        .reminder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
-        .rem-btn { background: #333; border: 1px solid #444; color: #ccc; padding: 5px; font-size: 0.8rem; cursor: pointer; border-radius: 4px; }
-        .rem-btn:hover { background: #444; color: white; }
+        
+        .reminder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .rem-btn { 
+            background: #2a2a2a; border: 1px solid #444; color: #888; padding: 8px; 
+            font-size: 0.8rem; cursor: pointer; border-radius: 6px; font-weight: bold;
+            transition: 0.1s;
+        }
+        .rem-btn:hover { background: #333; color: white; }
+        /* Active State for Tags */
+        .rem-btn.selected { background: var(--active-btn); border-color: var(--active-btn); color: white; box-shadow: 0 0 8px rgba(76, 175, 80, 0.4); }
+
         select { background: #111; color: white; padding: 10px; border: 1px solid var(--border); border-radius: 6px; width: 100%; margin-bottom: 10px; }
 
         .multi-card-container { display: flex; gap: 10px; overflow-x: auto; max-width: 100%; padding: 10px; }
@@ -298,12 +301,12 @@
             
             <label style="display:block; color:#888; margin:10px 0 5px;">Reminder Tokens</label>
             <div class="reminder-grid">
-                <button class="rem-btn" onclick="addRem('Is Demon')">Is Demon</button>
-                <button class="rem-btn" onclick="addRem('Safe')">Safe</button>
-                <button class="rem-btn" onclick="addRem('Poisoned')">Poisoned</button>
-                <button class="rem-btn" onclick="addRem('Drunk')">Drunk</button>
-                <button class="rem-btn" onclick="addRem('Mad')">Mad</button>
-                <button class="rem-btn" onclick="addRem('Dead Vote')">Dead Vote</button>
+                <button class="rem-btn" onclick="toggleRem(this, 'Is Demon')">Is Demon</button>
+                <button class="rem-btn" onclick="toggleRem(this, 'Safe')">Safe</button>
+                <button class="rem-btn" onclick="toggleRem(this, 'Poisoned')">Poisoned</button>
+                <button class="rem-btn" onclick="toggleRem(this, 'Drunk')">Drunk</button>
+                <button class="rem-btn" onclick="toggleRem(this, 'Mad')">Mad</button>
+                <button class="rem-btn" onclick="toggleRem(this, 'Dead Vote')">Dead Vote</button>
                 <button class="rem-btn" style="grid-column: span 2; color:#ff8888;" onclick="clearRem()">Clear Tokens</button>
             </div>
 
@@ -477,9 +480,7 @@
             let req = [...(baseDist[state.count] || [3,0,1,1])];
             if(state.sel.Minion.includes("Baron")) { req[0]-=2; req[1]+=2; }
             if(state.sel.Minion.includes("Godfather")) { req[0]-=1; req[1]+=1; }
-            if(state.sel.Demon.includes("Fang Gu")) { req[0]-=1; req[1]+=1; } // Added Fang Gu logic
-            // Note: Balloonist adds +1 Outsider if used as a Traveller/Fabled character mechanic usually, but if treating as Townsfolk modifier:
-            // if(state.sel.Townsfolk.includes("Balloonist")) { req[0]-=1; req[1]+=1; } 
+            if(state.sel.Demon.includes("Fang Gu")) { req[0]-=1; req[1]+=1; }
             
             const okT = checkCat('req-town', state.sel.Townsfolk.length, req[0]);
             const okO = checkCat('req-out', state.sel.Outsider.length, req[1]);
@@ -603,7 +604,6 @@
             
             const el = document.createElement('div'); el.id = `token-${p.id}`; el.className = 'token good draggable';
             el.innerHTML = `
-                <div class="drunk-indicator" style="display:none">🍺</div>
                 <div class="token-reminders"></div>
                 <div class="token-icon-wrap">
                     <img class="token-img" src="" style="display:none">
@@ -645,6 +645,12 @@
                 if(pool[i]) {
                     p.role = pool[i];
                     p.fake = (p.role === "Drunk") ? state.setupDrunkRole : "";
+                    
+                    // Auto-Add Drunk Reminder
+                    if(p.role === "Drunk" && !p.reminders.includes("Drunk")) {
+                        p.reminders.push("Drunk");
+                    }
+
                     const type = getRoleType(p.role);
                     p.align = (type==='Minion'||type==='Demon') ? 'evil' : 'good';
                     updateToken(p);
@@ -669,10 +675,6 @@
                 badge.innerHTML = `<span>${rShow.charAt(0)}</span>`;
                 badge.className = `badge-icon ${type==='Demon'?'b-dem':type==='Minion'?'b-min':type==='Outsider'?'b-out':'b-town'}`;
             } else { img.style.display = 'none'; badge.style.display = 'none'; }
-
-            // Drunk Indicator
-            const dk = el.querySelector('.drunk-indicator');
-            dk.style.display = (p.role === "Drunk") ? 'block' : 'none';
 
             // Vote
             const oldV = el.querySelector('.ctrl-vote'); if(oldV) oldV.remove();
@@ -718,6 +720,14 @@
             });
             sel.value = p.role;
             document.getElementById('edit-align').value = p.align;
+            
+            // Sync Toggle Buttons
+            document.querySelectorAll('.rem-btn').forEach(btn => {
+                const txt = btn.innerText;
+                if(p.reminders.includes(txt)) btn.classList.add('selected');
+                else btn.classList.remove('selected');
+            });
+
             document.getElementById('modal-edit').classList.remove('hidden');
         }
         function saveEdit() {
@@ -729,12 +739,24 @@
         function toggleLife() { const p = state.players.find(x=>x.id===editId); p.dead = !p.dead; updateToken(p); document.getElementById('modal-edit').classList.add('hidden'); }
         function delPlayer(e, id) { e.stopPropagation(); if(confirm("Remove?")) { state.players = state.players.filter(x=>x.id!==id); document.getElementById(`token-${id}`).remove(); } }
         
-        function addRem(txt) {
+        function toggleRem(btn, txt) {
             const p = state.players.find(x=>x.id===editId);
-            if(!p.reminders.includes(txt)) p.reminders.push(txt);
+            const idx = p.reminders.indexOf(txt);
+            if(idx > -1) {
+                p.reminders.splice(idx, 1);
+                btn.classList.remove('selected');
+            } else {
+                p.reminders.push(txt);
+                btn.classList.add('selected');
+            }
             updateToken(p);
         }
-        function clearRem() { const p = state.players.find(x=>x.id===editId); p.reminders = []; updateToken(p); }
+        function clearRem() { 
+            const p = state.players.find(x=>x.id===editId); 
+            p.reminders = []; 
+            document.querySelectorAll('.rem-btn').forEach(b=>b.classList.remove('selected'));
+            updateToken(p); 
+        }
 
         function showCard(e, name, type) {
             if(e) e.stopPropagation();
