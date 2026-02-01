@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V20 - Ultimate UI</title>
+    <title>Grimoire V21 - Custom Scripts</title>
     <style>
         :root {
-            --bg-dark: #0f0f13;
-            --bg-panel: #1e1e24;
+            --bg-dark: #0a0a0c;
+            --bg-panel: #16161a;
             --accent: #7c4dff;
+            --accent-hover: #651fff;
             --text-main: #eceff1;
-            --text-muted: #90a4ae;
+            --text-muted: #94a1b2;
             --border: #2c2e35;
             
             /* Role Colors */
@@ -25,7 +26,7 @@
         * { box-sizing: border-box; user-select: none; }
 
         body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
             margin: 0;
@@ -37,57 +38,121 @@
         /* --- UTILS --- */
         .hidden { display: none !important; }
         .btn {
-            background: var(--accent); color: white; border: none; padding: 10px 20px;
+            background: var(--accent); color: white; border: none; padding: 12px 24px;
             border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s;
             display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.8rem;
+            text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.9rem;
         }
-        .btn:active { transform: scale(0.98); }
-        .btn:disabled { background: #333; color: #555; }
+        .btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(124, 77, 255, 0.3); }
+        .btn:disabled { background: #333; color: #555; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-red { background: var(--dem-color); }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: #aaa; }
+        .btn-outline:hover { background: rgba(255,255,255,0.1); color: white; }
 
         /* --- SCREENS --- */
         .screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 10; display: flex; flex-direction: column; }
 
-        /* Setup/Shared Styles */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--border); }
-        .grid-scroll-area { flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px 40px; }
+        /* 1. SPLASH SCREEN (REDESIGNED) */
+        #screen-splash { 
+            align-items: center; justify-content: center; z-index: 50; 
+            background: radial-gradient(circle at center, #1a1a20 0%, #050505 100%);
+        }
+        .hero-title {
+            font-size: 5rem; margin: 0; 
+            background: linear-gradient(to right, #7c4dff, #2b7de9);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5); font-weight: 900; letter-spacing: -2px;
+        }
+        .hero-sub { color: var(--text-muted); font-size: 1.2rem; margin-bottom: 60px; letter-spacing: 1px; text-transform: uppercase; }
         
-        .role-col h3 { text-align: center; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-top:0; }
+        .script-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 800px; width: 90%; }
+        .script-card {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px;
+            padding: 30px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;
+        }
+        .script-card:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .script-card h3 { margin: 0 0 5px 0; font-size: 1.5rem; }
+        .script-card p { margin: 0; font-size: 0.85rem; color: #777; }
+        
+        /* Custom Script Card Special Style */
+        .card-custom { grid-column: span 2; border-color: var(--accent); background: linear-gradient(45deg, rgba(124, 77, 255, 0.1), transparent); }
+        .card-custom:hover { background: linear-gradient(45deg, rgba(124, 77, 255, 0.2), transparent); }
+
+        /* 1.5 CUSTOM BUILDER SCREEN */
+        #screen-builder { padding: 20px; display: flex; flex-direction: column; }
+        .builder-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+        .search-bar { 
+            width: 100%; padding: 12px; background: #111; border: 1px solid var(--border); 
+            color: white; border-radius: 8px; font-size: 1rem; margin-bottom: 20px; 
+        }
+        .builder-cols { display: flex; gap: 20px; flex-grow: 1; overflow: hidden; }
+        .builder-col { flex: 1; display: flex; flex-direction: column; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 10px; }
+        .builder-list { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+        .build-item { 
+            padding: 8px; border-radius: 6px; cursor: pointer; margin-bottom: 5px; font-size: 0.9rem; 
+            display: flex; align-items: center; gap: 10px; transition: 0.1s;
+        }
+        .build-item:hover { background: #333; }
+        .build-item.added { background: var(--accent); color: white; }
+        .build-item.dim { opacity: 0.3; }
+
+        /* SETUP SHARED */
+        .setup-screen { padding: 20px 40px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+        
+        .stepper { display: flex; align-items: center; background: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; }
+        .stepper button { background: transparent; border: none; color: white; font-size: 1.5rem; padding: 5px 20px; cursor: pointer; }
+        .stepper span { font-size: 1.5rem; font-weight: bold; min-width: 50px; text-align: center; }
+
+        .counts-display { display: flex; gap: 15px; }
+        .count-pill { background: var(--bg-panel); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .count-pill.valid { color: var(--town-color); border-color: var(--town-color); }
+        .count-pill.invalid { color: var(--dem-color); border-color: var(--dem-color); opacity: 0.6; }
+
+        /* GRID SYSTEM */
+        .grid-scroll-area { flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding-bottom: 20px; }
+        .role-col h3 { text-align: center; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 10px; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; }
         
         .role-item { 
             padding: 8px 12px; margin-bottom: 8px; background: #23242a; border-radius: 6px; cursor: pointer; 
             border: 1px solid transparent; display: flex; align-items: center; justify-content: space-between;
+            transition: 0.1s;
         }
-        .role-item.selected { background: var(--accent); color: white; }
+        .role-item:hover { background: #2c2e35; }
+        .role-item.selected { background: var(--accent); border-color: var(--accent-hover); color: white; }
         .role-item.disabled { opacity: 0.3; pointer-events: none; }
+        .role-item.in-play { border-color: var(--town-color); opacity: 0.6; }
         
         .role-left { display: flex; align-items: center; gap: 10px; flex: 1; }
-        .setup-icon { width: 30px; height: 30px; object-fit: contain; }
-        .eye-btn { padding: 5px; opacity: 0.5; font-size: 1.2rem; }
-
-        /* Stepper & Pills */
-        .stepper { display: flex; align-items: center; background: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border); }
-        .stepper button { background: transparent; border: none; color: white; font-size: 1.5rem; padding: 5px 20px; cursor: pointer; }
-        .stepper span { font-size: 1.5rem; font-weight: bold; min-width: 50px; text-align: center; }
-        
-        .counts-display { display: flex; gap: 15px; }
-        .count-pill { background: var(--bg-panel); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); font-weight: bold; }
-        .count-pill.valid { color: var(--town-color); border-color: var(--town-color); }
-        .count-pill.invalid { color: var(--dem-color); border-color: var(--dem-color); opacity: 0.6; }
+        .setup-icon { width: 30px; height: 30px; object-fit: contain; filter: drop-shadow(0 0 2px rgba(255,255,255,0.2)); flex-shrink: 0; }
+        .mod-text { font-size: 0.75rem; color: var(--min-color); margin-left: 6px; font-weight: bold; }
+        .eye-btn { padding: 4px; border-radius: 4px; cursor: pointer; opacity: 0.5; font-size: 1.1rem; }
+        .eye-btn:hover { opacity: 1; background: rgba(255,255,255,0.2); }
 
         /* GAME SCREEN */
         #screen-game { display: flex; flex-direction: row; }
         #sidebar { width: 340px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 25px; z-index: 100; }
         
-        #input-name { width: 100%; background: #111; border: 1px solid var(--border); color: white; padding: 15px; font-size: 1.1rem; border-radius: 8px; margin-bottom: 10px; }
-        
+        #input-name {
+            width: 100%; background: #111; border: 1px solid var(--border); color: white; 
+            padding: 15px; font-size: 1.1rem; border-radius: 8px; margin-bottom: 10px;
+        }
+        #input-name:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
         #game-board { flex-grow: 1; position: relative; background: radial-gradient(circle at center, #1a1b20 0%, #0f0f13 100%); overflow: hidden; }
-        #town-circle-guide { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; border: 2px dashed #333; border-radius: 50%; pointer-events: none; }
+        #town-circle-guide {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 600px; height: 600px; border: 2px dashed #333; border-radius: 50%; pointer-events: none;
+        }
 
         /* FABs */
         .fab-container { position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 50; }
-        .fab { background: #333; color: white; padding: 10px 20px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); cursor: pointer; font-weight: bold; border: 1px solid #555; }
+        .fab {
+            background: #333; color: white; padding: 10px 20px; border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: bold; border: 1px solid #555;
+        }
+        .fab:hover { background: #444; }
         .fab.active { background: var(--dem-color); border-color: var(--dem-color); }
 
         /* PLAYER TOKEN */
@@ -104,33 +169,55 @@
         .token.evil { border-color: var(--dem-color); background: #301818; }
         .token.dead { filter: grayscale(100%); opacity: 0.7; border-style: dotted; }
 
-        .token-icon-wrap { width: 50px; height: 50px; position: relative; display: flex; justify-content: center; align-items: center; margin: 0 auto; pointer-events: none; }
-        .token-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); display: block; }
+        .token-icon-wrap { width: 50px; height: 50px; position: relative; display: flex; justify-content: center; align-items: center; margin: 0 auto; }
+        .token-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); display: block; margin: auto; }
 
         .token-name { font-weight: 700; font-size: 0.85rem; pointer-events: none; margin-top: 5px; text-align: center; line-height: 1.1; max-width: 90%; }
         
-        /* Click Zones */
-        .token-ctrl { position: absolute; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .token-ctrl {
+            position: absolute; width: 26px; height: 26px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5); transition: 0.2s;
+        }
         .ctrl-eye { top: 0; right: -5px; background: var(--accent); color: white; font-size: 14px; border: 2px solid var(--bg-dark); }
         .ctrl-del { top: 0; left: -5px; background: var(--dem-color); color: white; font-size: 12px; border: 2px solid var(--bg-dark); display: none; }
-        
-        /* Vote - Explicitly clickable */
-        .ctrl-vote { bottom: -15px; left: 50%; transform: translateX(-50%); background: white; border: 3px solid #333; width: 30px; height: 30px; z-index: 50; cursor: pointer; }
+        .ctrl-vote { bottom: -10px; left: 50%; transform: translateX(-50%); background: white; border: 3px solid #333; width: 24px; height: 24px; }
         .ctrl-vote.used { background: #444; border-color: #666; }
 
-        .token-reminders { position: absolute; top: -10px; width: 140%; display: flex; justify-content: center; flex-wrap: wrap; gap: 2px; pointer-events: none; }
-        .reminder-tag { background: var(--rem-color); color: #000; font-size: 0.6rem; font-weight: bold; padding: 2px 6px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .token-reminders {
+            position: absolute; top: -10px; width: 140%; display: flex; justify-content: center; flex-wrap: wrap; gap: 2px; pointer-events: none;
+        }
+        .reminder-tag {
+            background: var(--rem-color); color: #000; font-size: 0.6rem; font-weight: bold; 
+            padding: 2px 6px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); white-space: nowrap;
+        }
 
         body.edit-mode .ctrl-del { display: flex; }
         body.edit-mode .token { animation: shake 0.3s infinite; }
         @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(1deg); } 75% { transform: rotate(-1deg); } }
 
-        /* --- MODALS --- */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        /* MODALS */
+        .modal-overlay { 
+            position: fixed; inset: 0; background: #000; z-index: 9999; 
+            display: flex; align-items: center; justify-content: center; 
+        }
         
-        /* Edit Modal Styling */
-        .edit-box { background: var(--bg-panel); padding: 25px; border-radius: 16px; width: 400px; max-width: 95vw; border: 1px solid var(--border); box-shadow: 0 10px 40px black; }
+        .card-view {
+            width: 90vw; max-width: 450px; background: #eceff1; color: #111;
+            border-radius: 20px; padding: 40px 20px; text-align: center;
+            box-shadow: 0 0 60px rgba(124, 77, 255, 0.4); border: 8px solid #222;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .card-img-lg { width: 30vh; max-width: 180px; height: auto; object-fit: contain; margin: 0 auto 20px auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); display: block; }
+        .card-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 5px; text-transform: uppercase; font-family: serif; line-height: 1; }
+        .card-type { font-size: 1rem; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; }
+        .card-desc { font-size: 1.2rem; line-height: 1.4; font-style: italic; margin-bottom: 30px; }
         
+        /* Edit Modal */
+        .edit-box { background: var(--bg-panel); padding: 30px; border-radius: 12px; width: 350px; z-index: 10000; border: 1px solid var(--border); box-shadow: 0 10px 40px black; }
+        #modal-edit { background: rgba(0,0,0,0.8); }
+        
+        /* Edit Header */
         .edit-header-input {
             width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--border);
             color: white; font-size: 1.5rem; font-weight: bold; padding: 5px; margin-bottom: 20px;
@@ -159,24 +246,23 @@
             position: absolute; width: 50%; height: 100%; border-radius: 30px;
             transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1;
         }
-        
-        /* Alive Toggle */
         .toggle-alive .toggle-slider { background: #4caf50; left: 0; }
         .toggle-alive.dead-state .toggle-slider { background: #555; left: 50%; }
-        
-        /* Align Toggle */
         .toggle-align .toggle-slider { background: var(--town-color); left: 0; }
         .toggle-align.evil-state .toggle-slider { background: var(--dem-color); left: 50%; }
 
-        /* Reminders */
-        .reminder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .reminder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .rem-btn { 
             background: #2a2a2a; border: 1px solid #444; color: #888; padding: 10px; 
             font-size: 0.85rem; cursor: pointer; border-radius: 6px; font-weight: bold;
+            transition: 0.1s;
         }
-        .rem-btn.selected { background: var(--active-btn); border-color: var(--active-btn); color: white; }
+        .rem-btn:hover { background: #333; color: white; }
+        .rem-btn.selected { background: var(--active-btn); border-color: var(--active-btn); color: white; box-shadow: 0 0 8px rgba(76, 175, 80, 0.4); }
 
-        /* Role Picker Modal */
+        select { background: #111; color: white; padding: 10px; border: 1px solid var(--border); border-radius: 6px; width: 100%; margin-bottom: 10px; }
+
+        /* Role Picker in Modal */
         #modal-role-picker .role-grid-full {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px;
             max-height: 70vh; overflow-y: auto; padding: 10px;
@@ -190,36 +276,65 @@
         .picker-icon { width: 40px; height: 40px; object-fit: contain; margin-bottom: 5px; }
         .picker-name { font-size: 0.7rem; line-height: 1.1; }
 
+        .multi-card-container { display: flex; gap: 10px; overflow-x: auto; max-width: 100%; padding: 10px; }
+        .mini-card { background: #eceff1; color: #111; padding: 15px; border-radius: 8px; width: 220px; text-align: center; flex-shrink: 0; }
+
         .badge-icon { width: 100%; height: 100%; border-radius: 50%; display: none; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; color: white; border: 2px solid rgba(255,255,255,0.2); }
         .b-town { background: linear-gradient(135deg, #2b7de9, #1a4c8f); }
         .b-out { background: linear-gradient(135deg, #2be9e9, #1a8f8f); color: #000; }
         .b-min { background: linear-gradient(135deg, #e9952b, #8f5a1a); }
         .b-dem { background: linear-gradient(135deg, #e92b2b, #8f1a1a); }
 
-        /* Card View */
-        .card-view { width: 90vw; max-width: 450px; background: #eceff1; color: #111; border-radius: 20px; padding: 40px 20px; text-align: center; }
-        .card-img-lg { width: 150px; height: 150px; object-fit: contain; margin: 0 auto 20px auto; display: block; }
-        .card-title { font-size: 2.5rem; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
-        .card-desc { font-size: 1.2rem; font-style: italic; }
-
     </style>
 </head>
 <body>
 
     <div id="screen-splash" class="screen">
-        <h1 style="font-size: 4rem; margin-bottom: 10px; text-shadow: 0 0 20px rgba(124,77,255,0.5);">Grimoire</h1>
-        <p style="color: var(--text-muted); margin-bottom: 50px;">The Unofficial Companion</p>
-        <div class="script-container">
-            <div class="script-card" onclick="initSetup('TB')"><h3>Trouble Brewing</h3></div>
-            <div class="script-card" onclick="initSetup('BM')"><h3>Bad Moon Rising</h3></div>
-            <div class="script-card" onclick="initSetup('SV')"><h3>Sects & Violets</h3></div>
+        <h1 class="hero-title">GRIMOIRE</h1>
+        <div class="hero-sub">The Storyteller's Companion</div>
+        
+        <div class="script-grid">
+            <div class="script-card" onclick="initSetup('TB')">
+                <h3>Trouble Brewing</h3>
+                <p>Beginner Friendly &bull; Logic &bull; Deduction</p>
+            </div>
+            <div class="script-card" onclick="initSetup('BM')">
+                <h3>Bad Moon Rising</h3>
+                <p>Death &bull; Gambling &bull; Chaos</p>
+            </div>
+            <div class="script-card" onclick="initSetup('SV')">
+                <h3>Sects & Violets</h3>
+                <p>Madness &bull; Info Overload &bull; Evil</p>
+            </div>
+            <div class="script-card card-custom" onclick="openCustomBuilder()">
+                <h3>+ Create Custom Script</h3>
+                <p>Combine Experimental Characters</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-builder" class="screen hidden">
+        <div class="builder-header">
+            <h2>Custom Script</h2>
+            <button class="btn" onclick="finishCustomScript()">Play Script &rarr;</button>
+        </div>
+        <input type="text" class="search-bar" placeholder="Search for characters..." onkeyup="filterBuilder(this.value)">
+        <div class="builder-cols">
+            <div class="builder-col" id="col-town"><h3>Townsfolk</h3><div class="builder-list"></div></div>
+            <div class="builder-col" id="col-out"><h3>Outsider</h3><div class="builder-list"></div></div>
+            <div class="builder-col" id="col-min"><h3>Minion</h3><div class="builder-list"></div></div>
+            <div class="builder-col" id="col-dem"><h3>Demon</h3><div class="builder-list"></div></div>
         </div>
     </div>
 
     <div id="screen-setup" class="screen setup-screen hidden">
         <div class="top-bar">
             <div style="display:flex; align-items:center; gap: 20px;">
-                <div class="stepper"><button onclick="changeCount(-1)">−</button><span id="p-count">5</span><button onclick="changeCount(1)">+</button></div>
+                <div class="stepper">
+                    <button onclick="changeCount(-1)">−</button>
+                    <span id="p-count">5</span>
+                    <button onclick="changeCount(1)">+</button>
+                </div>
                 <div class="counts-display">
                     <div class="count-pill" id="req-town">Town: 0/3</div>
                     <div class="count-pill" id="req-out">Out: 0/0</div>
@@ -233,12 +348,18 @@
     </div>
 
     <div id="screen-setup-drunk" class="screen setup-screen hidden">
-        <div class="top-bar"><h2>Select Drunk's Fake Role</h2><button class="btn" id="btn-drunk-confirm" disabled onclick="gotoSetupBluffs()">Confirm &rarr;</button></div>
+        <div class="top-bar">
+            <h2>Select Drunk's Fake Role</h2>
+            <button class="btn" id="btn-drunk-confirm" disabled onclick="gotoSetupBluffs()">Confirm &rarr;</button>
+        </div>
         <div id="role-grid-drunk" class="grid-scroll-area"></div>
     </div>
 
     <div id="screen-setup-bluffs" class="screen setup-screen hidden">
-        <div class="top-bar"><h2>Select 3 Bluffs <span id="bluff-counter" style="opacity:0.7;">0/3</span></h2><button class="btn" id="btn-enter" disabled onclick="enterGame()">Enter Town Square &rarr;</button></div>
+        <div class="top-bar">
+            <h2>Select 3 Demon Bluffs <span id="bluff-counter" style="margin-left:10px; opacity:0.7;">0/3</span></h2>
+            <button class="btn" id="btn-enter" disabled onclick="enterGame()">Enter Town Square &rarr;</button>
+        </div>
         <div id="role-grid-bluffs" class="grid-scroll-area"></div>
     </div>
 
@@ -250,7 +371,7 @@
             <hr style="border-color:var(--border); width:100%; margin: 20px 0;">
             <button class="btn" style="width:100%; background: #333; margin-bottom:10px;" onclick="randomizeRoles()">🎲 Shuffle & Assign</button>
             <button class="btn btn-outline" style="width:100%; color:var(--dem-color); border-color:var(--dem-color);" onclick="showBluffsModal()">👁 Show Bluffs</button>
-            
+
             <div style="margin-top: auto; display:flex; justify-content:space-between; align-items:center;">
                 <span id="phase-disp" style="font-weight:bold; font-size:1.2rem;">Setup</span>
                 <button class="btn" onclick="nextPhase()">Next Phase</button>
@@ -308,6 +429,7 @@
                 <button class="rem-btn" onclick="toggleRem(this, 'Drunk')">Drunk</button>
                 <button class="rem-btn" onclick="toggleRem(this, 'Mad')">Mad</button>
                 <button class="rem-btn" onclick="toggleRem(this, 'Dead Vote')">Dead Vote</button>
+                <button class="rem-btn" style="grid-column: span 2; color:#ff8888;" onclick="clearRem()">Clear Tokens</button>
             </div>
             
             <div style="display:flex; justify-content:flex-end; margin-top:20px;">
@@ -326,8 +448,9 @@
 
     <div id="modal-bluffs" class="modal-overlay hidden" onclick="this.classList.add('hidden')">
         <div style="text-align:center;">
-            <h2 style="color:var(--dem-color);">DEMON BLUFFS</h2>
-            <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;" id="bluff-cards-cont"></div>
+            <h2 style="color:var(--dem-color); margin-bottom:20px; text-transform:uppercase; letter-spacing:2px;">Demon Bluffs</h2>
+            <div class="multi-card-container" id="bluff-cards-cont"></div>
+            <div style="margin-top:20px; font-size:0.8rem; color:#888;">(Tap anywhere to close)</div>
         </div>
     </div>
 
@@ -343,29 +466,93 @@
             return `<div class="badge-icon ${cClass}"><span>${name ? name.charAt(0) : '?'}</span></div>`;
         };
 
-        // --- DATA ---
-        // (Shortened for brevity, assumes Full V18 content here)
-        const roles = {
-            TB: {
-                Townsfolk: [ "Washerwoman", "Librarian", "Investigator", "Chef", "Empath", "Fortune Teller", "Undertaker", "Monk", "Ravenkeeper", "Virgin", "Slayer", "Soldier", "Mayor" ].map(n=>({n,d:"..."})),
-                Outsider: [ "Butler", "Drunk", "Recluse", "Saint" ].map(n=>({n,d:"...",mod:n==="Drunk"?"Is Outsider":null})),
-                Minion: [ "Poisoner", "Spy", "Scarlet Woman", "Baron" ].map(n=>({n,d:"...",mod:n==="Baron"?"+2 Outsiders":null})),
-                Demon: [ "Imp" ].map(n=>({n,d:"..."}))
-            },
-            BM: { Townsfolk: ["Grandmother","Sailor","Chambermaid","Exorcist","Innkeeper","Gambler","Gossip","Courtier","Professor","Minstrel","Tea Lady","Pacifist","Fool"].map(n=>({n,d:"..."})), Outsider: ["Tinker","Moonchild","Goon","Lunatic"].map(n=>({n,d:"..."})), Minion: ["Godfather","Devils Advocate","Assassin","Mastermind"].map(n=>({n,d:"..."})), Demon: ["Zombuul","Pukka","Shabaloth","Po"].map(n=>({n,d:"..."})) },
-            SV: { Townsfolk: ["Clockmaker","Dreamer","Snake Charmer","Mathematician","Flowergirl","Town Crier","Oracle","Savant","Seamstress","Philosopher","Artist","Juggler","Sage"].map(n=>({n,d:"..."})), Outsider: ["Mutant","Sweetheart","Barber","Klutz"].map(n=>({n,d:"..."})), Minion: ["Witch","Cerebus","Pit-Hag","Evil Twin"].map(n=>({n,d:"..."})), Demon: ["Fang Gu","Vortox","No Dashii","Vigormortis"].map(n=>({n,d:"..."})) }
+        // --- DATA & STATE ---
+        // Basic Scripts (Truncated for brevity, V18 has full text)
+        const mock = (n, t) => ({n, d:"Role ability text...", type:t});
+        
+        // MASTER LIST for Custom Builder (Includes Experimental)
+        const allRolesList = [
+            // TOWNSFOLK
+            ...["Washerwoman","Librarian","Investigator","Chef","Empath","Fortune Teller","Undertaker","Monk","Ravenkeeper","Virgin","Slayer","Soldier","Mayor","Clockmaker","Dreamer","Snake Charmer","Mathematician","Flowergirl","Town Crier","Oracle","Savant","Seamstress","Philosopher","Artist","Juggler","Sage","Grandmother","Sailor","Chambermaid","Exorcist","Innkeeper","Gambler","Gossip","Courtier","Professor","Minstrel","Tea Lady","Pacifist","Fool",
+            "Noble","Bounty Hunter","Pixie","General","Preacher","King","Balloonist","Cult Leader","Lycanthrope","Amnesiac","Cannibal","Fisherman","Huntsman","Alchemist","Farmer","Magician","Choirboy","Poppy Grower","Atheist"].map(n=>mock(n,'Townsfolk')),
+            // OUTSIDER
+            ...["Butler","Drunk","Recluse","Saint","Mutant","Sweetheart","Barber","Klutz","Tinker","Moonchild","Goon","Lunatic",
+            "Snitch","Acrobat","Puzzlemaster","Heretic","Damsel","Golem","Politician"].map(n=>mock(n,'Outsider')),
+            // MINION
+            ...["Poisoner","Spy","Scarlet Woman","Baron","Witch","Cerebus","Pit-Hag","Evil Twin","Godfather","Devils Advocate","Assassin","Mastermind",
+            "Goblin","Marionette","Widow","Fearmonger","Psychopath","Boomdandy","Mezepheles","Organ Grinder","Vizier","Harpy"].map(n=>mock(n,'Minion')),
+            // DEMON
+            ...["Imp","Fang Gu","Vortox","No Dashii","Vigormortis","Zombuul","Pukka","Shabaloth","Po",
+            "Lil Monsta","Legion","Leviathan","Riot","Al-Hadikhia","Ojo","Kazali","Yaggababble"].map(n=>mock(n,'Demon'))
+        ];
+
+        // Standard Scripts
+        const scripts = {
+            TB: { Townsfolk: allRolesList.filter(r=>["Washerwoman","Librarian","Investigator","Chef","Empath","Fortune Teller","Undertaker","Monk","Ravenkeeper","Virgin","Slayer","Soldier","Mayor"].includes(r.n)), Outsider: allRolesList.filter(r=>["Butler","Drunk","Recluse","Saint"].includes(r.n)), Minion: allRolesList.filter(r=>["Poisoner","Spy","Scarlet Woman","Baron"].includes(r.n)), Demon: allRolesList.filter(r=>["Imp"].includes(r.n)) },
+            BM: { Townsfolk: allRolesList.filter(r=>["Grandmother","Sailor","Chambermaid","Exorcist","Innkeeper","Gambler","Gossip","Courtier","Professor","Minstrel","Tea Lady","Pacifist","Fool"].includes(r.n)), Outsider: allRolesList.filter(r=>["Tinker","Moonchild","Goon","Lunatic"].includes(r.n)), Minion: allRolesList.filter(r=>["Godfather","Devils Advocate","Assassin","Mastermind"].includes(r.n)), Demon: allRolesList.filter(r=>["Zombuul","Pukka","Shabaloth","Po"].includes(r.n)) },
+            SV: { Townsfolk: allRolesList.filter(r=>["Clockmaker","Dreamer","Snake Charmer","Mathematician","Flowergirl","Town Crier","Oracle","Savant","Seamstress","Philosopher","Artist","Juggler","Sage"].includes(r.n)), Outsider: allRolesList.filter(r=>["Mutant","Sweetheart","Barber","Klutz"].includes(r.n)), Minion: allRolesList.filter(r=>["Witch","Cerebus","Pit-Hag","Evil Twin"].includes(r.n)), Demon: allRolesList.filter(r=>["Fang Gu","Vortox","No Dashii","Vigormortis"].includes(r.n)) },
+            Custom: { Townsfolk:[], Outsider:[], Minion:[], Demon:[] }
         };
+
+        // Modifiers Logic
+        function getMod(n) {
+            if(n==="Baron") return "+2 Outsiders";
+            if(n==="Godfather"||n==="Fang Gu"||n==="Balloonist"||n==="Huntsman") return "+1 Outsider";
+            if(n==="Drunk"||n==="Marionette"||n==="Lunatic") return "Is Other";
+            return null;
+        }
 
         let state = { script: 'TB', count: 5, sel: { Townsfolk:[], Outsider:[], Minion:[], Demon:[] }, players: [], locked: true, phase: 0, setupDrunkRole: "", bluffs: [] };
         const baseDist = { 5:[3,0,1,1], 6:[3,1,1,1], 7:[5,0,1,1], 8:[5,1,1,1], 9:[5,2,1,1], 10:[7,0,2,1], 11:[7,1,2,1], 12:[7,2,2,1], 13:[9,0,3,1], 14:[9,1,3,1], 15:[9,2,3,1] };
 
-        // --- INIT & SETUP (Step 1, 2, 3 logic remains same as V19) ---
+        // --- INIT & BUILDER ---
         function initSetup(s) { state.script = s; document.getElementById('screen-splash').classList.add('hidden'); document.getElementById('screen-setup').classList.remove('hidden'); renderStep1(); updateCalc(); }
-        function changeCount(d) { let n = state.count + d; if(n<5) n=5; if(n>15) n=15; state.count = n; document.getElementById('p-count').innerText = n; updateCalc(); }
         
+        function openCustomBuilder() {
+            document.getElementById('screen-splash').classList.add('hidden');
+            document.getElementById('screen-builder').classList.remove('hidden');
+            renderBuilderLists('');
+        }
+
+        function renderBuilderLists(filter) {
+            const f = filter.toLowerCase();
+            const cols = { Townsfolk: document.getElementById('col-town').querySelector('.builder-list'), Outsider: document.getElementById('col-out').querySelector('.builder-list'), Minion: document.getElementById('col-min').querySelector('.builder-list'), Demon: document.getElementById('col-dem').querySelector('.builder-list') };
+            // Clear
+            Object.values(cols).forEach(c => c.innerHTML = '');
+            
+            allRolesList.forEach(r => {
+                if(r.n.toLowerCase().includes(f)) {
+                    const el = document.createElement('div');
+                    const isAdded = scripts.Custom[r.type].find(x=>x.n===r.n);
+                    el.className = `build-item ${isAdded?'added':''}`;
+                    el.innerHTML = `<img src="${getIconUrl(r.n)}" style="width:20px;height:20px;object-fit:contain;"> ${r.n}`;
+                    el.onclick = () => { toggleCustomRole(r); renderBuilderLists(filter); };
+                    cols[r.type].appendChild(el);
+                }
+            });
+        }
+
+        function toggleCustomRole(roleObj) {
+            const list = scripts.Custom[roleObj.type];
+            const idx = list.findIndex(x => x.n === roleObj.n);
+            if(idx > -1) list.splice(idx, 1);
+            else list.push(roleObj);
+        }
+
+        function finishCustomScript() {
+            state.script = 'Custom';
+            document.getElementById('screen-builder').classList.add('hidden');
+            document.getElementById('screen-setup').classList.remove('hidden');
+            renderStep1(); updateCalc();
+        }
+
+        function filterBuilder(val) { renderBuilderLists(val); }
+
+        // --- STEP 1 ---
+        function changeCount(d) { let n = state.count + d; if(n<5) n=5; if(n>15) n=15; state.count = n; document.getElementById('p-count').innerText = n; updateCalc(); }
         function renderStep1() {
             const con = document.getElementById('role-grid-1'); con.innerHTML = '';
-            const data = roles[state.script];
+            const data = scripts[state.script];
             for(let type in data) {
                 const col = document.createElement('div'); col.className = 'role-col'; col.innerHTML = `<h3>${type}</h3>`;
                 data[type].forEach(r => {
@@ -383,20 +570,25 @@
         }
         function updateCalc() {
             let req = [...(baseDist[state.count] || [3,0,1,1])];
+            // Modifiers
             if(state.sel.Minion.includes("Baron")) { req[0]-=2; req[1]+=2; }
             if(state.sel.Minion.includes("Godfather")) { req[0]-=1; req[1]+=1; }
             if(state.sel.Demon.includes("Fang Gu")) { req[0]-=1; req[1]+=1; }
+            // Check Balloonist
+            if(state.sel.Townsfolk.includes("Balloonist")) { req[0]-=1; req[1]+=1; }
+
             checkCat('req-town', state.sel.Townsfolk.length, req[0]); checkCat('req-out', state.sel.Outsider.length, req[1]); checkCat('req-min', state.sel.Minion.length, req[2]); checkCat('req-dem', state.sel.Demon.length, req[3]);
             document.getElementById('btn-next').disabled = !(state.sel.Townsfolk.length===req[0] && state.sel.Outsider.length===req[1] && state.sel.Minion.length===req[2] && state.sel.Demon.length===req[3]);
         }
         function checkCat(id, cur, req) { const el = document.getElementById(id); el.innerText = `${id.split('-')[1].toUpperCase()}: ${cur}/${req}`; if(cur===req){el.classList.add('valid');el.classList.remove('invalid')}else{el.classList.add('invalid');el.classList.remove('valid')} }
         
         function handleStep1Next() { if(state.sel.Outsider.includes("Drunk")) gotoDrunkSetup(); else gotoSetupBluffs(); }
+        
         function gotoDrunkSetup() {
             document.getElementById('screen-setup').classList.add('hidden'); document.getElementById('screen-setup-drunk').classList.remove('hidden');
             const con = document.getElementById('role-grid-drunk'); con.innerHTML = '';
             const allSel = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allSel.push(...state.sel[t]));
-            roles[state.script].Townsfolk.forEach(r => {
+            scripts[state.script].Townsfolk.forEach(r => {
                 const el = createRoleItem(r, 'Townsfolk', false);
                 if(allSel.includes(r.n)) { el.classList.add('in-play'); el.querySelector('span').innerText += " (In Play)"; }
                 el.onclick = (e) => { if(e.target.classList.contains('eye-btn')) return; document.querySelectorAll('#role-grid-drunk .selected').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); state.setupDrunkRole=r.n; document.getElementById('btn-drunk-confirm').disabled=false; };
@@ -407,8 +599,8 @@
             document.getElementById('screen-setup').classList.add('hidden'); document.getElementById('screen-setup-drunk').classList.add('hidden'); document.getElementById('screen-setup-bluffs').classList.remove('hidden');
             const con = document.getElementById('role-grid-bluffs'); con.innerHTML = '';
             const allSel = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allSel.push(...state.sel[t]));
-            for(let type in roles[state.script]) {
-                roles[state.script][type].forEach(r => {
+            for(let type in scripts[state.script]) {
+                scripts[state.script][type].forEach(r => {
                     const inPlay = allSel.includes(r.n);
                     const el = createRoleItem(r, type, inPlay);
                     if(inPlay) el.classList.add('disabled');
@@ -426,7 +618,10 @@
         }
         function createRoleItem(r, type, disabled) {
             const el = document.createElement('div'); el.className = 'role-item';
-            el.innerHTML = `<div class="role-left"><img src="${getIconUrl(r.n)}" class="setup-icon" onerror="this.style.opacity=0.3"><span style="${disabled?'text-decoration:line-through':''}">${r.n}</span></div><div class="eye-btn" onclick="showCard(event, '${r.n}', '${type}')">👁</div>`;
+            const url = getIconUrl(r.n);
+            const m = getMod(r.n);
+            const modHtml = m ? `<span class="mod-text">[${m}]</span>` : '';
+            el.innerHTML = `<div class="role-left"><img src="${url}" class="setup-icon" onerror="this.style.opacity=0.3"><span style="${disabled?'text-decoration:line-through':''}">${r.n}${modHtml}</span></div><div class="eye-btn" onclick="showCard(event, '${r.n}', '${type}')">👁</div>`;
             return el;
         }
         function enterGame() { document.getElementById('screen-setup-bluffs').classList.add('hidden'); document.getElementById('screen-game').classList.remove('hidden'); }
@@ -448,202 +643,73 @@
             `;
             const board = document.getElementById('game-board'); p.x = board.offsetWidth/2 - 55; p.y = board.offsetHeight/2 - 55; el.style.left = p.x+'px'; el.style.top = p.y+'px';
             el.onmousedown = (e) => startDrag(e, el, p);
-            el.onclick = (e) => { 
-                // Only open edit if we didn't just drag AND we didn't click a control
-                if(!e.target.classList.contains('token-ctrl') && !e.target.classList.contains('ctrl-vote')) {
-                    if(state.locked) openEdit(p.id);
-                }
-            };
+            el.onclick = (e) => { if(!e.target.classList.contains('token-ctrl') && !e.target.classList.contains('ctrl-vote')) { if(state.locked) openEdit(p.id); } };
             board.appendChild(el); document.getElementById('input-name').value = ''; updateToken(p);
         }
 
-        // --- NEW EDIT LOGIC ---
-        let editId = null;
-        let editTemp = {}; // Store temp changes
-
+        // --- EDIT LOGIC ---
+        let editId = null; let editTemp = {};
         function openEdit(id) {
-            editId = id;
-            const p = state.players.find(x=>x.id===id);
-            editTemp = { ...p, reminders: [...p.reminders] }; // Clone
-            
-            // Populate UI
+            editId = id; const p = state.players.find(x=>x.id===id); editTemp = { ...p, reminders: [...p.reminders] };
             document.getElementById('edit-name-input').value = p.name;
             document.getElementById('edit-role-text').innerText = p.role || "Select Role";
             const icon = document.getElementById('edit-role-icon');
             if(p.role) { icon.src = getIconUrl(p.role); icon.style.display='block'; } else { icon.style.display='none'; }
-
-            // Set Toggles
-            const lTog = document.getElementById('toggle-life');
-            if(p.dead) lTog.classList.add('dead-state'); else lTog.classList.remove('dead-state');
-            
-            const aTog = document.getElementById('toggle-align');
-            if(p.align==='evil') aTog.classList.add('evil-state'); else aTog.classList.remove('evil-state');
-
-            // Set Reminders
-            document.querySelectorAll('.rem-btn').forEach(btn => {
-                if(p.reminders.includes(btn.innerText)) btn.classList.add('selected');
-                else btn.classList.remove('selected');
-            });
-
+            const lTog = document.getElementById('toggle-life'); if(p.dead) lTog.classList.add('dead-state'); else lTog.classList.remove('dead-state');
+            const aTog = document.getElementById('toggle-align'); if(p.align==='evil') aTog.classList.add('evil-state'); else aTog.classList.remove('evil-state');
+            document.querySelectorAll('.rem-btn').forEach(btn => { if(p.reminders.includes(btn.innerText)) btn.classList.add('selected'); else btn.classList.remove('selected'); });
             document.getElementById('modal-edit').classList.remove('hidden');
         }
-
-        function toggleLifeSwitch() {
-            editTemp.dead = !editTemp.dead;
-            document.getElementById('toggle-life').classList.toggle('dead-state');
-        }
-        function toggleAlignSwitch() {
-            editTemp.align = (editTemp.align === 'good') ? 'evil' : 'good';
-            document.getElementById('toggle-align').classList.toggle('evil-state');
-        }
-        function toggleRem(btn, txt) {
-            const idx = editTemp.reminders.indexOf(txt);
-            if(idx > -1) { editTemp.reminders.splice(idx,1); btn.classList.remove('selected'); }
-            else { editTemp.reminders.push(txt); btn.classList.add('selected'); }
-        }
-
+        function toggleLifeSwitch() { editTemp.dead = !editTemp.dead; document.getElementById('toggle-life').classList.toggle('dead-state'); }
+        function toggleAlignSwitch() { editTemp.align = (editTemp.align === 'good') ? 'evil' : 'good'; document.getElementById('toggle-align').classList.toggle('evil-state'); }
+        function toggleRem(btn, txt) { const idx = editTemp.reminders.indexOf(txt); if(idx > -1) { editTemp.reminders.splice(idx,1); btn.classList.remove('selected'); } else { editTemp.reminders.push(txt); btn.classList.add('selected'); } }
         function saveEditAndClose() {
             const p = state.players.find(x=>x.id===editId);
-            // Apply changes
-            p.name = document.getElementById('edit-name-input').value;
-            p.role = editTemp.role;
-            p.align = editTemp.align;
-            p.dead = editTemp.dead;
-            p.reminders = editTemp.reminders;
-            
-            updateToken(p);
-            document.getElementById('modal-edit').classList.add('hidden');
+            p.name = document.getElementById('edit-name-input').value; p.role = editTemp.role; p.align = editTemp.align; p.dead = editTemp.dead; p.reminders = editTemp.reminders;
+            updateToken(p); document.getElementById('modal-edit').classList.add('hidden');
         }
-
-        // ROLE PICKER
         function openRolePicker() {
             const grid = document.getElementById('role-picker-grid'); grid.innerHTML = '';
-            const allRoles = [];
-            ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allRoles.push(...roles[state.script][t]));
-            
+            const allRoles = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allRoles.push(...scripts[state.script][t]));
             allRoles.forEach(r => {
-                const item = document.createElement('div');
-                item.className = 'picker-item';
+                const item = document.createElement('div'); item.className = 'picker-item';
                 if(editTemp.role === r.n) item.classList.add('active');
                 item.innerHTML = `<img src="${getIconUrl(r.n)}" class="picker-icon"><span class="picker-name">${r.n}</span>`;
-                item.onclick = () => {
-                    editTemp.role = r.n;
-                    // Update main edit modal display
-                    document.getElementById('edit-role-text').innerText = r.n;
-                    document.getElementById('edit-role-icon').src = getIconUrl(r.n);
-                    document.getElementById('edit-role-icon').style.display = 'block';
-                    document.getElementById('modal-role-picker').classList.add('hidden');
-                };
+                item.onclick = () => { editTemp.role = r.n; document.getElementById('edit-role-text').innerText = r.n; document.getElementById('edit-role-icon').src = getIconUrl(r.n); document.getElementById('edit-role-icon').style.display = 'block'; document.getElementById('modal-role-picker').classList.add('hidden'); };
                 grid.appendChild(item);
             });
             document.getElementById('modal-role-picker').classList.remove('hidden');
         }
 
-        // --- CORE FUNCTIONS (Drag, Token Update, Distribute) ---
-        function distributePlayers() {
-            if(state.players.length === 0) return;
-            const board = document.getElementById('game-board').getBoundingClientRect();
-            const cx = board.width / 2; const cy = board.height / 2; const r = 250; 
-            state.players.forEach((p, i) => {
-                const angle = (i / state.players.length) * 2 * Math.PI - (Math.PI/2);
-                p.x = cx + r * Math.cos(angle) - 55; p.y = cy + r * Math.sin(angle) - 55;
-                const el = document.getElementById(`token-${p.id}`);
-                el.style.left = p.x + 'px'; el.style.top = p.y + 'px';
-            });
-        }
-
+        // --- CORE ---
+        function distributePlayers() { if(state.players.length === 0) return; const b = document.getElementById('game-board').getBoundingClientRect(); const cx = b.width/2; const cy = b.height/2; const r = 250; state.players.forEach((p, i) => { const a = (i/state.players.length)*2*Math.PI-(Math.PI/2); p.x = cx+r*Math.cos(a)-55; p.y = cy+r*Math.sin(a)-55; const el=document.getElementById(`token-${p.id}`); el.style.left=p.x+'px'; el.style.top=p.y+'px'; }); }
         function updateToken(p) {
             const el = document.getElementById(`token-${p.id}`);
             el.className = `token ${p.align} ${p.dead?'dead':''} ${!state.locked?'draggable':''}`;
             el.querySelector('.token-name').innerText = p.name;
-            
-            // Icon
             const rShow = (p.role === "Drunk" && p.fake) ? p.fake : p.role;
             const type = getRoleType(rShow) || 'Townsfolk';
-            const img = el.querySelector('.token-img');
-            const badge = el.querySelector('.badge-icon');
-            if(rShow) {
-                img.src = getIconUrl(rShow); img.style.display = 'block';
-                img.onerror = () => { img.style.display='none'; badge.style.display='flex'; };
-                badge.innerHTML = `<span>${rShow.charAt(0)}</span>`;
-                badge.className = `badge-icon ${type==='Demon'?'b-dem':type==='Minion'?'b-min':type==='Outsider'?'b-out':'b-town'}`;
-            } else { img.style.display = 'none'; badge.style.display = 'none'; }
-
-            // Ghost Vote
-            const voteBtn = el.querySelector('.ctrl-vote');
-            if(p.dead) { voteBtn.style.display = 'block'; } 
-            else { voteBtn.style.display = 'none'; voteBtn.classList.remove('used'); }
-
-            // Reminders
-            const remCont = el.querySelector('.token-reminders');
-            remCont.innerHTML = p.reminders.map(r => `<div class="reminder-tag">${r}</div>`).join('');
+            const img = el.querySelector('.token-img'); const badge = el.querySelector('.badge-icon');
+            if(rShow) { img.src = getIconUrl(rShow); img.style.display='block'; img.onerror = () => { img.style.display='none'; badge.style.display='flex'; }; badge.innerHTML = `<span>${rShow.charAt(0)}</span>`; badge.className = `badge-icon ${type==='Demon'?'b-dem':type==='Minion'?'b-min':type==='Outsider'?'b-out':'b-town'}`; } else { img.style.display='none'; badge.style.display='none'; }
+            const v = el.querySelector('.ctrl-vote'); if(p.dead) v.style.display='block'; else { v.style.display='none'; v.classList.remove('used'); }
+            el.querySelector('.token-reminders').innerHTML = p.reminders.map(r => `<div class="reminder-tag">${r}</div>`).join('');
         }
-
-        function toggleVote(e, id) {
-            e.stopPropagation(); // CRITICAL: Stop click from opening edit
-            const el = document.getElementById(`token-${id}`).querySelector('.ctrl-vote');
-            el.classList.toggle('used');
-        }
-
+        function toggleVote(e, id) { e.stopPropagation(); document.getElementById(`token-${id}`).querySelector('.ctrl-vote').classList.toggle('used'); }
         function randomizeRoles() {
             let pool = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => pool.push(...state.sel[t]));
             for(let i=pool.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
-            state.players.forEach((p, i) => {
-                if(pool[i]) {
-                    p.role = pool[i];
-                    p.fake = (p.role === "Drunk") ? state.setupDrunkRole : "";
-                    if(p.role === "Drunk" && !p.reminders.includes("Drunk")) p.reminders.push("Drunk");
-                    const type = getRoleType(p.role);
-                    p.align = (type==='Minion'||type==='Demon') ? 'evil' : 'good';
-                    updateToken(p);
-                }
-            });
+            state.players.forEach((p, i) => { if(pool[i]) { p.role = pool[i]; p.fake = (p.role === "Drunk") ? state.setupDrunkRole : ""; if(p.role==="Drunk"&&!p.reminders.includes("Drunk"))p.reminders.push("Drunk"); const type = getRoleType(p.role); p.align = (type==='Minion'||type==='Demon') ? 'evil' : 'good'; updateToken(p); } });
         }
-
-        // --- DRAG ---
-        function startDrag(e, el, p) {
-            if(state.locked || e.target.classList.contains('token-ctrl')) return;
-            drag = el; const r = el.getBoundingClientRect(); offX = e.clientX - r.left; offY = e.clientY - r.top;
-            document.addEventListener('mousemove', onDrag); document.addEventListener('mouseup', stopDrag);
-        }
-        function onDrag(e) {
-            if(!drag) return; const b = document.getElementById('game-board').getBoundingClientRect();
-            drag.style.left = (e.clientX - b.left - offX) + 'px'; drag.style.top = (e.clientY - b.top - offY) + 'px';
-        }
+        function startDrag(e, el, p) { if(state.locked || e.target.classList.contains('token-ctrl')) return; drag = el; const r = el.getBoundingClientRect(); offX = e.clientX - r.left; offY = e.clientY - r.top; document.addEventListener('mousemove', onDrag); document.addEventListener('mouseup', stopDrag); }
+        function onDrag(e) { if(!drag) return; const b = document.getElementById('game-board').getBoundingClientRect(); drag.style.left = (e.clientX - b.left - offX) + 'px'; drag.style.top = (e.clientY - b.top - offY) + 'px'; }
         function stopDrag() { drag=null; document.removeEventListener('mousemove', onDrag); document.removeEventListener('mouseup', stopDrag); }
-
-        function toggleLock() {
-            state.locked = !state.locked;
-            const btn = document.getElementById('fab-lock'); const body = document.body;
-            if(state.locked) { btn.innerHTML = '<span>🔒 Locked</span>'; btn.classList.remove('editing'); body.classList.remove('edit-mode'); } 
-            else { btn.innerHTML = '<span>🔓 Edit Mode</span>'; btn.classList.add('editing'); body.classList.add('edit-mode'); }
-            state.players.forEach(p => updateToken(p));
-        }
-
+        function toggleLock() { state.locked = !state.locked; const btn = document.getElementById('fab-lock'); const body = document.body; if(state.locked) { btn.innerHTML = '<span>🔒 Locked</span>'; btn.classList.remove('editing'); body.classList.remove('edit-mode'); } else { btn.innerHTML = '<span>🔓 Edit Mode</span>'; btn.classList.add('editing'); body.classList.add('edit-mode'); } state.players.forEach(p => updateToken(p)); }
         function delPlayer(e, id) { e.stopPropagation(); if(confirm("Remove?")) { state.players = state.players.filter(x=>x.id!==id); document.getElementById(`token-${id}`).remove(); } }
         function viewPlayerCard(e, id) { e.stopPropagation(); const p = state.players.find(x=>x.id===id); const roleName = (p.role === "Drunk" && p.fake) ? p.fake : p.role; if(!roleName) return; showCard(null, roleName, getRoleType(roleName)); }
-        
-        function showCard(e, name, type) {
-            if(e) e.stopPropagation();
-            const d = roles[state.script][type].find(x=>x.n===name);
-            document.getElementById('cv-name').innerText = name; document.getElementById('cv-type').innerText = type; document.getElementById('cv-desc').innerText = d ? d.d : "";
-            const img = document.getElementById('cv-img'); img.src = getIconUrl(name); img.style.display = 'block'; img.onerror = () => { img.style.display = 'none'; }; 
-            document.getElementById('modal-card').classList.remove('hidden');
-        }
-        
-        function showBluffsModal() {
-            if(!state.bluffs || state.bluffs.length === 0) return alert("No Bluffs.");
-            const cont = document.getElementById('bluff-cards-cont'); cont.innerHTML = '';
-            state.bluffs.forEach(b => {
-                const type = getRoleType(b); const d = roles[state.script][type].find(x=>x.n===b);
-                const card = document.createElement('div'); card.className = 'mini-card';
-                card.innerHTML = `<img src="${getIconUrl(b)}" style="width:60px; height:60px; object-fit:contain; margin-bottom:10px;"><div style="font-weight:900; text-transform:uppercase;">${b}</div><div style="font-size:0.8rem; margin:5px 0 10px; color:#555;">${type}</div><div style="font-size:0.9rem; font-style:italic;">${d?d.d:''}</div>`;
-                cont.appendChild(card);
-            });
-            document.getElementById('modal-bluffs').classList.remove('hidden');
-        }
-
-        function getRoleType(n) { const d = roles[state.script]; if(d.Townsfolk.find(x=>x.n===n)) return 'Townsfolk'; if(d.Outsider.find(x=>x.n===n)) return 'Outsider'; if(d.Minion.find(x=>x.n===n)) return 'Minion'; if(d.Demon.find(x=>x.n===n)) return 'Demon'; return 'Townsfolk'; }
+        function showCard(e, name, type) { if(e) e.stopPropagation(); const d = allRolesList.find(x=>x.n===name) || {d:"..."}; document.getElementById('cv-name').innerText = name; document.getElementById('cv-type').innerText = type; document.getElementById('cv-desc').innerText = d.d; const img = document.getElementById('cv-img'); img.src = getIconUrl(name); img.style.display = 'block'; img.onerror = () => { img.style.display = 'none'; }; document.getElementById('modal-card').classList.remove('hidden'); }
+        function showBluffsModal() { if(!state.bluffs || state.bluffs.length === 0) return alert("No Bluffs."); const cont = document.getElementById('bluff-cards-cont'); cont.innerHTML = ''; state.bluffs.forEach(b => { const type = getRoleType(b); const d = allRolesList.find(x=>x.n===b); const card = document.createElement('div'); card.className = 'mini-card'; card.innerHTML = `<img src="${getIconUrl(b)}" style="width:60px; height:60px; object-fit:contain; margin-bottom:10px;"><div style="font-weight:900; text-transform:uppercase;">${b}</div><div style="font-size:0.8rem; margin:5px 0 10px; color:#555;">${type}</div><div style="font-size:0.9rem; font-style:italic;">${d?d.d:''}</div>`; cont.appendChild(card); }); document.getElementById('modal-bluffs').classList.remove('hidden'); }
+        function getRoleType(n) { const r = allRolesList.find(x => x.n === n); return r ? r.type : 'Townsfolk'; }
+        function log(t) { const d=document.createElement('div'); d.innerText=t; d.style.borderBottom="1px solid #222"; document.getElementById('game-log').prepend(d); }
         function nextPhase() { state.phase++; const t = (state.phase%2!==0)?`Night ${Math.ceil(state.phase/2)}`:`Day ${Math.ceil(state.phase/2)}`; document.getElementById('phase-disp').innerText = t; }
     </script>
 </body>
