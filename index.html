@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V11 - Privacy & Responsive</title>
+    <title>Grimoire V12 - Complete</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -19,6 +19,7 @@
             --out-color: #2be9e9;
             --min-color: #e9952b;
             --dem-color: #e92b2b;
+            --rem-color: #ffd700; /* Gold for reminders */
         }
 
         * { box-sizing: border-box; user-select: none; }
@@ -44,6 +45,7 @@
         .btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
         .btn:disabled { background: #333; color: #555; cursor: not-allowed; transform: none; }
         .btn-red { background: var(--dem-color); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); }
 
         /* --- SCREENS --- */
         .screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 10; display: flex; flex-direction: column; }
@@ -57,7 +59,7 @@
         }
         .script-card:hover { border-color: var(--accent); transform: scale(1.05); background: #25252d; }
 
-        /* SETUP */
+        /* SETUP 1 (ROLES) */
         #screen-setup { padding: 20px 40px; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
         
@@ -81,19 +83,18 @@
         .role-item:hover { background: #2c2e35; }
         .role-item.selected { background: var(--accent); border-color: var(--accent-hover); color: white; }
         
-        /* Setup Icons */
         .role-left { display: flex; align-items: center; gap: 10px; flex: 1; }
         .setup-icon { width: 30px; height: 30px; object-fit: contain; filter: drop-shadow(0 0 2px rgba(255,255,255,0.2)); flex-shrink: 0; }
         .mod-text { font-size: 0.75rem; color: var(--min-color); margin-left: 6px; font-weight: bold; }
-
         .eye-btn { padding: 4px; border-radius: 4px; cursor: pointer; opacity: 0.5; font-size: 1.1rem; }
         .eye-btn:hover { opacity: 1; background: rgba(255,255,255,0.2); }
 
-        /* Configuration */
-        #bottom-config { border-top: 1px solid var(--border); padding-top: 15px; display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
-        .config-group label { display: block; color: var(--text-muted); font-size: 0.8rem; margin-bottom: 5px; font-weight: bold; }
-        .bluff-row { display: flex; gap: 10px; }
-        select { background: var(--bg-panel); color: white; padding: 10px; border: 1px solid var(--border); border-radius: 6px; width: 100%; }
+        /* SETUP 2 (DETAILS) */
+        #screen-setup-2 { align-items: center; justify-content: center; padding: 40px; }
+        .detail-card { background: var(--bg-panel); padding: 40px; border-radius: 20px; width: 100%; max-width: 500px; text-align: center; border: 1px solid var(--border); }
+        .config-group { margin-bottom: 30px; text-align: left; }
+        .config-group label { display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: bold; }
+        select { background: #111; color: white; padding: 12px; border: 1px solid var(--border); border-radius: 8px; width: 100%; margin-bottom: 10px; font-size: 1rem; }
 
         /* GAME SCREEN */
         #screen-game { display: flex; flex-direction: row; }
@@ -133,18 +134,8 @@
         .token.evil { border-color: var(--dem-color); background: #301818; }
         .token.dead { filter: grayscale(100%); opacity: 0.7; border-style: dotted; }
 
-        .token-icon-wrap { 
-            width: 50px; height: 50px; 
-            position: relative; 
-            display: flex; justify-content: center; align-items: center;
-            margin: 0 auto; 
-        }
-        .token-img { 
-            width: 100%; height: 100%; 
-            object-fit: contain; 
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); 
-            display: block; margin: auto;
-        }
+        .token-icon-wrap { width: 50px; height: 50px; position: relative; display: flex; justify-content: center; align-items: center; margin: 0 auto; }
+        .token-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); display: block; margin: auto; }
 
         .token-name { font-weight: 700; font-size: 0.85rem; pointer-events: none; margin-top: 5px; text-align: center; line-height: 1.1; max-width: 90%; }
         
@@ -158,56 +149,52 @@
         .ctrl-vote { bottom: -10px; left: 50%; transform: translateX(-50%); background: white; border: 3px solid #333; width: 24px; height: 24px; }
         .ctrl-vote.used { background: #444; border-color: #666; }
 
+        /* REMINDER TOKENS */
+        .token-reminders {
+            position: absolute; top: -10px; width: 140%; display: flex; justify-content: center; flex-wrap: wrap; gap: 2px; pointer-events: none;
+        }
+        .reminder-tag {
+            background: var(--rem-color); color: #000; font-size: 0.6rem; font-weight: bold; 
+            padding: 2px 6px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); white-space: nowrap;
+        }
+
         body.edit-mode .ctrl-del { display: flex; }
         body.edit-mode .token { animation: shake 0.3s infinite; }
         @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(1deg); } 75% { transform: rotate(-1deg); } }
 
-        /* --- PRIVACY & RESPONSIVE CARD MODAL --- */
+        /* MODALS */
         .modal-overlay { 
-            position: fixed; inset: 0; 
-            background: #000; /* Solid Black for Privacy */
-            z-index: 9999; /* Top level */
+            position: fixed; inset: 0; background: #000; z-index: 9999; 
             display: flex; align-items: center; justify-content: center; 
         }
         
         .card-view {
-            width: 90vw; /* Responsive Width */
-            max-width: 450px; /* Max Desktop Width */
-            background: #eceff1; color: #111;
-            border-radius: 20px; padding: 40px 20px; 
-            text-align: center;
-            box-shadow: 0 0 60px rgba(124, 77, 255, 0.4); 
-            border: 8px solid #222;
+            width: 90vw; max-width: 450px; background: #eceff1; color: #111;
+            border-radius: 20px; padding: 40px 20px; text-align: center;
+            box-shadow: 0 0 60px rgba(124, 77, 255, 0.4); border: 8px solid #222;
             display: flex; flex-direction: column; align-items: center;
         }
-
-        .card-img-lg { 
-            width: 30vh; /* Responsive Height relative to screen */
-            max-width: 180px;
-            height: auto; 
-            object-fit: contain; margin: 0 auto 20px auto; 
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); 
-            display: block;
-        }
-
+        .card-img-lg { width: 30vh; max-width: 180px; height: auto; object-fit: contain; margin: 0 auto 20px auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); display: block; }
         .card-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 5px; text-transform: uppercase; font-family: serif; line-height: 1; }
         .card-type { font-size: 1rem; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; }
         .card-desc { font-size: 1.2rem; line-height: 1.4; font-style: italic; margin-bottom: 30px; }
         
-        .badge-icon {
-            width: 100%; height: 100%; border-radius: 50%;
-            display: none; align-items: center; justify-content: center;
-            font-weight: 900; font-size: 20px; color: white;
-            border: 2px solid rgba(255,255,255,0.2);
-        }
+        /* Edit Modal */
+        .edit-box { background: var(--bg-panel); padding: 30px; border-radius: 12px; width: 350px; z-index: 10000; }
+        #modal-edit { background: rgba(0,0,0,0.8); }
+        .reminder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
+        .rem-btn { background: #333; border: 1px solid #444; color: #ccc; padding: 5px; font-size: 0.8rem; cursor: pointer; border-radius: 4px; }
+        .rem-btn:hover { background: #444; color: white; }
+
+        /* Multi Card View (Bluffs) */
+        .multi-card-container { display: flex; gap: 10px; overflow-x: auto; max-width: 100%; padding: 10px; }
+        .mini-card { background: #eceff1; color: #111; padding: 15px; border-radius: 8px; width: 220px; text-align: center; flex-shrink: 0; }
+
+        .badge-icon { width: 100%; height: 100%; border-radius: 50%; display: none; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; color: white; border: 2px solid rgba(255,255,255,0.2); }
         .b-town { background: linear-gradient(135deg, #2b7de9, #1a4c8f); }
         .b-out { background: linear-gradient(135deg, #2be9e9, #1a8f8f); color: #000; }
         .b-min { background: linear-gradient(135deg, #e9952b, #8f5a1a); }
         .b-dem { background: linear-gradient(135deg, #e92b2b, #8f1a1a); }
-
-        .edit-box { background: var(--bg-panel); padding: 30px; border-radius: 12px; width: 350px; z-index: 10000; }
-        /* Edit modal needs to be above the black screen if used in game, but typically used separately */
-        #modal-edit { background: rgba(0,0,0,0.8); } 
 
     </style>
 </head>
@@ -238,25 +225,29 @@
                     <div class="count-pill" id="req-dem">Dem: 0/1</div>
                 </div>
             </div>
-            <div style="color:var(--dem-color); font-weight:bold; display:none;" id="bluff-warn">Bluff Conflict!</div>
-            <button class="btn" id="btn-start" disabled onclick="enterGame()">Enter Town Square &rarr;</button>
+            <button class="btn" id="btn-next" disabled onclick="gotoSetupStep2()">Next: Prep &rarr;</button>
         </div>
-        
         <div id="role-grid-container"></div>
-        
-        <div id="bottom-config">
+    </div>
+
+    <div id="screen-setup-2" class="screen hidden">
+        <div class="detail-card">
+            <h2 style="margin-top:0;">Grimoire Prep</h2>
+            
             <div class="config-group">
-                <label>DEMON BLUFFS</label>
-                <div class="bluff-row">
-                    <select id="bluff-1" onchange="validateBluffs()"></select>
-                    <select id="bluff-2" onchange="validateBluffs()"></select>
-                    <select id="bluff-3" onchange="validateBluffs()"></select>
-                </div>
+                <label style="color:var(--dem-color);">SELECT 3 DEMON BLUFFS</label>
+                <div id="bluff-warn" style="color:var(--dem-color); font-size:0.8rem; display:none; margin-bottom:5px;">Error: Bluffs must be unique and not in play.</div>
+                <select id="bluff-1" onchange="validateBluffs()"></select>
+                <select id="bluff-2" onchange="validateBluffs()"></select>
+                <select id="bluff-3" onchange="validateBluffs()"></select>
             </div>
+
             <div class="config-group hidden" id="setup-drunk-box">
-                <label style="color:var(--out-color);">THE DRUNK SEES THIS:</label>
+                <label style="color:var(--out-color);">THE DRUNK THINKS THEY ARE:</label>
                 <select id="setup-drunk-role"></select>
             </div>
+
+            <button class="btn" style="width:100%; padding: 15px;" id="btn-enter" disabled onclick="enterGame()">Enter Town Square</button>
         </div>
     </div>
 
@@ -267,12 +258,9 @@
             <input type="text" id="input-name" placeholder="Enter Name..." onkeypress="if(event.key==='Enter') addPlayer()">
             <button class="btn" onclick="addPlayer()">+ Add Player</button>
             <hr style="border-color:var(--border); width:100%; margin: 20px 0;">
-            <button class="btn" style="width:100%; background: #333;" onclick="randomizeRoles()">🎲 Shuffle & Assign</button>
             
-            <div style="margin-top: 20px; font-size: 0.9rem;">
-                <label style="color:var(--text-muted); font-size:0.75rem;">DEMON BLUFFS</label>
-                <div id="game-bluffs" style="color:var(--dem-color); font-weight:bold; margin-top:5px;"></div>
-            </div>
+            <button class="btn" style="width:100%; background: #333; margin-bottom:10px;" onclick="randomizeRoles()">🎲 Shuffle & Assign</button>
+            <button class="btn btn-outline" style="width:100%; color:var(--dem-color); border-color:var(--dem-color);" onclick="showBluffsModal()">👁 Show Bluffs</button>
 
             <div style="margin-top: auto; display:flex; justify-content:space-between; align-items:center;">
                 <span id="phase-disp" style="font-weight:bold; font-size:1.2rem;">Setup</span>
@@ -297,13 +285,35 @@
         </div>
     </div>
 
+    <div id="modal-bluffs" class="modal-overlay hidden" onclick="this.classList.add('hidden')">
+        <div style="text-align:center;">
+            <h2 style="color:var(--dem-color); margin-bottom:20px; text-transform:uppercase; letter-spacing:2px;">Demon Bluffs</h2>
+            <div class="multi-card-container" id="bluff-cards-cont"></div>
+            <div style="margin-top:20px; font-size:0.8rem; color:#888;">(Tap anywhere to close)</div>
+        </div>
+    </div>
+
     <div id="modal-edit" class="modal-overlay hidden" style="background:rgba(0,0,0,0.8);">
         <div class="edit-box">
             <h3>Edit Player</h3>
+            
             <label style="display:block; color:#888; margin-bottom:5px;">Role</label>
             <select id="edit-role"></select>
-            <label style="display:block; color:#888; margin:15px 0 5px;">Alignment</label>
+            
+            <label style="display:block; color:#888; margin:10px 0 5px;">Alignment</label>
             <select id="edit-align"><option value="good">Good</option><option value="evil">Evil</option></select>
+            
+            <label style="display:block; color:#888; margin:10px 0 5px;">Reminder Tokens</label>
+            <div class="reminder-grid">
+                <button class="rem-btn" onclick="addRem('Is the Demon')">Is Demon</button>
+                <button class="rem-btn" onclick="addRem('Safe')">Safe</button>
+                <button class="rem-btn" onclick="addRem('Poisoned')">Poisoned</button>
+                <button class="rem-btn" onclick="addRem('Drunk')">Drunk</button>
+                <button class="rem-btn" onclick="addRem('Mad')">Mad</button>
+                <button class="rem-btn" onclick="addRem('Dead Vote')">Dead Vote</button>
+                <button class="rem-btn" style="grid-column: span 2; color:#ff8888;" onclick="clearRem()">Clear Tokens</button>
+            </div>
+
             <div style="display:flex; gap:10px; margin-top:25px;">
                 <button class="btn" onclick="saveEdit()">Save</button>
                 <button class="btn btn-red" id="btn-kill" onclick="toggleLife()">Kill</button>
@@ -316,10 +326,7 @@
         // --- ASSETS ---
         const getIconUrl = (roleName) => {
             if(!roleName) return null;
-            const slug = roleName.trim().toLowerCase()
-                         .replace(/'/g, '') // remove apostrophes
-                         .replace(/ /g, '_') // space to underscore
-                         .replace(/-/g, '_'); // dash to underscore
+            const slug = roleName.trim().toLowerCase().replace(/'/g, '').replace(/ /g, '_').replace(/-/g, '_');
             return `https://raw.githubusercontent.com/bra1n/townsquare/develop/src/assets/icons/${slug}.png`;
         };
 
@@ -380,11 +387,10 @@
             document.getElementById('screen-splash').classList.add('hidden');
             document.getElementById('screen-setup').classList.remove('hidden');
             renderGrid();
-            populateBluffs();
             updateCalc();
         }
 
-        // --- SETUP LOGIC ---
+        // --- SETUP STEP 1 ---
         function changeCount(d) {
             let n = state.count + d; if(n<5) n=5; if(n>15) n=15; state.count = n;
             document.getElementById('p-count').innerText = n; updateCalc();
@@ -418,13 +424,6 @@
             const i = list.indexOf(name);
             if(i > -1) { list.splice(i, 1); el.classList.remove('selected'); } 
             else { list.push(name); el.classList.add('selected'); }
-            
-            const dBox = document.getElementById('setup-drunk-box');
-            if(state.sel.Outsider.includes("Drunk")) {
-                dBox.classList.remove('hidden');
-                const sel = document.getElementById('setup-drunk-role');
-                if(sel.options.length === 0) roles[state.script].Townsfolk.forEach(r => sel.innerHTML += `<option value="${r.n}">${r.n}</option>`);
-            } else { dBox.classList.add('hidden'); }
             updateCalc();
         }
 
@@ -437,8 +436,8 @@
             const okO = checkCat('req-out', state.sel.Outsider.length, req[1]);
             const okM = checkCat('req-min', state.sel.Minion.length, req[2]);
             const okD = checkCat('req-dem', state.sel.Demon.length, req[3]);
-            const okB = validateBluffs();
-            document.getElementById('btn-start').disabled = !(okT && okO && okM && okD && okB);
+            
+            document.getElementById('btn-next').disabled = !(okT && okO && okM && okD);
         }
 
         function checkCat(id, cur, req) {
@@ -446,6 +445,22 @@
             el.innerText = `${lbl.toUpperCase()}: ${cur}/${req}`;
             if(cur === req) { el.classList.add('valid'); el.classList.remove('invalid'); return true; }
             else { el.classList.add('invalid'); el.classList.remove('valid'); return false; }
+        }
+
+        // --- SETUP STEP 2 ---
+        function gotoSetupStep2() {
+            document.getElementById('screen-setup').classList.add('hidden');
+            document.getElementById('screen-setup-2').classList.remove('hidden');
+            populateBluffs();
+            
+            // Handle Drunk
+            const dBox = document.getElementById('setup-drunk-box');
+            if(state.sel.Outsider.includes("Drunk")) {
+                dBox.classList.remove('hidden');
+                const sel = document.getElementById('setup-drunk-role');
+                sel.innerHTML = '';
+                roles[state.script].Townsfolk.forEach(r => sel.innerHTML += `<option value="${r.n}">${r.n}</option>`);
+            } else { dBox.classList.add('hidden'); }
         }
 
         function populateBluffs() {
@@ -461,16 +476,17 @@
             let allSel = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allSel.push(...state.sel[t]));
             bluffs.forEach(b => { if(allSel.includes(b)) conflict = true; });
             if(new Set(bluffs).size !== bluffs.length) conflict = true;
+            
             document.getElementById('bluff-warn').style.display = conflict ? 'block' : 'none';
-            return !conflict;
+            // Enable enter button if 3 unique bluffs selected and valid
+            const valid = (!conflict && bluffs.length === 3);
+            document.getElementById('btn-enter').disabled = !valid;
         }
 
-        // --- GAME START ---
         function enterGame() {
             state.setupDrunkRole = document.getElementById('setup-drunk-role').value;
-            const bluffs = [document.getElementById('bluff-1').value, document.getElementById('bluff-2').value, document.getElementById('bluff-3').value].filter(x=>x);
-            document.getElementById('game-bluffs').innerText = bluffs.join(', ') || "None";
-            document.getElementById('screen-setup').classList.add('hidden');
+            state.bluffs = [document.getElementById('bluff-1').value, document.getElementById('bluff-2').value, document.getElementById('bluff-3').value];
+            document.getElementById('screen-setup-2').classList.add('hidden');
             document.getElementById('screen-game').classList.remove('hidden');
             log("Welcome to Ravenswood Bluff.");
         }
@@ -480,11 +496,12 @@
 
         function addPlayer() {
             const n = document.getElementById('input-name').value.trim(); if(!n) return;
-            const p = { id:Date.now(), name:n, role:"", fake:"", align:"good", dead:false, x:0, y:0 };
+            const p = { id:Date.now(), name:n, role:"", fake:"", align:"good", dead:false, reminders:[], x:0, y:0 };
             state.players.push(p);
             
             const el = document.createElement('div'); el.id = `token-${p.id}`; el.className = 'token good draggable';
             el.innerHTML = `
+                <div class="token-reminders"></div>
                 <div class="token-icon-wrap">
                     <img class="token-img" src="" style="display:none">
                     ${getBadgeHtml('?', 'Townsfolk')}
@@ -524,21 +541,15 @@
             const rShow = (p.role === "Drunk" && p.fake) ? p.fake : p.role;
             const type = getRoleType(rShow) || 'Townsfolk';
             
-            // Set Image
             const img = wrap.querySelector('.token-img');
             const badge = wrap.querySelector('.badge-icon');
             
             if(rShow) {
-                img.src = getIconUrl(rShow);
-                img.style.display = 'block';
+                img.src = getIconUrl(rShow); img.style.display = 'block';
                 img.onerror = () => { img.style.display='none'; badge.style.display='flex'; };
-                
                 badge.innerHTML = `<span>${rShow.charAt(0)}</span>`;
                 badge.className = `badge-icon ${type==='Demon'?'b-dem':type==='Minion'?'b-min':type==='Outsider'?'b-out':'b-town'}`;
-            } else {
-                img.style.display = 'none';
-                badge.style.display = 'none';
-            }
+            } else { img.style.display = 'none'; badge.style.display = 'none'; }
 
             const oldV = el.querySelector('.ctrl-vote'); if(oldV) oldV.remove();
             if(p.dead) {
@@ -546,6 +557,10 @@
                 v.onmousedown = (e) => { e.stopPropagation(); v.classList.toggle('used'); };
                 el.appendChild(v);
             }
+
+            // Update Reminders
+            const remCont = el.querySelector('.token-reminders');
+            remCont.innerHTML = p.reminders.map(r => `<div class="reminder-tag">${r}</div>`).join('');
         }
 
         // --- DRAG ---
@@ -560,7 +575,7 @@
         }
         function stopDrag() { drag=null; document.removeEventListener('mousemove', onDrag); document.removeEventListener('mouseup', stopDrag); }
 
-        // --- UTILS ---
+        // --- UTILS & MODALS ---
         function toggleLock() {
             state.locked = !state.locked;
             const btn = document.getElementById('fab-lock'); const body = document.body;
@@ -580,7 +595,6 @@
             });
             sel.value = p.role;
             document.getElementById('edit-align').value = p.align;
-            document.getElementById('btn-kill').innerText = p.dead ? "Revive" : "Kill";
             document.getElementById('modal-edit').classList.remove('hidden');
         }
         function saveEdit() {
@@ -592,8 +606,19 @@
         function toggleLife() { const p = state.players.find(x=>x.id===editId); p.dead = !p.dead; updateToken(p); document.getElementById('modal-edit').classList.add('hidden'); }
         function delPlayer(e, id) { e.stopPropagation(); if(confirm("Remove?")) { state.players = state.players.filter(x=>x.id!==id); document.getElementById(`token-${id}`).remove(); } }
         
+        function addRem(txt) {
+            const p = state.players.find(x=>x.id===editId);
+            if(!p.reminders.includes(txt)) p.reminders.push(txt);
+            updateToken(p);
+        }
+        function clearRem() {
+            const p = state.players.find(x=>x.id===editId);
+            p.reminders = [];
+            updateToken(p);
+        }
+
         function showCard(e, name, type) {
-            e.stopPropagation();
+            if(e) e.stopPropagation();
             const d = roles[state.script][type].find(x=>x.n===name);
             document.getElementById('cv-name').innerText = name;
             document.getElementById('cv-type').innerText = type;
@@ -610,8 +635,28 @@
             const roleName = (p.role === "Drunk" && p.fake) ? p.fake : p.role;
             if(!roleName) return;
             const type = getRoleType(roleName);
-            showCard(e, roleName, type);
+            showCard(null, roleName, type);
         }
+        function showBluffsModal() {
+            if(!state.bluffs || state.bluffs.length === 0) return alert("No Bluffs selected.");
+            const cont = document.getElementById('bluff-cards-cont');
+            cont.innerHTML = '';
+            state.bluffs.forEach(b => {
+                const type = getRoleType(b);
+                const d = roles[state.script][type].find(x=>x.n===b);
+                const card = document.createElement('div');
+                card.className = 'mini-card';
+                card.innerHTML = `
+                    <img src="${getIconUrl(b)}" style="width:60px; height:60px; object-fit:contain; margin-bottom:10px;">
+                    <div style="font-weight:900; text-transform:uppercase;">${b}</div>
+                    <div style="font-size:0.8rem; margin:5px 0 10px; color:#555;">${type}</div>
+                    <div style="font-size:0.9rem; font-style:italic;">${d?d.d:''}</div>
+                `;
+                cont.appendChild(card);
+            });
+            document.getElementById('modal-bluffs').classList.remove('hidden');
+        }
+
         function getRoleType(n) {
             const d = roles[state.script];
             if(d.Townsfolk.find(x=>x.n===n)) return 'Townsfolk';
