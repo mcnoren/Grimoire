@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V23 - Script Manager Fixed</title>
+    <title>Grimoire V23 - Bug Fixes</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
             --bg-panel: #1e1e24;
             --accent: #7c4dff;
+            --accent-hover: #651fff;
             --text-main: #eceff1;
             --text-muted: #90a4ae;
             --border: #2c2e35;
@@ -98,10 +99,11 @@
         .library-list { flex-grow: 1; overflow-y: auto; }
         .script-panel { flex-grow: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; overflow-y: auto; }
         .script-col { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; }
+        .script-col h4 { margin-top: 0; color: var(--text-muted); border-bottom: 1px solid #333; padding-bottom: 5px; }
         
         .build-item { padding: 8px; border-radius: 4px; cursor: pointer; margin-bottom: 4px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
         .build-item:hover { background: #333; }
-        .build-item.added { opacity: 0.5; }
+        .build-item.added { opacity: 0.5; background: #222; }
 
         /* 3. SETUP & GAME (Shared Styles) */
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--border); }
@@ -158,7 +160,6 @@
         .card-title { font-size: 2.5rem; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
         .card-desc { font-size: 1.2rem; font-style: italic; }
         
-        /* New Edit Modal */
         .edit-box { background: var(--bg-panel); padding: 25px; border-radius: 16px; width: 400px; max-width: 95vw; border: 1px solid var(--border); box-shadow: 0 10px 40px black; }
         .edit-header-input { width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--border); color: white; font-size: 1.5rem; font-weight: bold; padding: 5px; margin-bottom: 20px; text-align: center; }
         .edit-header-input:focus { outline: none; border-color: var(--accent); }
@@ -192,6 +193,104 @@
         .b-dem { background: linear-gradient(135deg, #e92b2b, #8f1a1a); }
 
     </style>
+    
+    <script>
+        // --- ASSETS ---
+        function cleanName(name) { return name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(); }
+        function getIconUrl(roleName) {
+            if(!roleName) return null;
+            return `./icons/${cleanName(roleName)}.png`;
+        }
+        
+        // --- FULL ROLE DATABASE ---
+        // * = First Night Wake
+        const DB = [
+            {n:"Washerwoman",t:"Townsfolk",d:"Start knowing* that 1 of 2 players is a specific Townsfolk.",f:true},
+            {n:"Librarian",t:"Townsfolk",d:"Start knowing* that 1 of 2 players is a specific Outsider.",f:true},
+            {n:"Investigator",t:"Townsfolk",d:"Start knowing* that 1 of 2 players is a specific Minion.",f:true},
+            {n:"Chef",t:"Townsfolk",d:"Start knowing* how many pairs of evil players are neighbors.",f:true},
+            {n:"Empath",t:"Townsfolk",d:"Each night, learn how many of your 2 alive neighbors are evil."},
+            {n:"Fortune Teller",t:"Townsfolk",d:"Each night, choose 2 players: learn if either is a Demon. There is a good player that registers as a Demon to you."},
+            {n:"Undertaker",t:"Townsfolk",d:"Each night, learn which character died by execution today."},
+            {n:"Monk",t:"Townsfolk",d:"Each night*, choose a player (not yourself): they are safe from the Demon tonight."},
+            {n:"Ravenkeeper",t:"Townsfolk",d:"If you die at night, you are woken to choose a player: you learn their character."},
+            {n:"Virgin",t:"Townsfolk",d:"The 1st time you are nominated by a Townsfolk, you are executed if the nominee is a Townsfolk."},
+            {n:"Slayer",t:"Townsfolk",d:"Once per game, during the day, publicly choose a player: if they are the Demon, they die."},
+            {n:"Soldier",t:"Townsfolk",d:"You are safe from the Demon."},
+            {n:"Mayor",t:"Townsfolk",d:"If no one dies by execution, you might win. If you die at night, another player might die instead."},
+            {n:"Butler",t:"Outsider",d:"Each night, choose a player (not yourself): tomorrow, you may only vote if they vote too."},
+            {n:"Drunk",t:"Outsider",d:"You do not know you are the Drunk. You think you are a Townsfolk, but you are not.", mod:"Is Outsider"},
+            {n:"Recluse",t:"Outsider",d:"You might register as evil & as a Minion or Demon, even if dead."},
+            {n:"Saint",t:"Outsider",d:"If you die by execution, your team loses."},
+            {n:"Poisoner",t:"Minion",d:"Each night, choose a player: they are poisoned tonight and tomorrow day."},
+            {n:"Spy",t:"Minion",d:"Each night, you see the Grimoire. You might register as good & as a Townsfolk or Outsider."},
+            {n:"Scarlet Woman",t:"Minion",d:"If there are 5 or more players alive & the Demon dies, you become the Demon."},
+            {n:"Baron",t:"Minion",d:"There are extra Outsiders in play.", mod:"+2 Outsiders",f:true},
+            {n:"Imp",t:"Demon",d:"Each night*, choose a player: they die. If you kill yourself this way, a Minion becomes the Imp."},
+            
+            // Bad Moon Rising
+            {n:"Grandmother",t:"Townsfolk",d:"Start knowing* a specific good player (your Grandchild). If they die by Demon, you die too.",f:true},
+            {n:"Sailor",t:"Townsfolk",d:"Each night, choose a player: either you or they are drunk. You can't die."},
+            {n:"Chambermaid",t:"Townsfolk",d:"Each night, choose 2 alive players (not yourself): learn how many woke tonight."},
+            {n:"Exorcist",t:"Townsfolk",d:"Each night*, choose a player (not yourself): the Demon doesn't wake tonight if you chose them."},
+            {n:"Innkeeper",t:"Townsfolk",d:"Each night*, choose 2 players: they are safe from the Demon. One is drunk."},
+            {n:"Gambler",t:"Townsfolk",d:"Each night*, choose a player & guess their character: if you guess wrong, you die."},
+            {n:"Gossip",t:"Townsfolk",d:"Each day, make a public statement. If true, a player dies tonight."},
+            {n:"Courtier",t:"Townsfolk",d:"Once per game, at night, choose a character: they are drunk for 3 nights & days."},
+            {n:"Professor",t:"Townsfolk",d:"Once per game, at night*, choose a dead player: if they are a Townsfolk, they are resurrected."},
+            {n:"Minstrel",t:"Townsfolk",d:"When a Minion dies by execution, all other players (except Travellers) are drunk until tomorrow dusk."},
+            {n:"Tea Lady",t:"Townsfolk",d:"If both your alive neighbors are good, they can't die."},
+            {n:"Pacifist",t:"Townsfolk",d:"Executed good players might not die."},
+            {n:"Fool",t:"Townsfolk",d:"The first time you die (except by execution), you don't die."},
+            {n:"Tinker",t:"Outsider",d:"You might die at any time."},
+            {n:"Moonchild",t:"Outsider",d:"When you die, choose a player: they die tonight."},
+            {n:"Goon",t:"Outsider",d:"Each night, the 1st player to choose you with their ability is drunk until dusk. You become their alignment."},
+            {n:"Lunatic",t:"Outsider",d:"You think you are a Demon, but you are not. The Demon knows who you are.",f:true},
+            {n:"Godfather",t:"Minion",d:"Start knowing* which Outsiders are in play. If 1 died today, choose a player: they die.", mod:"+1 Outsider",f:true},
+            {n:"Devils Advocate",t:"Minion",d:"Each night, choose a living player: if executed tomorrow, they don't die."},
+            {n:"Assassin",t:"Minion",d:"Once per game, at night*, choose a player: they die (no protection)."},
+            {n:"Mastermind",t:"Minion",d:"If the Demon dies by execution (game ends), play 1 more day. If a player is then executed, their team loses."},
+            {n:"Zombuul",t:"Demon",d:"Each night*, if no one died today, choose a player: they die. 1st time you die, you live but register as dead."},
+            {n:"Pukka",t:"Demon",d:"Each night, choose a player: they are poisoned. The previously poisoned player dies."},
+            {n:"Shabaloth",t:"Demon",d:"Each night*, choose 2 players: they die. A dead player you chose might be resurrected."},
+            {n:"Po",t:"Demon",d:"Each night*, choose a player: they die. If you chose no one last night, choose 3 players."},
+            
+            // Sects & Violets
+            {n:"Clockmaker",t:"Townsfolk",d:"Start knowing* how many steps from the Demon to its nearest Minion.",f:true},
+            {n:"Dreamer",t:"Townsfolk",d:"Each night, choose a player (not yourself/Traveller): learn 1 good and 1 evil character, 1 is true."},
+            {n:"Snake Charmer",t:"Townsfolk",d:"Each night, choose a player: if they are the Demon, you become the Demon and they become the Snake Charmer."},
+            {n:"Mathematician",t:"Townsfolk",d:"Each night, learn how many players' abilities malfunctioned tonight."},
+            {n:"Flowergirl",t:"Townsfolk",d:"Each night, learn if the Demon voted today."},
+            {n:"Town Crier",t:"Townsfolk",d:"Each night, learn if a Minion nominated today."},
+            {n:"Oracle",t:"Townsfolk",d:"Each night, learn how many dead players are evil."},
+            {n:"Savant",t:"Townsfolk",d:"Each day, visit the Storyteller to learn 2 things: 1 is true, 1 is false."},
+            {n:"Seamstress",t:"Townsfolk",d:"Once per game, at night, choose 2 players: learn if they are the same alignment."},
+            {n:"Philosopher",t:"Townsfolk",d:"Once per game, at night, choose a good character: gain that ability. If in play, they are drunk."},
+            {n:"Artist",t:"Townsfolk",d:"Once per game, during the day, privately ask the Storyteller any Yes/No question."},
+            {n:"Juggler",t:"Townsfolk",d:"1st day, guess up to 5 players' characters. Tonight, learn how many were correct."},
+            {n:"Sage",t:"Townsfolk",d:"If the Demon kills you, you learn that 1 of 2 players is the Demon."},
+            {n:"Mutant",t:"Outsider",d:"If you are 'mad' about being an Outsider, you might be executed."},
+            {n:"Sweetheart",t:"Outsider",d:"When you die, 1 player is drunk from now on."},
+            {n:"Barber",t:"Outsider",d:"If you die, the Demon chooses 2 players to swap characters."},
+            {n:"Klutz",t:"Outsider",d:"When you learn you died, choose a living player: if they are evil, your team loses."},
+            {n:"Witch",t:"Minion",d:"Each night, choose a player: if they nominate tomorrow, they die."},
+            {n:"Cerebus",t:"Minion",d:"Each night, choose a player & a character: they are 'mad' they are that character tomorrow or might be executed."},
+            {n:"Pit-Hag",t:"Minion",d:"Each night*, choose a player & a character: they become that character. If already in play, they are drunk."},
+            {n:"Evil Twin",t:"Minion",d:"You & an opposing player know each other. If the good player is executed, evil wins. Good can't win if you both live.",f:true},
+            {n:"Fang Gu",t:"Demon",d:"Each night*, choose a player: they die. The 1st Outsider you choose becomes an evil Fang Gu & you die.", mod:"+1 Outsider"},
+            {n:"Vortox",t:"Demon",d:"Each night*, choose a player: they die. Townsfolk abilities yield false info. If no one is executed, evil wins."},
+            {n:"No Dashii",t:"Demon",d:"Each night*, choose a player: they die. Your 2 Townsfolk neighbors are poisoned."},
+            {n:"Vigormortis",t:"Demon",d:"Each night*, choose a player: they die. Minions you kill keep abilities & poison 1 neighbor."},
+            
+            // Experimental / Other
+            {n:"Noble",t:"Townsfolk",d:"Start knowing* 3 players, 1 is evil.",f:true},
+            {n:"Bounty Hunter",t:"Townsfolk",d:"Start knowing* 1 evil player. If the good player you know dies, you learn another.",f:true},
+            {n:"Balloonist",t:"Townsfolk",d:"Each night, learn a player of a different character type than last night. [+1 Outsider]",mod:"+1 Outsider"},
+            {n:"Al-Hadikhia",t:"Demon",d:"Each night*, choose 3 players. They act. If all live, all die. Else, those who chose death die."},
+            {n:"Atheist",t:"Townsfolk",d:"The Storyteller can break the rules. If executed, good wins if there is no Demon."},
+            {n:"Heretic",t:"Outsider",d:"Whoever wins, loses & whoever loses, wins."}
+        ];
+    </script>
 </head>
 <body>
 
@@ -343,54 +442,20 @@
     </div>
 
     <script>
-        // --- ASSETS ---
-        function cleanName(name) { return name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(); }
-        function getIconUrl(roleName) {
-            if(!roleName) return null;
-            return `./icons/${cleanName(roleName)}.png`;
-        }
         const getBadgeHtml = (name, type) => {
             let cClass = 'b-town'; if(type==='Outsider') cClass='b-out'; if(type==='Minion') cClass='b-min'; if(type==='Demon') cClass='b-dem';
             return `<div class="badge-icon ${cClass}"><span>${name ? name.charAt(0) : '?'}</span></div>`;
         };
 
-        // --- DATA & STATE ---
-        // Basic Scripts (Truncated for brevity, V18 has full text)
-        const mock = (n, t) => ({n, d:"Role ability text...", type:t});
-        
-        // MASTER LIST for Custom Builder (Includes Experimental)
-        const allRolesList = [
-            // TOWNSFOLK
-            ...["Washerwoman","Librarian","Investigator","Chef","Empath","Fortune Teller","Undertaker","Monk","Ravenkeeper","Virgin","Slayer","Soldier","Mayor","Clockmaker","Dreamer","Snake Charmer","Mathematician","Flowergirl","Town Crier","Oracle","Savant","Seamstress","Philosopher","Artist","Juggler","Sage","Grandmother","Sailor","Chambermaid","Exorcist","Innkeeper","Gambler","Gossip","Courtier","Professor","Minstrel","Tea Lady","Pacifist","Fool",
-            "Noble","Bounty Hunter","Pixie","General","Preacher","King","Balloonist","Cult Leader","Lycanthrope","Amnesiac","Cannibal","Fisherman","Huntsman","Alchemist","Farmer","Magician","Choirboy","Poppy Grower","Atheist"].map(n=>mock(n,'Townsfolk')),
-            // OUTSIDER
-            ...["Butler","Drunk","Recluse","Saint","Mutant","Sweetheart","Barber","Klutz","Tinker","Moonchild","Goon","Lunatic",
-            "Snitch","Acrobat","Puzzlemaster","Heretic","Damsel","Golem","Politician"].map(n=>mock(n,'Outsider')),
-            // MINION
-            ...["Poisoner","Spy","Scarlet Woman","Baron","Witch","Cerebus","Pit-Hag","Evil Twin","Godfather","Devils Advocate","Assassin","Mastermind",
-            "Goblin","Marionette","Widow","Fearmonger","Psychopath","Boomdandy","Mezepheles","Organ Grinder","Vizier","Harpy"].map(n=>mock(n,'Minion')),
-            // DEMON
-            ...["Imp","Fang Gu","Vortox","No Dashii","Vigormortis","Zombuul","Pukka","Shabaloth","Po",
-            "Lil Monsta","Legion","Leviathan","Riot","Al-Hadikhia","Ojo","Kazali","Yaggababble"].map(n=>mock(n,'Demon'))
-        ];
-
-        // Standard Scripts
-        const scripts = {
-            TB: { Townsfolk: allRolesList.filter(r=>["Washerwoman","Librarian","Investigator","Chef","Empath","Fortune Teller","Undertaker","Monk","Ravenkeeper","Virgin","Slayer","Soldier","Mayor"].includes(r.n)), Outsider: allRolesList.filter(r=>["Butler","Drunk","Recluse","Saint"].includes(r.n)), Minion: allRolesList.filter(r=>["Poisoner","Spy","Scarlet Woman","Baron"].includes(r.n)), Demon: allRolesList.filter(r=>["Imp"].includes(r.n)) },
-            BM: { Townsfolk: allRolesList.filter(r=>["Grandmother","Sailor","Chambermaid","Exorcist","Innkeeper","Gambler","Gossip","Courtier","Professor","Minstrel","Tea Lady","Pacifist","Fool"].includes(r.n)), Outsider: allRolesList.filter(r=>["Tinker","Moonchild","Goon","Lunatic"].includes(r.n)), Minion: allRolesList.filter(r=>["Godfather","Devils Advocate","Assassin","Mastermind"].includes(r.n)), Demon: allRolesList.filter(r=>["Zombuul","Pukka","Shabaloth","Po"].includes(r.n)) },
-            SV: { Townsfolk: allRolesList.filter(r=>["Clockmaker","Dreamer","Snake Charmer","Mathematician","Flowergirl","Town Crier","Oracle","Savant","Seamstress","Philosopher","Artist","Juggler","Sage"].includes(r.n)), Outsider: allRolesList.filter(r=>["Mutant","Sweetheart","Barber","Klutz"].includes(r.n)), Minion: allRolesList.filter(r=>["Witch","Cerebus","Pit-Hag","Evil Twin"].includes(r.n)), Demon: allRolesList.filter(r=>["Fang Gu","Vortox","No Dashii","Vigormortis"].includes(r.n)) },
-            Custom: { Townsfolk:[], Outsider:[], Minion:[], Demon:[] }
+        // --- STATE & STORAGE ---
+        let app = {
+            activeScriptId: null, // 'TB', 'BM', 'SV' or Timestamp
+            activeRoles: {}, // {Townsfolk:[],...}
+            count: 5,
+            sel: { Townsfolk:[], Outsider:[], Minion:[], Demon:[] },
+            players: [], locked: true, phase: 0, setupDrunkRole: "", bluffs: [],
+            editId: null, editTemp: {}
         };
-
-        // Modifiers Logic
-        function getMod(n) {
-            if(n==="Baron") return "+2 Outsiders";
-            if(n==="Godfather"||n==="Fang Gu"||n==="Balloonist"||n==="Huntsman") return "+1 Outsider";
-            if(n==="Drunk"||n==="Marionette"||n==="Lunatic") return "Is Other";
-            return null;
-        }
-
-        let state = { script: 'TB', count: 5, sel: { Townsfolk:[], Outsider:[], Minion:[], Demon:[] }, players: [], locked: true, phase: 0, setupDrunkRole: "", bluffs: [], editId: null, editTemp: {} };
         const baseDist = { 5:[3,0,1,1], 6:[3,1,1,1], 7:[5,0,1,1], 8:[5,1,1,1], 9:[5,2,1,1], 10:[7,0,2,1], 11:[7,1,2,1], 12:[7,2,2,1], 13:[9,0,3,1], 14:[9,1,3,1], 15:[9,2,3,1] };
 
         // --- INIT & SPLASH ---
@@ -504,12 +569,16 @@
             if(idx > -1) builderData[r.t].splice(idx, 1);
             else builderData[r.t].push(r.n);
         }
+        
+        // Corrected Column Mapping for Custom Builder
         function renderBuilderCols() {
+            const map = {Townsfolk:'b-town', Outsider:'b-out', Minion:'b-min', Demon:'b-dem'};
             ['Townsfolk','Outsider','Minion','Demon'].forEach(t => {
-                const col = document.getElementById(`b-${t.substring(0,3).toLowerCase()}`);
+                const col = document.getElementById(map[t]);
                 col.innerHTML = `<h4>${t}</h4>` + builderData[t].map(n=>`<div>${n}</div>`).join('');
             });
         }
+        
         function saveCustomScript() {
             const title = document.getElementById('build-title').value.trim();
             if(!title) return alert("Title required.");
@@ -646,7 +715,6 @@
             const v = el.querySelector('.ctrl-vote'); if(p.dead) v.style.display='block'; else { v.style.display='none'; v.classList.remove('used'); }
             el.querySelector('.token-reminders').innerHTML = p.reminders.map(r => `<div class="reminder-tag">${r}</div>`).join('');
         }
-        // ... (Drag/Drop/Edit logic identical to V20)
         function startDrag(e, el, p) { if(app.locked || e.target.classList.contains('token-ctrl')) return; drag = el; const r = el.getBoundingClientRect(); offX = e.clientX - r.left; offY = e.clientY - r.top; document.addEventListener('mousemove', onDrag); document.addEventListener('mouseup', stopDrag); }
         function onDrag(e) { if(!drag) return; const b = document.getElementById('game-board').getBoundingClientRect(); drag.style.left = (e.clientX - b.left - offX) + 'px'; drag.style.top = (e.clientY - b.top - offY) + 'px'; }
         function stopDrag() { drag=null; document.removeEventListener('mousemove', onDrag); document.removeEventListener('mouseup', stopDrag); }
@@ -666,93 +734,6 @@
         function getRoleType(n) { const r = DB.find(x => x.n === n); return r ? r.t : 'Townsfolk'; }
         function log(t) { const d=document.createElement('div'); d.innerText=t; d.style.borderBottom="1px solid #222"; document.getElementById('game-log').prepend(d); }
         function nextPhase() { app.phase++; const t = (app.phase%2!==0)?`Night ${Math.ceil(app.phase/2)}`:`Day ${Math.ceil(app.phase/2)}`; document.getElementById('phase-disp').innerText = t; }
-        
-        // --- V22 DB (Compact) ---
-        const DB = [
-            {n:"Washerwoman",t:"Townsfolk",d:"Start knowing* that 1 of 2 players is a specific Townsfolk.",f:true},
-            {n:"Librarian",t:"Townsfolk",d:"Start knowing* that 1 of 2 players is a specific Outsider.",f:true},
-            {n:"Investigator",t:"Townsfolk",d:"Start knowing* that 1 of 2 players is a specific Minion.",f:true},
-            {n:"Chef",t:"Townsfolk",d:"Start knowing* how many pairs of evil players are neighbors.",f:true},
-            {n:"Empath",t:"Townsfolk",d:"Each night, learn how many of your 2 alive neighbors are evil."},
-            {n:"Fortune Teller",t:"Townsfolk",d:"Each night, choose 2 players: learn if either is a Demon. There is a good player that registers as a Demon to you."},
-            {n:"Undertaker",t:"Townsfolk",d:"Each night, learn which character died by execution today."},
-            {n:"Monk",t:"Townsfolk",d:"Each night*, choose a player (not yourself): they are safe from the Demon tonight."},
-            {n:"Ravenkeeper",t:"Townsfolk",d:"If you die at night, you are woken to choose a player: you learn their character."},
-            {n:"Virgin",t:"Townsfolk",d:"The 1st time you are nominated by a Townsfolk, you are executed if the nominee is a Townsfolk."},
-            {n:"Slayer",t:"Townsfolk",d:"Once per game, during the day, publicly choose a player: if they are the Demon, they die."},
-            {n:"Soldier",t:"Townsfolk",d:"You are safe from the Demon."},
-            {n:"Mayor",t:"Townsfolk",d:"If no one dies by execution, you might win. If you die at night, another player might die instead."},
-            {n:"Butler",t:"Outsider",d:"Each night, choose a player (not yourself): tomorrow, you may only vote if they vote too."},
-            {n:"Drunk",t:"Outsider",d:"You do not know you are the Drunk. You think you are a Townsfolk, but you are not.", mod:"Is Outsider"},
-            {n:"Recluse",t:"Outsider",d:"You might register as evil & as a Minion or Demon, even if dead."},
-            {n:"Saint",t:"Outsider",d:"If you die by execution, your team loses."},
-            {n:"Poisoner",t:"Minion",d:"Each night, choose a player: they are poisoned tonight and tomorrow day."},
-            {n:"Spy",t:"Minion",d:"Each night, you see the Grimoire. You might register as good & as a Townsfolk or Outsider."},
-            {n:"Scarlet Woman",t:"Minion",d:"If there are 5 or more players alive & the Demon dies, you become the Demon."},
-            {n:"Baron",t:"Minion",d:"There are extra Outsiders in play.", mod:"+2 Outsiders",f:true},
-            {n:"Imp",t:"Demon",d:"Each night*, choose a player: they die. If you kill yourself this way, a Minion becomes the Imp."},
-            // BM
-            {n:"Grandmother",t:"Townsfolk",d:"Start knowing* a specific good player (your Grandchild). If they die by Demon, you die too.",f:true},
-            {n:"Sailor",t:"Townsfolk",d:"Each night, choose a player: either you or they are drunk. You can't die."},
-            {n:"Chambermaid",t:"Townsfolk",d:"Each night, choose 2 alive players (not yourself): learn how many woke tonight."},
-            {n:"Exorcist",t:"Townsfolk",d:"Each night*, choose a player (not yourself): the Demon doesn't wake tonight if you chose them."},
-            {n:"Innkeeper",t:"Townsfolk",d:"Each night*, choose 2 players: they are safe from the Demon. One is drunk."},
-            {n:"Gambler",t:"Townsfolk",d:"Each night*, choose a player & guess their character: if you guess wrong, you die."},
-            {n:"Gossip",t:"Townsfolk",d:"Each day, make a public statement. If true, a player dies tonight."},
-            {n:"Courtier",t:"Townsfolk",d:"Once per game, at night, choose a character: they are drunk for 3 nights & days."},
-            {n:"Professor",t:"Townsfolk",d:"Once per game, at night*, choose a dead player: if they are a Townsfolk, they are resurrected."},
-            {n:"Minstrel",t:"Townsfolk",d:"When a Minion dies by execution, all other players (except Travellers) are drunk until tomorrow dusk."},
-            {n:"Tea Lady",t:"Townsfolk",d:"If both your alive neighbors are good, they can't die."},
-            {n:"Pacifist",t:"Townsfolk",d:"Executed good players might not die."},
-            {n:"Fool",t:"Townsfolk",d:"The first time you die (except by execution), you don't die."},
-            {n:"Tinker",t:"Outsider",d:"You might die at any time."},
-            {n:"Moonchild",t:"Outsider",d:"When you die, choose a player: they die tonight."},
-            {n:"Goon",t:"Outsider",d:"Each night, the 1st player to choose you with their ability is drunk until dusk. You become their alignment."},
-            {n:"Lunatic",t:"Outsider",d:"You think you are a Demon, but you are not. The Demon knows who you are.",f:true},
-            {n:"Godfather",t:"Minion",d:"Start knowing* which Outsiders are in play. If 1 died today, choose a player: they die.", mod:"+1 Outsider",f:true},
-            {n:"Devils Advocate",t:"Minion",d:"Each night, choose a living player: if executed tomorrow, they don't die."},
-            {n:"Assassin",t:"Minion",d:"Once per game, at night*, choose a player: they die (no protection)."},
-            {n:"Mastermind",t:"Minion",d:"If the Demon dies by execution (game ends), play 1 more day. If a player is then executed, their team loses."},
-            {n:"Zombuul",t:"Demon",d:"Each night*, if no one died today, choose a player: they die. 1st time you die, you live but register as dead."},
-            {n:"Pukka",t:"Demon",d:"Each night, choose a player: they are poisoned. The previously poisoned player dies."},
-            {n:"Shabaloth",t:"Demon",d:"Each night*, choose 2 players: they die. A dead player you chose might be resurrected."},
-            {n:"Po",t:"Demon",d:"Each night*, choose a player: they die. If you chose no one last night, choose 3 players."},
-            // SV
-            {n:"Clockmaker",t:"Townsfolk",d:"Start knowing* how many steps from the Demon to its nearest Minion.",f:true},
-            {n:"Dreamer",t:"Townsfolk",d:"Each night, choose a player (not yourself/Traveller): learn 1 good and 1 evil character, 1 is true."},
-            {n:"Snake Charmer",t:"Townsfolk",d:"Each night, choose a player: if they are the Demon, you become the Demon and they become the Snake Charmer."},
-            {n:"Mathematician",t:"Townsfolk",d:"Each night, learn how many players' abilities malfunctioned tonight."},
-            {n:"Flowergirl",t:"Townsfolk",d:"Each night, learn if the Demon voted today."},
-            {n:"Town Crier",t:"Townsfolk",d:"Each night, learn if a Minion nominated today."},
-            {n:"Oracle",t:"Townsfolk",d:"Each night, learn how many dead players are evil."},
-            {n:"Savant",t:"Townsfolk",d:"Each day, visit the Storyteller to learn 2 things: 1 is true, 1 is false."},
-            {n:"Seamstress",t:"Townsfolk",d:"Once per game, at night, choose 2 players: learn if they are the same alignment."},
-            {n:"Philosopher",t:"Townsfolk",d:"Once per game, at night, choose a good character: gain that ability. If in play, they are drunk."},
-            {n:"Artist",t:"Townsfolk",d:"Once per game, during the day, privately ask the Storyteller any Yes/No question."},
-            {n:"Juggler",t:"Townsfolk",d:"1st day, guess up to 5 players' characters. Tonight, learn how many were correct."},
-            {n:"Sage",t:"Townsfolk",d:"If the Demon kills you, you learn that 1 of 2 players is the Demon."},
-            {n:"Mutant",t:"Outsider",d:"If you are 'mad' about being an Outsider, you might be executed."},
-            {n:"Sweetheart",t:"Outsider",d:"When you die, 1 player is drunk from now on."},
-            {n:"Barber",t:"Outsider",d:"If you die, the Demon chooses 2 players to swap characters."},
-            {n:"Klutz",t:"Outsider",d:"When you learn you died, choose a living player: if they are evil, your team loses."},
-            {n:"Witch",t:"Minion",d:"Each night, choose a player: if they nominate tomorrow, they die."},
-            {n:"Cerebus",t:"Minion",d:"Each night, choose a player & a character: they are 'mad' they are that character tomorrow or might be executed."},
-            {n:"Pit-Hag",t:"Minion",d:"Each night*, choose a player & a character: they become that character. If already in play, they are drunk."},
-            {n:"Evil Twin",t:"Minion",d:"You & an opposing player know each other. If the good player is executed, evil wins. Good can't win if you both live.",f:true},
-            {n:"Fang Gu",t:"Demon",d:"Each night*, choose a player: they die. The 1st Outsider you choose becomes an evil Fang Gu & you die.", mod:"+1 Outsider"},
-            {n:"Vortox",t:"Demon",d:"Each night*, choose a player: they die. Townsfolk abilities yield false info. If no one is executed, evil wins."},
-            {n:"No Dashii",t:"Demon",d:"Each night*, choose a player: they die. Your 2 Townsfolk neighbors are poisoned."},
-            {n:"Vigormortis",t:"Demon",d:"Each night*, choose a player: they die. Minions you kill keep abilities & poison 1 neighbor."},
-            // Exp
-            {n:"Noble",t:"Townsfolk",d:"Start knowing* 3 players, 1 is evil.",f:true},
-            {n:"Bounty Hunter",t:"Townsfolk",d:"Start knowing* 1 evil player. If the good player you know dies, you learn another.",f:true},
-            {n:"Balloonist",t:"Townsfolk",d:"Each night, learn a player of a different character type than last night. [+1 Outsider]",mod:"+1 Outsider"},
-            {n:"Al-Hadikhia",t:"Demon",d:"Each night*, choose 3 players. They act. If all live, all die. Else, those who chose death die."},
-            {n:"Atheist",t:"Townsfolk",d:"The Storyteller can break the rules. If executed, good wins if there is no Demon."},
-            {n:"Heretic",t:"Outsider",d:"Whoever wins, loses & whoever loses, wins."}
-        ];
-        // Master List for Builder is just DB ref
-        const allRolesList = DB;
     </script>
 </body>
 </html>
