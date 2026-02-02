@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V31 - Horizontal Builder</title>
+    <title>Grimoire V32 - Grid Builder</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -104,14 +104,13 @@
         .library-panel { 
             width: 320px; display: flex; flex-direction: column; border-right: 1px solid var(--border); 
             padding-right: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; 
-            overflow: hidden; /* Important for scroll */
-            flex-shrink: 0;
+            overflow: hidden; flex-shrink: 0;
         }
         
-        /* Tabs - Fixed at top */
+        /* Tabs */
         .lib-tabs { 
             display: flex; gap: 5px; background: #15151a; padding: 10px 5px; border-bottom: 1px solid var(--border); 
-            overflow-x: auto; flex-shrink: 0; /* Ensures it doesn't shrink */
+            overflow-x: auto; flex-shrink: 0; 
         }
         .lib-tabs::-webkit-scrollbar { height: 4px; }
         .lib-tabs::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
@@ -141,36 +140,58 @@
         .build-eye { padding: 6px; cursor: pointer; opacity: 0.4; font-size: 1rem; border-radius: 4px; }
         .build-eye:hover { opacity: 1; color: var(--accent); background: rgba(255,255,255,0.1); }
 
-        /* SCRIPT PANEL (Right Side) - 2 Columns */
+        /* SCRIPT PANEL (Right Side) - 1 Column for Groups, 4 Columns for Roles */
         .script-panel { 
             flex-grow: 1; 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; /* Two columns per row */
+            display: flex;
+            flex-direction: column;
             gap: 20px; 
             overflow-y: auto; 
             padding: 10px; 
-            align-content: start;
         }
-        .script-col { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--border); }
-        .script-col h4 { margin: 0 0 10px 0; color: var(--text-muted); border-bottom: 1px solid #333; padding-bottom: 10px; text-align: center; text-transform: uppercase; letter-spacing: 2px; }
         
-        /* Expanded Script Item with Description */
+        .script-col { 
+            background: rgba(255,255,255,0.03); 
+            border-radius: 8px; 
+            padding: 15px; 
+            border: 1px solid var(--border); 
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 columns for roles */
+            gap: 10px;
+        }
+        
+        /* Make header span all 4 columns */
+        .script-col h4 { 
+            grid-column: 1 / -1; 
+            margin: 0 0 10px 0; 
+            color: var(--text-muted); 
+            border-bottom: 1px solid #333; 
+            padding-bottom: 10px; 
+            text-align: center; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+        }
+        
+        /* Grid Item Box */
         .script-item-box {
             background: rgba(0,0,0,0.2);
             border-radius: 6px;
             padding: 10px;
             display: flex;
-            gap: 10px;
+            flex-direction: column; /* Vertical Stacking */
+            align-items: center;
+            text-align: center;
+            gap: 8px;
             border: 1px solid transparent;
             transition: 0.2s;
             cursor: pointer;
+            height: 100%;
         }
         .script-item-box:hover { background: rgba(255,255,255,0.05); border-color: #444; }
-        .script-item-content { flex: 1; }
-        .script-item-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-        .script-item-name { font-weight: bold; font-size: 1rem; color: #eceff1; }
-        .script-item-desc { font-size: 0.85rem; color: #888; font-style: italic; line-height: 1.4; }
-        .script-item-actions { display: flex; flex-direction: column; gap: 5px; justify-content: flex-start; }
+        
+        .script-item-head { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .script-item-name { font-weight: bold; font-size: 0.95rem; color: #eceff1; }
+        .script-item-desc { font-size: 0.75rem; color: #888; font-style: italic; line-height: 1.3; }
 
         /* 3. SETUP & GAME */
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--border); }
@@ -919,17 +940,14 @@
                     const item = document.createElement('div');
                     item.className = 'script-item-box';
                     item.innerHTML = `
-                        <div class="script-item-content" onclick="toggleBuilderRole({n:'${r.n}', t:'${r.t}'}); renderLibrary(''); renderBuilderCols();">
-                            <div class="script-item-head">
-                                <img src="${getIconUrl(r.n)}" style="width:30px; height:30px; object-fit:contain;">
-                                <div class="script-item-name">${r.n}</div>
-                            </div>
-                            <div class="script-item-desc">${r.d}</div>
+                        <div class="script-item-head">
+                            <img src="${getIconUrl(r.n)}" style="width:30px; height:30px; object-fit:contain;">
+                            <div class="script-item-name">${r.n}</div>
                         </div>
-                        <div class="script-item-actions">
-                            <div class="build-eye" onclick="showCard(event, '${r.n}', '${r.t}')">👁</div>
-                        </div>
+                        <div class="script-item-desc">${r.d}</div>
                     `;
+                    // Click to remove
+                    item.onclick = () => { toggleBuilderRole({n:r.n, t:r.t}); renderLibrary(''); renderBuilderCols(); };
                     col.appendChild(item);
                 });
             });
