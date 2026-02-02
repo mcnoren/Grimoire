@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V27 - Stable</title>
+    <title>Grimoire V24 - Organized Builder</title>
     <style>
         :root {
-            --bg-dark: #0a0a0c;
-            --bg-panel: #16161a;
+            --bg-dark: #0f0f13;
+            --bg-panel: #1e1e24;
             --accent: #7c4dff;
-            --accent-hover: #651fff;
             --text-main: #eceff1;
-            --text-muted: #94a1b2;
+            --text-muted: #90a4ae;
             --border: #2c2e35;
             
             --town-color: #2b7de9;
@@ -19,13 +18,12 @@
             --min-color: #e9952b;
             --dem-color: #e92b2b;
             --rem-color: #ffd700;
-            --active-btn: #4caf50;
         }
 
         * { box-sizing: border-box; user-select: none; }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
             margin: 0;
@@ -42,8 +40,8 @@
             display: inline-flex; align-items: center; justify-content: center; gap: 8px;
             text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.8rem;
         }
-        .btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(124, 77, 255, 0.3); }
-        .btn:disabled { background: #333; color: #555; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { background: #333; color: #555; cursor: not-allowed; }
         .btn-red { background: var(--dem-color); }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: #aaa; }
         .btn-outline:hover { background: rgba(255,255,255,0.1); color: white; }
@@ -57,51 +55,51 @@
             background: radial-gradient(circle at center, #1a1a20 0%, #050505 100%);
         }
         .hero-title {
-            font-size: 4.5rem; margin: 0; 
+            font-size: 4rem; margin: 0 0 10px 0; 
             background: linear-gradient(to right, #7c4dff, #2b7de9);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-shadow: 0 10px 30px rgba(0,0,0,0.5); font-weight: 900; letter-spacing: -2px;
+            font-weight: 900; letter-spacing: -2px; text-align: center;
         }
-        .hero-sub { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 50px; letter-spacing: 1px; text-transform: uppercase; }
         
         .splash-section { width: 100%; max-width: 900px; margin-bottom: 40px; }
         .section-title { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; }
         
-        .script-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        .script-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
         
         .script-card {
             background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px;
-            padding: 25px; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;
-            display: flex; flex-direction: column; height: 130px; justify-content: center; text-align: center;
+            padding: 25px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; height: 140px; justify-content: center; text-align: center;
         }
-        .script-card:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .script-card:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); transform: translateY(-3px); }
         .script-card h3 { margin: 0 0 5px 0; font-size: 1.4rem; }
-        .script-card p { margin: 0; font-size: 0.85rem; color: #777; }
+        .script-card p { margin: 0; font-size: 0.8rem; color: #777; }
         
         .card-official { border-left: 4px solid var(--accent); }
-        .card-custom { border-left: 4px solid var(--town-color); background: linear-gradient(45deg, rgba(43, 125, 233, 0.05), transparent); }
-        .card-new { border: 2px dashed #444; background: transparent; color: #666; }
+        .card-custom { border-left: 4px solid var(--town-color); }
+        .card-new { border: 2px dashed #444; background: transparent; display: flex; align-items: center; justify-content: center; color: #666; }
         .card-new:hover { border-color: var(--accent); color: var(--accent); }
 
         /* 1.5 SCRIPT PREVIEW MODAL */
         #modal-preview .preview-content { display: flex; flex-direction: column; height: 100%; }
         .preview-lists { flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; text-align: left; }
         .preview-col h4 { border-bottom: 1px solid #333; padding-bottom: 5px; margin-bottom: 10px; color: var(--text-muted); }
-        .preview-item { font-size: 0.9rem; margin-bottom: 4px; display: flex; gap: 8px; align-items: center; color: #ccc; }
+        .preview-item { font-size: 0.9rem; margin-bottom: 4px; display: flex; gap: 8px; align-items: center; }
         .preview-icon { width: 20px; height: 20px; object-fit: contain; }
 
         /* 2. BUILDER */
-        #screen-builder { padding: 20px; display: flex; flex-direction: column; }
+        #screen-builder { padding: 20px; }
         .builder-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border); margin-bottom: 15px; }
         .title-input { background: transparent; border: none; font-size: 1.5rem; color: white; font-weight: bold; border-bottom: 2px solid #444; width: 300px; }
         .title-input:focus { outline: none; border-color: var(--accent); }
         
         .builder-body { display: flex; gap: 20px; flex-grow: 1; overflow: hidden; }
-        
-        /* Library (Left) */
         .library-panel { width: 340px; display: flex; flex-direction: column; border-right: 1px solid var(--border); padding-right: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; }
         .library-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
-        .lib-header { font-size: 0.9rem; font-weight: bold; color: var(--accent); border-bottom: 1px solid #333; padding-bottom: 5px; margin: 15px 0 5px 0; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* New Library Styles */
+        .lib-section { margin-bottom: 20px; }
+        .lib-header { font-size: 1rem; font-weight: bold; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
         .lib-type-header { font-size: 0.75rem; color: var(--text-muted); margin: 8px 0 4px 5px; font-weight: bold; text-transform: uppercase; }
         
         .build-item { 
@@ -110,23 +108,15 @@
             background: rgba(255,255,255,0.03); transition: 0.1s;
         }
         .build-item:hover { background: #333; }
-        .build-item.added { background: #222; opacity: 0.5; border-left: 3px solid var(--accent); }
+        .build-item.added { background: #333; opacity: 0.6; border-left: 3px solid var(--accent); }
         .build-left { display: flex; align-items: center; gap: 8px; flex: 1; cursor: pointer; }
-        .build-icon-btn { padding: 4px; cursor: pointer; opacity: 0.4; font-size: 1rem; }
-        .build-icon-btn:hover { opacity: 1; color: var(--accent); }
+        .build-eye { padding: 4px; cursor: pointer; opacity: 0.4; font-size: 1rem; }
+        .build-eye:hover { opacity: 1; color: var(--accent); }
 
-        /* Columns (Right) */
         .script-panel { flex-grow: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; overflow-y: auto; padding-left: 10px; }
         .script-col { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; }
         .script-col h4 { margin-top: 0; color: var(--text-muted); border-bottom: 1px solid #333; padding-bottom: 5px; text-align: center; }
-        
-        .col-item { 
-            padding: 6px; border-bottom: 1px solid #222; font-size: 0.9rem; 
-            display: flex; justify-content: space-between; align-items: center; 
-        }
-        .col-item:hover { background: rgba(255,255,255,0.05); }
-        .col-actions { display: flex; gap: 5px; }
-        .action-del:hover { color: var(--dem-color); opacity: 1; }
+        .script-col div { padding: 5px; border-bottom: 1px solid #222; font-size: 0.9rem; }
 
         /* 3. SETUP & GAME (Shared Styles) */
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--border); }
@@ -134,7 +124,6 @@
         .role-item { padding: 8px 12px; margin-bottom: 8px; background: #23242a; border-radius: 6px; cursor: pointer; border: 1px solid transparent; display: flex; align-items: center; justify-content: space-between; }
         .role-item.selected { background: var(--accent); color: white; }
         .role-item.disabled { opacity: 0.3; pointer-events: none; }
-        .role-item.in-play { border-color: var(--town-color); opacity: 0.6; }
         .role-left { display: flex; align-items: center; gap: 10px; flex: 1; }
         .setup-icon { width: 30px; height: 30px; object-fit: contain; }
         .eye-btn { padding: 5px; opacity: 0.5; font-size: 1.2rem; }
@@ -179,23 +168,10 @@
 
         /* MODALS */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        
-        /* IMPROVED CARD VIEW */
-        .card-view { 
-            width: 90vw; max-width: 380px; 
-            background: linear-gradient(145deg, #eceff1, #cfd8dc); 
-            color: #111; border-radius: 16px; padding: 30px; 
-            text-align: center; 
-            box-shadow: 0 0 80px rgba(124, 77, 255, 0.3); border: 4px solid #333; 
-        }
-        .card-img-lg { 
-            width: 90px; height: 90px; object-fit: contain; 
-            margin: 0 auto 10px auto; display: block; 
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); 
-        }
-        .card-title { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin: 0; line-height: 1; letter-spacing: -1px; }
-        .card-type { font-size: 0.8rem; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 2px; margin: 5px 0 20px 0; }
-        .card-desc { font-size: 1.1rem; line-height: 1.4; font-style: italic; margin-bottom: 20px; padding: 0 10px; }
+        .card-view { width: 90vw; max-width: 450px; background: #eceff1; color: #111; border-radius: 20px; padding: 40px 20px; text-align: center; }
+        .card-img-lg { width: 150px; height: 150px; object-fit: contain; margin: 0 auto 20px auto; display: block; }
+        .card-title { font-size: 2.5rem; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
+        .card-desc { font-size: 1.2rem; font-style: italic; }
         
         .edit-box { background: var(--bg-panel); padding: 25px; border-radius: 16px; width: 400px; max-width: 95vw; border: 1px solid var(--border); box-shadow: 0 10px 40px black; }
         .edit-header-input { width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--border); color: white; font-size: 1.5rem; font-weight: bold; padding: 5px; margin-bottom: 20px; text-align: center; }
@@ -243,25 +219,14 @@
         .picker-icon { width: 40px; height: 40px; object-fit: contain; margin-bottom: 5px; }
         .picker-name { font-size: 0.7rem; line-height: 1.1; }
 
-        /* Responsive Bluff Modal */
-        .multi-card-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 90vw; max-width: 1200px; padding: 20px; }
-        .mini-card { background: linear-gradient(145deg, #eceff1, #cfd8dc); color: #111; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .multi-card-container { display: flex; gap: 10px; overflow-x: auto; max-width: 100%; padding: 10px; }
+        .mini-card { background: #eceff1; color: #111; padding: 15px; border-radius: 8px; width: 220px; text-align: center; flex-shrink: 0; }
 
     </style>
     
     <script>
-        // --- ASSETS ---
-        function cleanName(name) { return name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(); }
-        function getIconUrl(roleName) {
-            if(!roleName) return null;
-            return `./icons/${cleanName(roleName)}.png`;
-        }
-        const getBadgeHtml = (name, type) => {
-            let cClass = 'b-town'; if(type==='Outsider') cClass='b-out'; if(type==='Minion') cClass='b-min'; if(type==='Demon') cClass='b-dem';
-            return `<div class="badge-icon ${cClass}"><span>${name ? name.charAt(0) : '?'}</span></div>`;
-        };
-
-        // --- FULL ROLE DATABASE ---
+        // --- DATABASE LOADED FIRST ---
+        // * = First Night Wake
         const DB = [
             {n:"Washerwoman",t:"Townsfolk",d:"Start knowing* that 1 of 2 players is a specific Townsfolk.",f:true},
             {n:"Librarian",t:"Townsfolk",d:"Start knowing* that 1 of 2 players is a specific Outsider.",f:true},
@@ -348,11 +313,173 @@
             {n:"Atheist",t:"Townsfolk",d:"The Storyteller can break the rules. If executed, good wins if there is no Demon."},
             {n:"Heretic",t:"Outsider",d:"Whoever wins, loses & whoever loses, wins."}
         ];
+    </script>
+</head>
+<body>
+
+    <div id="screen-splash" class="screen">
+        <h1 class="hero-title">GRIMOIRE</h1>
+        <div style="text-align:center; color:#888; margin-bottom:40px;">The Storyteller's Companion</div>
+        
+        <div class="splash-section">
+            <div class="section-title">Official Scripts</div>
+            <div class="script-grid">
+                <div class="script-card card-official" onclick="openPreview('TB')">
+                    <h3>Trouble Brewing</h3><p>Logic &bull; Deduction</p>
+                </div>
+                <div class="script-card card-official" onclick="openPreview('BM')">
+                    <h3>Bad Moon Rising</h3><p>Death &bull; Gambling</p>
+                </div>
+                <div class="script-card card-official" onclick="openPreview('SV')">
+                    <h3>Sects & Violets</h3><p>Madness &bull; Chaos</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="splash-section">
+            <div class="section-title">Homebrew Collection</div>
+            <div class="script-grid" id="custom-grid">
+                <div class="script-card card-new" onclick="openBuilder()">
+                    <h3>+ Create New Script</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-preview" class="modal-overlay hidden">
+        <div class="edit-box" style="width:600px; height:80vh; display:flex; flex-direction:column;">
+            <div style="border-bottom:1px solid #333; padding-bottom:15px; margin-bottom:15px;">
+                <h2 style="margin:0;" id="prev-title">Script Title</h2>
+            </div>
+            <div class="preview-content">
+                <div class="preview-lists" id="prev-lists"></div>
+            </div>
+            <div style="border-top:1px solid #333; padding-top:15px; display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn btn-red hidden" id="btn-prev-del" onclick="deleteCustomScript()">Delete</button>
+                <button class="btn btn-outline hidden" id="btn-prev-edit" onclick="editCustomScript()">Edit</button>
+                <button class="btn btn-outline" onclick="closePreview()">Cancel</button>
+                <button class="btn" onclick="startScriptSetup()">Play Script &rarr;</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-builder" class="screen hidden">
+        <div class="builder-header">
+            <input type="text" class="title-input" id="build-title" placeholder="Script Title">
+            <div>
+                <button class="btn btn-outline" onclick="exitBuilder()">Cancel</button>
+                <button class="btn" onclick="saveCustomScript()">Save Script</button>
+            </div>
+        </div>
+        <div style="padding:0 10px 10px 10px;"><input type="text" style="width:100%; padding:10px; background:#111; border:1px solid #333; color:white;" placeholder="Search roles..." onkeyup="filterBuilder(this.value)"></div>
+        <div class="builder-body">
+            <div class="library-panel">
+                <div class="library-list" id="build-lib"></div>
+            </div>
+            <div class="script-panel">
+                <div class="script-col" id="b-town"><h4>Townsfolk</h4></div>
+                <div class="script-col" id="b-out"><h4>Outsider</h4></div>
+                <div class="script-col" id="b-min"><h4>Minion</h4></div>
+                <div class="script-col" id="b-dem"><h4>Demon</h4></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-setup" class="screen setup-screen hidden">
+        <div class="top-bar">
+            <div style="display:flex; align-items:center; gap: 20px;">
+                <div class="stepper"><button onclick="changeCount(-1)">−</button><span id="p-count">5</span><button onclick="changeCount(1)">+</button></div>
+                <div class="counts-display"><div class="count-pill" id="req-town">Town: 0/3</div><div class="count-pill" id="req-out">Out: 0/0</div><div class="count-pill" id="req-min">Min: 0/1</div><div class="count-pill" id="req-dem">Dem: 0/1</div></div>
+            </div>
+            <button class="btn" id="btn-next" disabled onclick="handleStep1Next()">Next &rarr;</button>
+        </div>
+        <div id="role-grid-1" class="grid-scroll-area"></div>
+    </div>
+
+    <div id="screen-setup-drunk" class="screen setup-screen hidden">
+        <div class="top-bar"><h2>Select Drunk's Fake Role</h2><button class="btn" id="btn-drunk-confirm" disabled onclick="gotoSetupBluffs()">Confirm &rarr;</button></div><div id="role-grid-drunk" class="grid-scroll-area"></div>
+    </div>
+    <div id="screen-setup-bluffs" class="screen setup-screen hidden">
+        <div class="top-bar"><h2>Select 3 Demon Bluffs <span id="bluff-counter" style="opacity:0.7;">0/3</span></h2><button class="btn" id="btn-enter" disabled onclick="enterGame()">Enter Town Square &rarr;</button></div><div id="role-grid-bluffs" class="grid-scroll-area"></div>
+    </div>
+
+    <div id="screen-game" class="screen hidden">
+        <div id="sidebar">
+            <h3 style="margin-top:0;">Controls</h3>
+            <input type="text" id="input-name" placeholder="Enter Name..." onkeypress="if(event.key==='Enter') addPlayer()">
+            <button class="btn" onclick="addPlayer()">+ Add Player</button>
+            <hr style="border-color:var(--border); width:100%; margin: 20px 0;">
+            <button class="btn" style="width:100%; background: #333; margin-bottom:10px;" onclick="randomizeRoles()">🎲 Shuffle & Assign</button>
+            <button class="btn btn-outline" style="width:100%; color:var(--dem-color); border-color:var(--dem-color);" onclick="showBluffsModal()">👁 Show Bluffs</button>
+            <div style="margin-top: auto; display:flex; justify-content:space-between; align-items:center;"><span id="phase-disp" style="font-weight:bold; font-size:1.2rem;">Setup</span><button class="btn" onclick="nextPhase()">Next Phase</button></div>
+            <div id="game-log" style="height:100px; background:#111; overflow-y:auto; margin-top:10px; font-size:0.8rem; padding:5px; color:#aaa; border:1px solid #333;"></div>
+        </div>
+        <div id="game-board">
+            <div id="town-circle-guide"></div>
+            <div class="fab-container">
+                <div class="fab" id="fab-lock" onclick="toggleLock()"><span>🔒 Locked</span></div>
+                <div class="fab" title="Distribute Evenly" onclick="distributePlayers()"><span style="font-size:1.2rem;">↻</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-card" class="modal-overlay hidden" onclick="this.classList.add('hidden')">
+        <div class="card-view" onclick="event.stopPropagation()">
+            <img id="cv-img" class="card-img-lg" src="">
+            <div class="card-title" id="cv-name">IMP</div>
+            <div class="card-type" id="cv-type">DEMON</div>
+            <div class="card-desc" id="cv-desc"></div>
+            <div style="margin-top:auto; font-size:0.8rem; color:#888;">(Tap anywhere to close)</div>
+        </div>
+    </div>
+
+    <div id="modal-edit" class="modal-overlay hidden">
+        <div class="edit-box">
+            <input type="text" id="edit-name-input" class="edit-header-input" placeholder="Player Name">
+            <div class="role-changer-btn" onclick="openRolePicker()"><img id="edit-role-icon" class="role-changer-icon" src=""><span id="edit-role-text" class="role-changer-text">Role</span><span style="font-size:0.8rem; color:#888;">(Change)</span></div>
+            <div class="toggle-row">
+                <div id="toggle-life" class="toggle-container toggle-alive" onclick="toggleLifeSwitch()"><div class="toggle-slider"></div><div class="toggle-opt">Alive</div><div class="toggle-opt">Dead</div></div>
+                <div id="toggle-align" class="toggle-container toggle-align" onclick="toggleAlignSwitch()"><div class="toggle-slider"></div><div class="toggle-opt">Good</div><div class="toggle-opt">Evil</div></div>
+            </div>
+            <label style="color:#888; font-size:0.8rem; display:block; margin-bottom:5px;">REMINDER TOKENS</label>
+            <div class="reminder-grid">
+                <button class="rem-btn" onclick="toggleRem(this, 'Is Demon')">Is Demon</button><button class="rem-btn" onclick="toggleRem(this, 'Safe')">Safe</button>
+                <button class="rem-btn" onclick="toggleRem(this, 'Poisoned')">Poisoned</button><button class="rem-btn" onclick="toggleRem(this, 'Drunk')">Drunk</button>
+                <button class="rem-btn" onclick="toggleRem(this, 'Mad')">Mad</button><button class="rem-btn" onclick="toggleRem(this, 'Dead Vote')">Dead Vote</button>
+                <button class="rem-btn" style="grid-column: span 2; color:#ff8888;" onclick="clearRem()">Clear Tokens</button>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:20px;"><button class="btn" onclick="saveEditAndClose()">Done</button></div>
+        </div>
+    </div>
+
+    <div id="modal-role-picker" class="modal-overlay hidden" style="z-index:10001">
+        <div class="edit-box" style="width: 500px; max-width:95vw;">
+            <h3 style="margin-top:0;">Select Role</h3>
+            <div id="role-picker-grid" class="role-grid-full" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(80px,1fr)); gap:10px; max-height:70vh; overflow-y:auto;"></div>
+            <button class="btn" style="width:100%; margin-top:10px; background:#444;" onclick="document.getElementById('modal-role-picker').classList.add('hidden')">Cancel</button>
+        </div>
+    </div>
+
+    <div id="modal-bluffs" class="modal-overlay hidden" onclick="this.classList.add('hidden')">
+        <div style="text-align:center;"><h2 style="color:var(--dem-color);">DEMON BLUFFS</h2><div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;" id="bluff-cards-cont"></div></div>
+    </div>
+
+    <script>
+        // --- ASSETS ---
+        function cleanName(name) { return name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(); }
+        function getIconUrl(roleName) {
+            if(!roleName) return null;
+            return `./icons/${cleanName(roleName)}.png`;
+        }
+        const getBadgeHtml = (name, type) => {
+            let cClass = 'b-town'; if(type==='Outsider') cClass='b-out'; if(type==='Minion') cClass='b-min'; if(type==='Demon') cClass='b-dem';
+            return `<div class="badge-icon ${cClass}"><span>${name ? name.charAt(0) : '?'}</span></div>`;
+        };
 
         // --- STATE & STORAGE ---
         let app = {
-            activeScriptId: null, 
-            activeRoles: {}, 
+            activeScriptId: null, // 'TB', 'BM', 'SV' or Timestamp
+            activeRoles: {}, // {Townsfolk:[],...}
             count: 5,
             sel: { Townsfolk:[], Outsider:[], Minion:[], Demon:[] },
             players: [], locked: true, phase: 0, setupDrunkRole: "", bluffs: [],
@@ -365,7 +492,9 @@
 
         function loadCustomScripts() {
             const grid = document.getElementById('custom-grid');
+            // Remove existing custom cards (keep the "Create New" card)
             Array.from(grid.children).forEach(c => { if(!c.classList.contains('card-new')) c.remove(); });
+            
             const saved = JSON.parse(localStorage.getItem('grimoire_scripts') || '[]');
             saved.forEach(s => {
                 const card = document.createElement('div');
@@ -385,9 +514,9 @@
                 const names = {TB:"Trouble Brewing",BM:"Bad Moon Rising",SV:"Sects & Violets"};
                 scriptData = { id: id, title: names[id], content: getOfficialContent(id), isOfficial: true };
             } else {
-                // Custom
+                // Custom (ID is number, stored as number in JSON, so we might need loose match or parseInt)
                 const saved = JSON.parse(localStorage.getItem('grimoire_scripts') || '[]');
-                scriptData = saved.find(s => s.id == id);
+                scriptData = saved.find(s => s.id == id); // == for type coercion just in case
             }
             if(!scriptData) return;
             previewScript = scriptData;
@@ -460,6 +589,10 @@
             const bmRoles = getOfficialContent('BM');
             const svRoles = getOfficialContent('SV');
             
+            // Helper to get roles from DB by name list
+            const getRolesFromList = (list) => DB.filter(r => list.includes(r.n));
+            
+            // Define Sources
             const sources = [
                 { name: "Trouble Brewing", roles: tbRoles },
                 { name: "Bad Moon Rising", roles: bmRoles },
@@ -472,13 +605,16 @@
                 section.className = 'lib-section';
                 let hasMatches = false;
                 
+                // Add Header
                 const header = document.createElement('div');
                 header.className = 'lib-header';
                 header.innerText = src.name;
                 section.appendChild(header);
 
                 ['Townsfolk', 'Outsider', 'Minion', 'Demon'].forEach(t => {
+                    // For Exp, roles are already grouped. For official, they are in the 'roles' object by key
                     let roleNames = src.roles[t] || []; 
+                    // Filter by search
                     roleNames = roleNames.filter(n => n.toLowerCase().includes(f));
                     
                     if (roleNames.length > 0) {
@@ -498,7 +634,7 @@
                                     <img src="${getIconUrl(r.n)}" style="width:20px;height:20px;">
                                     <span>${r.n}</span>
                                 </div>
-                                <div class="build-icon-btn" onclick="showCard(event, '${r.n}', '${r.t}')">👁</div>
+                                <div class="build-eye" onclick="showCard(event, '${r.n}', '${r.t}')">👁</div>
                             `;
                             // Toggle Action
                             el.querySelector('.build-left').onclick = () => { toggleBuilderRole(r); renderLibrary(filter); renderBuilderCols(); };
@@ -512,6 +648,7 @@
         }
 
         function getExperimentalRoles() {
+            // All roles NOT in the official 3
             const officials = [
                 ...getOfficialContent('TB').Townsfolk, ...getOfficialContent('TB').Outsider, ...getOfficialContent('TB').Minion, ...getOfficialContent('TB').Demon,
                 ...getOfficialContent('BM').Townsfolk, ...getOfficialContent('BM').Outsider, ...getOfficialContent('BM').Minion, ...getOfficialContent('BM').Demon,
@@ -534,22 +671,9 @@
             const map = {Townsfolk:'b-town', Outsider:'b-out', Minion:'b-min', Demon:'b-dem'};
             ['Townsfolk','Outsider','Minion','Demon'].forEach(t => {
                 const col = document.getElementById(map[t]);
-                col.innerHTML = `<h4>${t}</h4>` + builderData[t].map(n=>`
-                    <div class="col-item">
-                        <span>${n}</span>
-                        <div class="col-actions">
-                            <div class="build-icon-btn" onclick="showCard(event, '${n}', '${t}')">👁</div>
-                            <div class="build-icon-btn action-del" onclick="removeBuilderRole('${n}', '${t}')">🗑</div>
-                        </div>
-                    </div>`).join('');
+                // Clear but keep header
+                col.innerHTML = `<h4>${t}</h4>` + builderData[t].map(n=>`<div>${n}</div>`).join('');
             });
-        }
-
-        function removeBuilderRole(n, t) {
-            const idx = builderData[t].indexOf(n);
-            if(idx > -1) builderData[t].splice(idx, 1);
-            renderBuilderCols();
-            renderLibrary(document.querySelector('.search-bar') ? document.querySelector('.search-bar').value : '');
         }
         
         function saveCustomScript() {
@@ -585,8 +709,6 @@
             document.getElementById('screen-builder').classList.remove('hidden');
             renderLibrary(''); renderBuilderCols();
         }
-
-        function filterBuilder(val) { renderLibrary(val); }
 
         // --- SETUP STEP 1 ---
         function changeCount(d) { let n = app.count + d; if(n<5) n=5; if(n>15) n=15; app.count = n; document.getElementById('p-count').innerText = n; updateCalc(); }
@@ -709,6 +831,8 @@
         function getRoleType(n) { const r = DB.find(x => x.n === n); return r ? r.t : 'Townsfolk'; }
         function log(t) { const d=document.createElement('div'); d.innerText=t; d.style.borderBottom="1px solid #222"; document.getElementById('game-log').prepend(d); }
         function nextPhase() { app.phase++; const t = (app.phase%2!==0)?`Night ${Math.ceil(app.phase/2)}`:`Day ${Math.ceil(app.phase/2)}`; document.getElementById('phase-disp').innerText = t; }
+        
+        function filterBuilder(val) { renderLibrary(val); }
     </script>
 </body>
 </html>
