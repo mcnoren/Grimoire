@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V33 - Mobile & Import Ready</title>
+    <title>Grimoire V34 - Compact Setup</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -49,9 +49,7 @@
         .btn-outline { background: transparent; border: 1px solid var(--border); color: #aaa; }
         .btn-outline:hover { background: rgba(255,255,255,0.1); color: white; }
         
-        a.btn-link {
-            text-decoration: none; color: inherit; display: block;
-        }
+        a.btn-link { text-decoration: none; color: inherit; display: block; }
 
         /* --- SCREENS --- */
         .screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 10; display: flex; flex-direction: column; }
@@ -109,30 +107,16 @@
             overflow: hidden; flex-shrink: 0;
         }
         
-        /* New Tools Area in Library */
         .lib-tools {
-            padding: 10px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            padding: 10px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;
         }
         .tool-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border);
-            color: #ccc;
-            padding: 8px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            text-align: center;
-            transition: 0.2s;
-            text-decoration: none;
-            display: block;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #ccc;
+            padding: 8px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; text-align: center;
+            transition: 0.2s; text-decoration: none; display: block;
         }
         .tool-btn:hover { background: rgba(255,255,255,0.1); color: white; border-color: #666; }
         
-        /* Tabs */
         .lib-tabs { 
             display: flex; gap: 5px; background: #15151a; padding: 10px 5px; border-bottom: 1px solid var(--border); 
             overflow-x: auto; flex-shrink: 0; 
@@ -148,12 +132,11 @@
         .lib-tab.active { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(124, 77, 255, 0.3); }
 
         .library-list { flex-grow: 1; overflow-y: auto; padding: 10px 5px 10px 0; }
-        
         .lib-section { margin-bottom: 20px; }
         .lib-type-header { font-size: 0.75rem; color: var(--text-muted); margin: 8px 0 4px 5px; font-weight: bold; text-transform: uppercase; }
         
         .build-item { 
-            padding: 8px 10px; border-radius: 6px; margin-bottom: 4px; font-size: 0.95rem; /* Larger for touch */
+            padding: 8px 10px; border-radius: 6px; margin-bottom: 4px; font-size: 0.95rem; 
             display: flex; align-items: center; justify-content: space-between; 
             background: rgba(255,255,255,0.03); transition: 0.1s; border: 1px solid transparent;
         }
@@ -189,15 +172,51 @@
         .script-item-name { font-weight: bold; font-size: 0.95rem; color: #eceff1; }
         .script-item-desc { font-size: 0.75rem; color: #888; font-style: italic; line-height: 1.3; }
 
-        /* 3. SETUP & GAME */
+        /* 3. SETUP - Redesigned Layout */
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--border); }
         .counts-display { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
-        .grid-scroll-area { flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px 40px; }
         
+        /* Step 1: Column View for script overview */
+        .setup-columns-container {
+            flex-grow: 1; overflow-y: auto; padding: 20px 40px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;
+        }
+        .role-col {
+            background: #1e1e24; border-radius: 8px; padding: 10px; border: 1px solid #333; h-height: fit-content;
+        }
+        .role-col h3 { text-align: center; margin: 0 0 10px 0; font-size: 1rem; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        
+        .role-item { 
+            padding: 6px 10px; margin-bottom: 4px; background: #2a2a30; border-radius: 4px; 
+            cursor: pointer; border: 1px solid transparent; display: flex; align-items: center; justify-content: space-between;
+            font-size: 0.9rem;
+        }
+        .role-item.selected { background: var(--accent); color: white; border-color: var(--accent); }
+        .role-item.disabled { opacity: 0.3; pointer-events: none; }
+        .role-left { display: flex; align-items: center; gap: 8px; flex: 1; }
+        .setup-icon { width: 24px; height: 24px; object-fit: contain; }
+        .eye-btn { padding: 4px; opacity: 0.5; font-size: 1rem; }
+
+        /* Step 2 & 3: Grid View for Drunk/Bluff selection */
+        .setup-card-grid {
+            flex-grow: 1; overflow-y: auto; padding: 20px 40px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px;
+        }
+        .setup-card {
+            background: #2a2a30; border-radius: 8px; padding: 10px;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            cursor: pointer; border: 2px solid transparent; transition: 0.1s;
+        }
+        .setup-card:hover { background: #333; }
+        .setup-card.selected { border-color: var(--accent); background: #333; }
+        .setup-card.disabled { opacity: 0.2; pointer-events: none; filter: grayscale(1); }
+        .sc-icon { width: 40px; height: 40px; object-fit: contain; margin-bottom: 8px; }
+        .sc-name { font-size: 0.8rem; font-weight: bold; line-height: 1.2; }
+
+        /* Stepper & Pills */
         .stepper { display: flex; align-items: center; background: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border); }
         .stepper button { background: transparent; border: none; color: white; font-size: 1.5rem; padding: 5px 20px; cursor: pointer; }
         .stepper span { font-size: 1.5rem; font-weight: bold; min-width: 50px; text-align: center; }
-        
         .count-pill { background: var(--bg-panel); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); font-weight: bold; white-space: nowrap; }
         .count-pill.valid { color: var(--town-color); border-color: var(--town-color); }
         .count-pill.invalid { color: var(--dem-color); border-color: var(--dem-color); opacity: 0.6; }
@@ -232,18 +251,14 @@
         @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(1deg); } 75% { transform: rotate(-1deg); } }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        
         .card-view { width: 90vw; max-width: 400px; background: #23242a; color: #eceff1; border-radius: 16px; padding: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8); border: 3px solid #444; }
         .card-img-lg { width: 120px; height: 120px; object-fit: contain; margin: 0 auto 15px auto; display: block; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
         .card-title { font-size: 2rem; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
         .card-type { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; color: #aaa; margin-bottom: 20px; font-weight: bold; }
         .card-desc { font-size: 1.1rem; line-height: 1.5; font-style: italic; color: #ddd; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; }
-        
         .edit-box { background: var(--bg-panel); padding: 25px; border-radius: 16px; width: 400px; max-width: 95vw; border: 1px solid var(--border); box-shadow: 0 10px 40px black; }
         .edit-header-input { width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--border); color: white; font-size: 1.5rem; font-weight: bold; padding: 5px; margin-bottom: 20px; text-align: center; }
-        
         .role-changer-btn { display: flex; align-items: center; justify-content: center; gap: 15px; background: #2a2a30; width: 100%; padding: 15px; border-radius: 10px; cursor: pointer; border: 1px solid var(--border); margin-bottom: 20px; transition: 0.2s; }
-        
         .toggle-row { display: flex; gap: 15px; margin-bottom: 20px; }
         .toggle-container { flex: 1; background: #111; border-radius: 30px; height: 40px; position: relative; display: flex; cursor: pointer; border: 1px solid var(--border); overflow: hidden; }
         .toggle-opt { flex: 1; z-index: 2; text-align: center; line-height: 40px; font-weight: bold; font-size: 0.8rem; transition: color 0.2s; }
@@ -252,22 +267,18 @@
         .toggle-alive.dead-state .toggle-slider { background: #555; left: 50%; }
         .toggle-align .toggle-slider { background: var(--town-color); left: 0; }
         .toggle-align.evil-state .toggle-slider { background: var(--dem-color); left: 50%; }
-
         .reminder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .rem-btn { background: #2a2a2a; border: 1px solid #444; color: #888; padding: 10px; font-size: 0.85rem; cursor: pointer; border-radius: 6px; font-weight: bold; }
         .rem-btn.selected { background: var(--active-btn); border-color: var(--active-btn); color: white; }
-
         .fab-container { position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 50; }
         .fab { background: #333; color: white; padding: 10px 20px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); cursor: pointer; font-weight: bold; border: 1px solid #555; }
         .fab.active { background: var(--dem-color); border-color: var(--dem-color); }
-
         #modal-role-picker .role-grid-full { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; max-height: 70vh; overflow-y: auto; padding: 10px; }
         .picker-item { background: #333; border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; border: 2px solid transparent; display: flex; flex-direction: column; align-items: center; }
         .picker-item:hover { background: #444; }
         .picker-item.active { border-color: var(--accent); background: #222; }
         .picker-icon { width: 40px; height: 40px; object-fit: contain; margin-bottom: 5px; }
         .picker-name { font-size: 0.7rem; line-height: 1.1; }
-
         .hover-card { position: fixed; width: 300px; background: #1a1a20; border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 20000; pointer-events: none; border: 2px solid #555; color: #eee; text-align: center; }
         .hover-head { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; text-align: left; }
         .hover-img { width: 50px; height: 50px; object-fit: contain; }
@@ -279,7 +290,7 @@
         @media (max-width: 1024px) {
             .script-col { grid-template-columns: repeat(3, 1fr); }
             .library-panel { width: 280px; }
-            .grid-scroll-area { grid-template-columns: repeat(3, 1fr); }
+            .setup-columns-container { grid-template-columns: repeat(3, 1fr); }
         }
 
         @media (max-width: 768px) {
@@ -299,9 +310,10 @@
             .token-name { font-size: 0.65rem; }
             .token-ctrl { width: 22px; height: 22px; font-size: 10px; }
             
-            .grid-scroll-area { grid-template-columns: repeat(2, 1fr); padding: 10px; }
+            .setup-columns-container { grid-template-columns: repeat(2, 1fr); padding: 10px; }
             .top-bar { padding: 10px; flex-direction: column; gap: 10px; }
             .counts-display { justify-content: center; width: 100%; }
+            .setup-card-grid { padding: 10px; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
         }
 
     </style>
@@ -572,14 +584,16 @@
             </div>
             <button class="btn" id="btn-next" onclick="handleStep1Next()">Next &rarr;</button>
         </div>
-        <div id="role-grid-1" class="grid-scroll-area"></div>
+        <div id="role-grid-1" class="setup-columns-container"></div>
     </div>
 
     <div id="screen-setup-drunk" class="screen setup-screen hidden">
-        <div class="top-bar"><h2>Select Drunk's Fake Role</h2><button class="btn" id="btn-drunk-confirm" disabled onclick="gotoSetupBluffs()">Confirm &rarr;</button></div><div id="role-grid-drunk" class="grid-scroll-area"></div>
+        <div class="top-bar"><h2>Select Drunk's Fake Role</h2><button class="btn" id="btn-drunk-confirm" disabled onclick="gotoSetupBluffs()">Confirm &rarr;</button></div>
+        <div id="role-grid-drunk" class="setup-card-grid"></div>
     </div>
     <div id="screen-setup-bluffs" class="screen setup-screen hidden">
-        <div class="top-bar"><h2>Select 3 Demon Bluffs <span id="bluff-counter" style="opacity:0.7;">0/3</span></h2><button class="btn" id="btn-enter" disabled onclick="enterGame()">Enter Town Square &rarr;</button></div><div id="role-grid-bluffs" class="grid-scroll-area"></div>
+        <div class="top-bar"><h2>Select 3 Demon Bluffs <span id="bluff-counter" style="opacity:0.7;">0/3</span></h2><button class="btn" id="btn-enter" disabled onclick="enterGame()">Enter Town Square &rarr;</button></div>
+        <div id="role-grid-bluffs" class="setup-card-grid"></div>
     </div>
 
     <div id="screen-game" class="screen hidden">
@@ -911,11 +925,6 @@
                 // Clear but keep header
                 col.innerHTML = `<h4>${t}</h4>`;
                 
-                // Clear old content, but we need to remove children that are not H4
-                Array.from(col.children).forEach(child => {
-                    if (child.tagName !== 'H4') child.remove();
-                });
-                
                 builderData[t].forEach(rName => {
                     const r = DB.find(x => x.n === rName) || {n:rName, t:t, d:"..."};
                     
@@ -1041,7 +1050,13 @@
                 const col = document.createElement('div'); col.className = 'role-col'; col.innerHTML = `<h3>${type}</h3>`;
                 app.activeRoles[type].forEach(rName => {
                     const rData = DB.find(x=>x.n===rName) || {n:rName, mod:null};
-                    const el = createRoleItem(rData, type, false);
+                    // Use a slightly different create function for Step 1
+                    const el = document.createElement('div'); 
+                    el.className = 'role-item';
+                    const url = getIconUrl(rData.n); 
+                    const modHtml = rData.mod ? `<span style="color:#aaa;font-size:0.7em;margin-left:5px;">[${rData.mod}]</span>` : '';
+                    el.innerHTML = `<div class="role-left"><img src="${url}" class="setup-icon" onerror="this.style.opacity=0.3"><span>${rData.n}${modHtml}</span></div><div class="eye-btn" onclick="showCard(event, '${rData.n}', '${type}')" onmouseenter="showHover(event, '${rData.n}', '${type}')" onmouseleave="hideHover()">👁</div>`;
+                    
                     el.onclick = (e) => { if(!e.target.classList.contains('eye-btn')) toggleRoleStep1(type, rName, el); };
                     col.appendChild(el);
                 });
@@ -1076,7 +1091,7 @@
         function checkCat(id, cur, req) { const el = document.getElementById(id); el.innerText = `${id.split('-')[1].toUpperCase()}: ${cur}/${req}`; if(cur===req){el.classList.add('valid');el.classList.remove('invalid')}else{el.classList.add('invalid');el.classList.remove('valid')} }
         function handleStep1Next() { if(app.sel.Outsider && app.sel.Outsider.includes("Drunk")) gotoDrunkSetup(); else gotoSetupBluffs(); }
 
-        // --- STEP 2/3 ---
+        // --- STEP 2/3 (REDESIGNED) ---
         function gotoDrunkSetup() {
             document.getElementById('screen-setup').classList.add('hidden'); document.getElementById('screen-setup-drunk').classList.remove('hidden');
             const con = document.getElementById('role-grid-drunk'); con.innerHTML = '';
@@ -1085,9 +1100,15 @@
             if(app.activeRoles.Townsfolk) {
                 app.activeRoles.Townsfolk.forEach(rName => {
                     const r = DB.find(x=>x.n===rName);
-                    const el = createRoleItem(r, 'Townsfolk', false);
-                    if(allSel.includes(r.n)) { el.classList.add('in-play'); el.querySelector('span').innerText += " (In Play)"; }
-                    el.onclick = (e) => { if(e.target.classList.contains('eye-btn')) return; document.querySelectorAll('#role-grid-drunk .selected').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); app.setupDrunkRole=r.n; document.getElementById('btn-drunk-confirm').disabled=false; };
+                    // Use Card Style
+                    const el = document.createElement('div'); el.className = 'setup-card';
+                    el.innerHTML = `<img src="${getIconUrl(r.n)}" class="sc-icon"><div class="sc-name">${r.n}</div>`;
+                    
+                    if(allSel.includes(r.n)) { el.classList.add('in-play'); el.querySelector('.sc-name').innerText += " (In Play)"; }
+                    el.onclick = (e) => { 
+                        document.querySelectorAll('#role-grid-drunk .selected').forEach(x=>x.classList.remove('selected')); 
+                        el.classList.add('selected'); app.setupDrunkRole=r.n; document.getElementById('btn-drunk-confirm').disabled=false; 
+                    };
                     con.appendChild(el);
                 });
             }
@@ -1103,9 +1124,12 @@
                 app.activeRoles[type].forEach(rName => {
                     const r = DB.find(x=>x.n===rName);
                     const inPlay = allSel.includes(r.n);
-                    const el = createRoleItem(r, type, inPlay);
+                    
+                    const el = document.createElement('div'); el.className = 'setup-card';
+                    el.innerHTML = `<img src="${getIconUrl(r.n)}" class="sc-icon"><div class="sc-name">${r.n}</div>`;
+                    
                     if(inPlay) el.classList.add('disabled');
-                    el.onclick = (e) => { if(!e.target.classList.contains('eye-btn') && !inPlay) toggleBluff(r.n, el); };
+                    el.onclick = (e) => { if(!inPlay) toggleBluff(r.n, el); };
                     con.appendChild(el);
                 });
             }
@@ -1116,12 +1140,7 @@
             document.getElementById('bluff-counter').innerText = `${app.bluffs.length}/3`;
             document.getElementById('btn-enter').disabled = (app.bluffs.length !== 3);
         }
-        function createRoleItem(r, type, disabled) {
-            const el = document.createElement('div'); el.className = 'role-item';
-            const url = getIconUrl(r.n); const modHtml = r.mod ? `<span class="mod-text">[${r.mod}]</span>` : '';
-            el.innerHTML = `<div class="role-left"><img src="${url}" class="setup-icon" onerror="this.style.opacity=0.3"><span style="${disabled?'text-decoration:line-through':''}">${r.n}${modHtml}</span></div><div class="eye-btn" onclick="showCard(event, '${r.n}', '${type}')" onmouseenter="showHover(event, '${r.n}', '${type}')" onmouseleave="hideHover()">👁</div>`;
-            return el;
-        }
+        
         function enterGame() { document.getElementById('screen-setup-bluffs').classList.add('hidden'); document.getElementById('screen-game').classList.remove('hidden'); log("Welcome to Ravenswood Bluff."); }
 
         // --- GAMEPLAY ---
