@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V29 - Import & Flexible Setup</title>
+    <title>Grimoire V30 - Complete Role List</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -143,10 +143,10 @@
         /* 3. SETUP & GAME (Shared Styles) */
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--border); }
         
-        /* --- UPDATED: Horizontal Counts --- */
+        /* Horizontal Counts */
         .counts-display { 
             display: flex; 
-            gap: 15px; /* Horizontal gap */
+            gap: 15px; 
             align-items: center;
         }
 
@@ -163,14 +163,13 @@
         .stepper button { background: transparent; border: none; color: white; font-size: 1.5rem; padding: 5px 20px; cursor: pointer; }
         .stepper span { font-size: 1.5rem; font-weight: bold; min-width: 50px; text-align: center; }
         
-        /* Updated Pills for Horizontal Layout */
         .count-pill { 
             background: var(--bg-panel); 
             padding: 8px 16px; 
             border-radius: 20px; 
             border: 1px solid var(--border); 
             font-weight: bold; 
-            white-space: nowrap; /* Keep single line */
+            white-space: nowrap; 
         }
         .count-pill.valid { color: var(--town-color); border-color: var(--town-color); }
         .count-pill.invalid { color: var(--dem-color); border-color: var(--dem-color); opacity: 0.6; }
@@ -372,7 +371,7 @@
             {n:"Barber",t:"Outsider",d:"If you die, the Demon chooses 2 players to swap characters."},
             {n:"Klutz",t:"Outsider",d:"When you learn you died, choose a living player: if they are evil, your team loses."},
             {n:"Witch",t:"Minion",d:"Each night, choose a player: if they nominate tomorrow, they die."},
-            {n:"Cerebus",t:"Minion",d:"Each night, choose a player & a character: they are 'mad' they are that character tomorrow or might be executed."},
+            {n:"Cerenovus",t:"Minion",d:"Each night, choose a player & a character: they are 'mad' they are that character tomorrow or might be executed."},
             {n:"Pit-Hag",t:"Minion",d:"Each night*, choose a player & a character: they become that character. If already in play, they are drunk."},
             {n:"Evil Twin",t:"Minion",d:"You & an opposing player know each other. If the good player is executed, evil wins. Good can't win if you both live.",f:true},
             {n:"Fang Gu",t:"Demon",d:"Each night*, choose a player: they die. The 1st Outsider you choose becomes an evil Fang Gu & you die.", mod:"+1 Outsider"},
@@ -456,7 +455,18 @@
             {n:"Steward",t:"Townsfolk",d:"You start knowing 1 good player.",f:true},
             {n:"Village Idiot",t:"Townsfolk",d:"Each night, choose a player: you learn their alignment. +2 Village Idiots. One is drunk."},
             {n:"Puzzlemaster",t:"Outsider",d:"1 player is drunk, even if you die. If you guess who, you learn the Demon."},
-            {n:"Plague Doctor",t:"Outsider",d:"If you die, the Storyteller gains a Minion ability."}
+            {n:"Plague Doctor",t:"Outsider",d:"If you die, the Storyteller gains a Minion ability."},
+            {n:"Boomdandy",t:"Minion",d:"If you are executed, all but 3 players die. 1 minute to win."},
+            {n:"Cannibal",t:"Townsfolk",d:"You have the ability of the recently killed executee. If they are evil, you are poisoned."},
+            {n:"Fearmonger",t:"Minion",d:"Each night, choose a player. If you nominate & execute them, their team loses. All players know if you chose a new player."},
+            {n:"Goblin",t:"Minion",d:"If you are claimed to be the Goblin & are executed, your team wins."},
+            {n:"Leviathan",t:"Demon",d:"L5. Day 5, good wins. If more than 1 good player is executed, evil wins."},
+            {n:"Lleech",t:"Demon",d:"Each night*, choose a player: they die. You start by choosing a player: they are poisoned & you die if & only if they die."},
+            {n:"Mezepheles",t:"Minion",d:"Start knowing a secret word. The 1st good player to say it turns evil."},
+            {n:"Nightwatchman",t:"Townsfolk",d:"Once per game, at night, choose a player: they learn you are the Nightwatchman."},
+            {n:"Poppygrower",t:"Townsfolk",d:"Minions & Demons do not know each other. If you die, they learn who they are tonight."},
+            {n:"Preacher",t:"Townsfolk",d:"Each night, choose a player: a Minion chosen loses their ability."},
+            {n:"Psychopath",t:"Minion",d:"Each day, before nominations, you may publicly choose a player: they die. If executed, you only die if you lose roshambo."}
         ];
     </script>
 </head>
@@ -760,7 +770,7 @@
             let list = [];
             if(id==='TB') list = ["Washerwoman","Librarian","Investigator","Chef","Empath","Fortune Teller","Undertaker","Monk","Ravenkeeper","Virgin","Slayer","Soldier","Mayor","Butler","Drunk","Recluse","Saint","Poisoner","Spy","Scarlet Woman","Baron","Imp"];
             if(id==='BM') list = ["Grandmother","Sailor","Chambermaid","Exorcist","Innkeeper","Gambler","Gossip","Courtier","Professor","Minstrel","Tea Lady","Pacifist","Fool","Tinker","Moonchild","Goon","Lunatic","Godfather","Devils Advocate","Assassin","Mastermind","Zombuul","Pukka","Shabaloth","Po"];
-            if(id==='SV') list = ["Clockmaker","Dreamer","Snake Charmer","Mathematician","Flowergirl","Town Crier","Oracle","Savant","Seamstress","Philosopher","Artist","Juggler","Sage","Mutant","Sweetheart","Barber","Klutz","Witch","Cerebus","Pit-Hag","Evil Twin","Fang Gu","Vortox","No Dashii","Vigormortis"];
+            if(id==='SV') list = ["Clockmaker","Dreamer","Snake Charmer","Mathematician","Flowergirl","Town Crier","Oracle","Savant","Seamstress","Philosopher","Artist","Juggler","Sage","Mutant","Sweetheart","Barber","Klutz","Witch","Cerenovus","Pit-Hag","Evil Twin","Fang Gu","Vortox","No Dashii","Vigormortis"];
             
             const res = {Townsfolk:[], Outsider:[], Minion:[], Demon:[], Traveler:[], Fabled:[], Loric:[]};
             list.forEach(n => { const r = DB.find(x=>x.n===n); if(r) res[r.t].push(r.n); });
