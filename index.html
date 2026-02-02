@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V26 - Script Editor</title>
+    <title>Grimoire V27 - Stable</title>
     <style>
         :root {
             --bg-dark: #0a0a0c;
@@ -128,7 +128,7 @@
         .col-actions { display: flex; gap: 5px; }
         .action-del:hover { color: var(--dem-color); opacity: 1; }
 
-        /* 3. SETUP & GAME */
+        /* 3. SETUP & GAME (Shared Styles) */
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--border); }
         .grid-scroll-area { flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px 40px; }
         .role-item { padding: 8px 12px; margin-bottom: 8px; background: #23242a; border-radius: 6px; cursor: pointer; border: 1px solid transparent; display: flex; align-items: center; justify-content: space-between; }
@@ -139,6 +139,7 @@
         .setup-icon { width: 30px; height: 30px; object-fit: contain; }
         .eye-btn { padding: 5px; opacity: 0.5; font-size: 1.2rem; }
 
+        /* Stepper & Pills */
         .stepper { display: flex; align-items: center; background: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border); }
         .stepper button { background: transparent; border: none; color: white; font-size: 1.5rem; padding: 5px 20px; cursor: pointer; }
         .stepper span { font-size: 1.5rem; font-weight: bold; min-width: 50px; text-align: center; }
@@ -146,12 +147,14 @@
         .count-pill.valid { color: var(--town-color); border-color: var(--town-color); }
         .count-pill.invalid { color: var(--dem-color); border-color: var(--dem-color); opacity: 0.6; }
 
+        /* GAME LAYOUT */
         #screen-game { display: flex; flex-direction: row; }
         #sidebar { width: 340px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 25px; z-index: 100; }
         #input-name { width: 100%; background: #111; border: 1px solid var(--border); color: white; padding: 15px; font-size: 1.1rem; border-radius: 8px; margin-bottom: 10px; }
         #game-board { flex-grow: 1; position: relative; background: radial-gradient(circle at center, #1a1b20 0%, #0f0f13 100%); overflow: hidden; }
         #town-circle-guide { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; border: 2px dashed #333; border-radius: 50%; pointer-events: none; }
 
+        /* TOKEN */
         .token { position: absolute; width: 110px; height: 110px; background: #25262c; border: 3px solid #555; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.6); z-index: 20; transition: border-color 0.2s, transform 0.2s; }
         .token.draggable { cursor: grab; }
         .token.draggable:active { cursor: grabbing; z-index: 100; transform: scale(1.05); }
@@ -167,13 +170,15 @@
         .ctrl-del { top: 0; left: -5px; background: var(--dem-color); color: white; font-size: 12px; border: 2px solid var(--bg-dark); display: none; }
         .ctrl-vote { bottom: -15px; left: 50%; transform: translateX(-50%); background: white; border: 3px solid #333; width: 30px; height: 30px; z-index: 50; cursor: pointer; }
         .ctrl-vote.used { background: #444; border-color: #666; }
+        
         .token-reminders { position: absolute; top: -10px; width: 140%; display: flex; justify-content: center; flex-wrap: wrap; gap: 2px; pointer-events: none; }
         .reminder-tag { background: var(--rem-color); color: #000; font-size: 0.6rem; font-weight: bold; padding: 2px 6px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         body.edit-mode .ctrl-del { display: flex; }
         body.edit-mode .token { animation: shake 0.3s infinite; }
+        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(1deg); } 75% { transform: rotate(-1deg); } }
 
         /* MODALS */
-        .modal-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         
         /* IMPROVED CARD VIEW */
         .card-view { 
@@ -190,7 +195,7 @@
         }
         .card-title { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin: 0; line-height: 1; letter-spacing: -1px; }
         .card-type { font-size: 0.8rem; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 2px; margin: 5px 0 20px 0; }
-        .card-desc { font-size: 1.1rem; line-height: 1.4; font-style: italic; margin-bottom: 20px; }
+        .card-desc { font-size: 1.1rem; line-height: 1.4; font-style: italic; margin-bottom: 20px; padding: 0 10px; }
         
         .edit-box { background: var(--bg-panel); padding: 25px; border-radius: 16px; width: 400px; max-width: 95vw; border: 1px solid var(--border); box-shadow: 0 10px 40px black; }
         .edit-header-input { width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--border); color: white; font-size: 1.5rem; font-weight: bold; padding: 5px; margin-bottom: 20px; text-align: center; }
@@ -224,8 +229,15 @@
         .b-min { background: linear-gradient(135deg, #e9952b, #8f5a1a); }
         .b-dem { background: linear-gradient(135deg, #e92b2b, #8f1a1a); }
 
-        #modal-role-picker .role-grid-full { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; max-height: 70vh; overflow-y: auto; padding: 10px; }
-        .picker-item { background: #333; border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; border: 2px solid transparent; display: flex; flex-direction: column; align-items: center; }
+        /* Role Picker in Modal */
+        #modal-role-picker .role-grid-full {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px;
+            max-height: 70vh; overflow-y: auto; padding: 10px;
+        }
+        .picker-item {
+            background: #333; border-radius: 8px; padding: 10px; text-align: center; cursor: pointer;
+            border: 2px solid transparent; display: flex; flex-direction: column; align-items: center;
+        }
         .picker-item:hover { background: #444; }
         .picker-item.active { border-color: var(--accent); background: #222; }
         .picker-icon { width: 40px; height: 40px; object-fit: contain; margin-bottom: 5px; }
@@ -368,10 +380,12 @@
         let previewScript = null;
         function openPreview(id) {
             let scriptData;
+            // Official
             if(['TB','BM','SV'].includes(id)) {
                 const names = {TB:"Trouble Brewing",BM:"Bad Moon Rising",SV:"Sects & Violets"};
                 scriptData = { id: id, title: names[id], content: getOfficialContent(id), isOfficial: true };
             } else {
+                // Custom
                 const saved = JSON.parse(localStorage.getItem('grimoire_scripts') || '[]');
                 scriptData = saved.find(s => s.id == id);
             }
@@ -392,8 +406,10 @@
                 con.appendChild(col);
             });
 
+            // Buttons
             document.getElementById('btn-prev-del').classList.toggle('hidden', !!scriptData.isOfficial);
             document.getElementById('btn-prev-edit').classList.toggle('hidden', !!scriptData.isOfficial);
+            
             document.getElementById('screen-splash').classList.add('hidden');
             document.getElementById('modal-preview').classList.remove('hidden');
         }
@@ -404,10 +420,12 @@
         }
 
         function getOfficialContent(id) {
+            // Filter DB based on ID
             let list = [];
             if(id==='TB') list = ["Washerwoman","Librarian","Investigator","Chef","Empath","Fortune Teller","Undertaker","Monk","Ravenkeeper","Virgin","Slayer","Soldier","Mayor","Butler","Drunk","Recluse","Saint","Poisoner","Spy","Scarlet Woman","Baron","Imp"];
             if(id==='BM') list = ["Grandmother","Sailor","Chambermaid","Exorcist","Innkeeper","Gambler","Gossip","Courtier","Professor","Minstrel","Tea Lady","Pacifist","Fool","Tinker","Moonchild","Goon","Lunatic","Godfather","Devils Advocate","Assassin","Mastermind","Zombuul","Pukka","Shabaloth","Po"];
             if(id==='SV') list = ["Clockmaker","Dreamer","Snake Charmer","Mathematician","Flowergirl","Town Crier","Oracle","Savant","Seamstress","Philosopher","Artist","Juggler","Sage","Mutant","Sweetheart","Barber","Klutz","Witch","Cerebus","Pit-Hag","Evil Twin","Fang Gu","Vortox","No Dashii","Vigormortis"];
+            
             const res = {Townsfolk:[], Outsider:[], Minion:[], Demon:[]};
             list.forEach(n => { const r = DB.find(x=>x.n===n); if(r) res[r.t].push(r.n); });
             return res;
@@ -437,17 +455,11 @@
             container.innerHTML = '';
             const f = filter.toLowerCase();
 
+            // Official Lists
             const tbRoles = getOfficialContent('TB');
             const bmRoles = getOfficialContent('BM');
             const svRoles = getOfficialContent('SV');
             
-            const getExperimentalRoles = () => {
-                const officials = [...tbRoles.Townsfolk, ...tbRoles.Outsider, ...tbRoles.Minion, ...tbRoles.Demon, ...bmRoles.Townsfolk, ...bmRoles.Outsider, ...bmRoles.Minion, ...bmRoles.Demon, ...svRoles.Townsfolk, ...svRoles.Outsider, ...svRoles.Minion, ...svRoles.Demon];
-                const exp = { Townsfolk:[], Outsider:[], Minion:[], Demon:[] };
-                DB.forEach(r => { if(!officials.includes(r.n)) exp[r.t].push(r.n); });
-                return exp;
-            };
-
             const sources = [
                 { name: "Trouble Brewing", roles: tbRoles },
                 { name: "Bad Moon Rising", roles: bmRoles },
@@ -481,14 +493,35 @@
                             const el = document.createElement('div');
                             const isAdded = builderData[r.t].includes(r.n);
                             el.className = `build-item ${isAdded ? 'added' : ''}`;
-                            el.innerHTML = `<div class="build-left"><img src="${getIconUrl(r.n)}" style="width:20px;height:20px;"><span>${r.n}</span></div><div class="build-icon-btn" onclick="showCard(event, '${r.n}', '${r.t}')">👁</div>`;
+                            el.innerHTML = `
+                                <div class="build-left">
+                                    <img src="${getIconUrl(r.n)}" style="width:20px;height:20px;">
+                                    <span>${r.n}</span>
+                                </div>
+                                <div class="build-icon-btn" onclick="showCard(event, '${r.n}', '${r.t}')">👁</div>
+                            `;
+                            // Toggle Action
                             el.querySelector('.build-left').onclick = () => { toggleBuilderRole(r); renderLibrary(filter); renderBuilderCols(); };
                             section.appendChild(el);
                         });
                     }
                 });
+
                 if(hasMatches) container.appendChild(section);
             });
+        }
+
+        function getExperimentalRoles() {
+            const officials = [
+                ...getOfficialContent('TB').Townsfolk, ...getOfficialContent('TB').Outsider, ...getOfficialContent('TB').Minion, ...getOfficialContent('TB').Demon,
+                ...getOfficialContent('BM').Townsfolk, ...getOfficialContent('BM').Outsider, ...getOfficialContent('BM').Minion, ...getOfficialContent('BM').Demon,
+                ...getOfficialContent('SV').Townsfolk, ...getOfficialContent('SV').Outsider, ...getOfficialContent('SV').Minion, ...getOfficialContent('SV').Demon
+            ];
+            const exp = { Townsfolk:[], Outsider:[], Minion:[], Demon:[] };
+            DB.forEach(r => {
+                if(!officials.includes(r.n)) exp[r.t].push(r.n);
+            });
+            return exp;
         }
 
         function toggleBuilderRole(r) {
@@ -523,10 +556,13 @@
             const title = document.getElementById('build-title').value.trim();
             if(!title) return alert("Title required.");
             const scripts = JSON.parse(localStorage.getItem('grimoire_scripts') || '[]');
+            
+            // If editing, remove old
             if(previewScript && !previewScript.isOfficial) {
                 const idx = scripts.findIndex(s=>s.id===previewScript.id);
                 if(idx>-1) scripts.splice(idx,1);
             }
+
             const newScript = { id: Date.now(), title: title, content: builderData };
             scripts.push(newScript);
             localStorage.setItem('grimoire_scripts', JSON.stringify(scripts));
