@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V25 - Organized Builder</title>
+    <title>Grimoire V26 - Organized Builder</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -95,11 +95,22 @@
         
         .builder-body { display: flex; gap: 20px; flex-grow: 1; overflow: hidden; }
         .library-panel { width: 340px; display: flex; flex-direction: column; border-right: 1px solid var(--border); padding-right: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+        
+        /* Library Tabs */
+        .lib-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+        .lib-tab { 
+            flex: 1; background: transparent; border: none; color: #888; 
+            padding: 8px 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem;
+            border-bottom: 2px solid transparent; transition: 0.2s;
+        }
+        .lib-tab:hover { color: white; background: rgba(255,255,255,0.05); }
+        .lib-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(255,255,255,0.05); }
+
         .library-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
         
         /* New Library Styles */
         .lib-section { margin-bottom: 20px; }
-        .lib-header { font-size: 1rem; font-weight: bold; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .lib-header { font-size: 1rem; font-weight: bold; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; display: none; /* Hidden now due to tabs */ }
         .lib-type-header { font-size: 0.75rem; color: var(--text-muted); margin: 8px 0 4px 5px; font-weight: bold; text-transform: uppercase; }
         
         .build-item { 
@@ -169,16 +180,16 @@
         /* MODALS */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         
-        /* Updated Card View Styles */
+        /* Card View Styles */
         .card-view { 
             width: 90vw; max-width: 400px; 
-            background: #23242a; /* Darker background */
+            background: #23242a; 
             color: #eceff1; 
             border-radius: 16px; 
             padding: 30px; 
             text-align: center; 
             box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            border: 3px solid #444; /* Default border */
+            border: 3px solid #444; 
         }
         .card-img-lg { width: 120px; height: 120px; object-fit: contain; margin: 0 auto 15px auto; display: block; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
         .card-title { font-size: 2rem; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
@@ -234,7 +245,7 @@
         .multi-card-container { display: flex; gap: 10px; overflow-x: auto; max-width: 100%; padding: 10px; }
         .mini-card { background: #eceff1; color: #111; padding: 15px; border-radius: 8px; width: 220px; text-align: center; flex-shrink: 0; }
 
-        /* --- NEW HOVER CARD --- */
+        /* HOVER CARD */
         .hover-card {
             position: fixed;
             width: 300px;
@@ -243,7 +254,7 @@
             padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             z-index: 20000;
-            pointer-events: none; /* Let mouse pass through so it doesn't flicker */
+            pointer-events: none; /* Let mouse pass through */
             border: 2px solid #555;
             color: #eee;
             text-align: center;
@@ -403,9 +414,15 @@
                 <button class="btn" onclick="saveCustomScript()">Save Script</button>
             </div>
         </div>
-        <div style="padding:0 10px 10px 10px;"><input type="text" style="width:100%; padding:10px; background:#111; border:1px solid #333; color:white;" placeholder="Search roles..." onkeyup="filterBuilder(this.value)"></div>
+        <div style="padding:0 10px 10px 10px;"><input type="text" id="build-search" style="width:100%; padding:10px; background:#111; border:1px solid #333; color:white;" placeholder="Search roles..." onkeyup="filterBuilder(this.value)"></div>
         <div class="builder-body">
             <div class="library-panel">
+                <div class="lib-tabs">
+                    <button class="lib-tab active" id="tab-TB" onclick="switchLibTab('Trouble Brewing', this)">TB</button>
+                    <button class="lib-tab" id="tab-BM" onclick="switchLibTab('Bad Moon Rising', this)">BMR</button>
+                    <button class="lib-tab" id="tab-SV" onclick="switchLibTab('Sects & Violets', this)">SV</button>
+                    <button class="lib-tab" id="tab-Exp" onclick="switchLibTab('Experimental', this)">Exp</button>
+                </div>
                 <div class="library-list" id="build-lib"></div>
             </div>
             <div class="script-panel">
@@ -533,7 +550,8 @@
             count: 5,
             sel: { Townsfolk:[], Outsider:[], Minion:[], Demon:[] },
             players: [], locked: true, phase: 0, setupDrunkRole: "", bluffs: [],
-            editId: null, editTemp: {}
+            editId: null, editTemp: {},
+            libTab: "Trouble Brewing" // Default tab
         };
         const baseDist = { 5:[3,0,1,1], 6:[3,1,1,1], 7:[5,0,1,1], 8:[5,1,1,1], 9:[5,2,1,1], 10:[7,0,2,1], 11:[7,1,2,1], 12:[7,2,2,1], 13:[9,0,3,1], 14:[9,1,3,1], 15:[9,2,3,1] };
 
@@ -645,6 +663,16 @@
         }
         function exitBuilder() { document.getElementById('screen-builder').classList.add('hidden'); document.getElementById('screen-splash').classList.remove('hidden'); }
         
+        // Tab switching logic
+        function switchLibTab(name, el) {
+            app.libTab = name;
+            document.querySelectorAll('.lib-tab').forEach(t => t.classList.remove('active'));
+            if(el) el.classList.add('active');
+            // Re-render
+            const filter = document.getElementById('build-search').value;
+            renderLibrary(filter);
+        }
+
         function renderLibrary(filter) {
             const container = document.getElementById('build-lib');
             container.innerHTML = '';
@@ -655,9 +683,6 @@
             const bmRoles = getOfficialContent('BM');
             const svRoles = getOfficialContent('SV');
             
-            // Helper to get roles from DB by name list
-            const getRolesFromList = (list) => DB.filter(r => list.includes(r.n));
-            
             // Define Sources
             const sources = [
                 { name: "Trouble Brewing", roles: tbRoles },
@@ -666,25 +691,20 @@
                 { name: "Experimental", roles: getExperimentalRoles() }
             ];
 
-            sources.forEach(src => {
+            // Filter by Active Tab
+            const activeSource = sources.find(s => s.name === app.libTab);
+            
+            if (activeSource) {
                 const section = document.createElement('div');
                 section.className = 'lib-section';
-                let hasMatches = false;
                 
-                // Add Header
-                const header = document.createElement('div');
-                header.className = 'lib-header';
-                header.innerText = src.name;
-                section.appendChild(header);
+                // (Optional Header removed since tabs exist, but keeping struct)
 
                 ['Townsfolk', 'Outsider', 'Minion', 'Demon'].forEach(t => {
-                    // For Exp, roles are already grouped. For official, they are in the 'roles' object by key
-                    let roleNames = src.roles[t] || []; 
-                    // Filter by search
+                    let roleNames = activeSource.roles[t] || []; 
                     roleNames = roleNames.filter(n => n.toLowerCase().includes(f));
                     
                     if (roleNames.length > 0) {
-                        hasMatches = true;
                         const subHead = document.createElement('div');
                         subHead.className = 'lib-type-header';
                         subHead.innerText = t;
@@ -708,9 +728,8 @@
                         });
                     }
                 });
-
-                if(hasMatches) container.appendChild(section);
-            });
+                container.appendChild(section);
+            }
         }
 
         function getExperimentalRoles() {
