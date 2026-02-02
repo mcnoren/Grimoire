@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V24 - Organized Builder</title>
+    <title>Grimoire V25 - Organized Builder</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -168,10 +168,22 @@
 
         /* MODALS */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .card-view { width: 90vw; max-width: 450px; background: #eceff1; color: #111; border-radius: 20px; padding: 40px 20px; text-align: center; }
-        .card-img-lg { width: 150px; height: 150px; object-fit: contain; margin: 0 auto 20px auto; display: block; }
-        .card-title { font-size: 2.5rem; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
-        .card-desc { font-size: 1.2rem; font-style: italic; }
+        
+        /* Updated Card View Styles */
+        .card-view { 
+            width: 90vw; max-width: 400px; 
+            background: #23242a; /* Darker background */
+            color: #eceff1; 
+            border-radius: 16px; 
+            padding: 30px; 
+            text-align: center; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            border: 3px solid #444; /* Default border */
+        }
+        .card-img-lg { width: 120px; height: 120px; object-fit: contain; margin: 0 auto 15px auto; display: block; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
+        .card-title { font-size: 2rem; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
+        .card-type { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; color: #aaa; margin-bottom: 20px; font-weight: bold; }
+        .card-desc { font-size: 1.1rem; line-height: 1.5; font-style: italic; color: #ddd; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; }
         
         .edit-box { background: var(--bg-panel); padding: 25px; border-radius: 16px; width: 400px; max-width: 95vw; border: 1px solid var(--border); box-shadow: 0 10px 40px black; }
         .edit-header-input { width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--border); color: white; font-size: 1.5rem; font-weight: bold; padding: 5px; margin-bottom: 20px; text-align: center; }
@@ -221,6 +233,26 @@
 
         .multi-card-container { display: flex; gap: 10px; overflow-x: auto; max-width: 100%; padding: 10px; }
         .mini-card { background: #eceff1; color: #111; padding: 15px; border-radius: 8px; width: 220px; text-align: center; flex-shrink: 0; }
+
+        /* --- NEW HOVER CARD --- */
+        .hover-card {
+            position: fixed;
+            width: 300px;
+            background: #1a1a20; /* Dark bg */
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            z-index: 20000;
+            pointer-events: none; /* Let mouse pass through so it doesn't flicker */
+            border: 2px solid #555;
+            color: #eee;
+            text-align: center;
+        }
+        .hover-head { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; text-align: left; }
+        .hover-img { width: 50px; height: 50px; object-fit: contain; }
+        .hover-info h3 { margin: 0; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .hover-info span { font-size: 0.75rem; text-transform: uppercase; color: #888; letter-spacing: 1px; font-weight: bold; }
+        .hover-desc { font-size: 0.95rem; font-style: italic; line-height: 1.4; color: #ccc; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
 
     </style>
     
@@ -433,6 +465,17 @@
         </div>
     </div>
 
+    <div id="hover-tooltip" class="hover-card hidden">
+        <div class="hover-head">
+            <img id="ht-img" class="hover-img" src="">
+            <div class="hover-info">
+                <h3 id="ht-name">Role Name</h3>
+                <span id="ht-type">Townsfolk</span>
+            </div>
+        </div>
+        <div class="hover-desc" id="ht-desc">Description goes here...</div>
+    </div>
+
     <div id="modal-edit" class="modal-overlay hidden">
         <div class="edit-box">
             <input type="text" id="edit-name-input" class="edit-header-input" placeholder="Player Name">
@@ -475,6 +518,13 @@
             let cClass = 'b-town'; if(type==='Outsider') cClass='b-out'; if(type==='Minion') cClass='b-min'; if(type==='Demon') cClass='b-dem';
             return `<div class="badge-icon ${cClass}"><span>${name ? name.charAt(0) : '?'}</span></div>`;
         };
+        const getColorByType = (type) => {
+            if(type==='Townsfolk') return 'var(--town-color)';
+            if(type==='Outsider') return 'var(--out-color)';
+            if(type==='Minion') return 'var(--min-color)';
+            if(type==='Demon') return 'var(--dem-color)';
+            return '#555';
+        }
 
         // --- STATE & STORAGE ---
         let app = {
@@ -502,6 +552,22 @@
                 card.innerHTML = `<h3>${s.title}</h3><p>Custom Script</p>`;
                 card.onclick = () => openPreview(s.id);
                 grid.insertBefore(card, grid.lastElementChild);
+            });
+            
+            // Mouse tracking for tooltip
+            document.addEventListener('mousemove', (e) => {
+                const tt = document.getElementById('hover-tooltip');
+                if(!tt.classList.contains('hidden')) {
+                    // Position to bottom right of cursor
+                    let top = e.clientY + 15;
+                    let left = e.clientX + 15;
+                    // Boundary checks
+                    if(left + 320 > window.innerWidth) left = e.clientX - 320;
+                    if(top + 150 > window.innerHeight) top = e.clientY - 150;
+                    
+                    tt.style.top = top + 'px';
+                    tt.style.left = left + 'px';
+                }
             });
         }
 
@@ -634,7 +700,7 @@
                                     <img src="${getIconUrl(r.n)}" style="width:20px;height:20px;">
                                     <span>${r.n}</span>
                                 </div>
-                                <div class="build-eye" onclick="showCard(event, '${r.n}', '${r.t}')">👁</div>
+                                <div class="build-eye" onclick="showCard(event, '${r.n}', '${r.t}')" onmouseenter="showHover(event, '${r.n}', '${r.t}')" onmouseleave="hideHover()">👁</div>
                             `;
                             // Toggle Action
                             el.querySelector('.build-left').onclick = () => { toggleBuilderRole(r); renderLibrary(filter); renderBuilderCols(); };
@@ -779,7 +845,7 @@
         function createRoleItem(r, type, disabled) {
             const el = document.createElement('div'); el.className = 'role-item';
             const url = getIconUrl(r.n); const modHtml = r.mod ? `<span class="mod-text">[${r.mod}]</span>` : '';
-            el.innerHTML = `<div class="role-left"><img src="${url}" class="setup-icon" onerror="this.style.opacity=0.3"><span style="${disabled?'text-decoration:line-through':''}">${r.n}${modHtml}</span></div><div class="eye-btn" onclick="showCard(event, '${r.n}', '${type}')">👁</div>`;
+            el.innerHTML = `<div class="role-left"><img src="${url}" class="setup-icon" onerror="this.style.opacity=0.3"><span style="${disabled?'text-decoration:line-through':''}">${r.n}${modHtml}</span></div><div class="eye-btn" onclick="showCard(event, '${r.n}', '${type}')" onmouseenter="showHover(event, '${r.n}', '${type}')" onmouseleave="hideHover()">👁</div>`;
             return el;
         }
         function enterGame() { document.getElementById('screen-setup-bluffs').classList.add('hidden'); document.getElementById('screen-game').classList.remove('hidden'); log("Welcome to Ravenswood Bluff."); }
@@ -791,11 +857,14 @@
             const p = { id:Date.now(), name:n, role:"", fake:"", align:"good", dead:false, reminders:[], x:0, y:0 };
             app.players.push(p);
             const el = document.createElement('div'); el.id = `token-${p.id}`; el.className = 'token good draggable';
-            el.innerHTML = `<div class="token-reminders"></div><div class="token-icon-wrap"><img class="token-img" src="" style="display:none">${getBadgeHtml('?', 'Townsfolk')}</div><div class="token-name">${n}</div><div class="token-ctrl ctrl-eye" onmousedown="viewPlayerCard(event, ${p.id})">👁</div><div class="token-ctrl ctrl-del" onmousedown="delPlayer(event, ${p.id})">✕</div><div class="token-ctrl ctrl-vote" onmousedown="toggleVote(event, ${p.id})"></div>`;
+            el.innerHTML = `<div class="token-reminders"></div><div class="token-icon-wrap"><img class="token-img" src="" style="display:none">${getBadgeHtml('?', 'Townsfolk')}</div><div class="token-name">${n}</div><div class="token-ctrl ctrl-eye" onmousedown="viewPlayerCard(event, ${p.id})" onmouseenter="showHover(event, getPlayerRoleName(${p.id}), getPlayerRoleType(${p.id}))" onmouseleave="hideHover()">👁</div><div class="token-ctrl ctrl-del" onmousedown="delPlayer(event, ${p.id})">✕</div><div class="token-ctrl ctrl-vote" onmousedown="toggleVote(event, ${p.id})"></div>`;
             const board = document.getElementById('game-board'); p.x = board.offsetWidth/2 - 55; p.y = board.offsetHeight/2 - 55; el.style.left = p.x+'px'; el.style.top = p.y+'px';
             el.onmousedown = (e) => startDrag(e, el, p); el.onclick = (e) => { if(!e.target.classList.contains('token-ctrl') && !e.target.classList.contains('ctrl-vote')) { if(app.locked) openEdit(p.id); } };
             board.appendChild(el); document.getElementById('input-name').value = ''; updateToken(p);
         }
+        function getPlayerRoleName(id) { const p = app.players.find(x=>x.id===id); if(!p) return null; return (p.role==="Drunk" && p.fake) ? p.fake : p.role; }
+        function getPlayerRoleType(id) { const n = getPlayerRoleName(id); if(!n) return 'Townsfolk'; return getRoleType(n); }
+        
         function randomizeRoles() {
             let pool = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => pool.push(...app.sel[t]));
             for(let i=pool.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
@@ -811,6 +880,11 @@
             if(rShow) { img.src = getIconUrl(rShow); img.style.display='block'; img.onerror = () => { img.style.display='none'; badge.style.display='flex'; }; badge.innerHTML = `<span>${rShow.charAt(0)}</span>`; badge.className = `badge-icon ${type==='Demon'?'b-dem':type==='Minion'?'b-min':type==='Outsider'?'b-out':'b-town'}`; } else { img.style.display='none'; badge.style.display='none'; }
             const v = el.querySelector('.ctrl-vote'); if(p.dead) v.style.display='block'; else { v.style.display='none'; v.classList.remove('used'); }
             el.querySelector('.token-reminders').innerHTML = p.reminders.map(r => `<div class="reminder-tag">${r}</div>`).join('');
+            
+            // Re-bind hover event with new role data
+            const eye = el.querySelector('.ctrl-eye');
+            eye.onmouseenter = (e) => showHover(e, rShow, type);
+            eye.onmouseleave = () => hideHover();
         }
         function startDrag(e, el, p) { if(app.locked || e.target.classList.contains('token-ctrl')) return; drag = el; const r = el.getBoundingClientRect(); offX = e.clientX - r.left; offY = e.clientY - r.top; document.addEventListener('mousemove', onDrag); document.addEventListener('mouseup', stopDrag); }
         function onDrag(e) { if(!drag) return; const b = document.getElementById('game-board').getBoundingClientRect(); drag.style.left = (e.clientX - b.left - offX) + 'px'; drag.style.top = (e.clientY - b.top - offY) + 'px'; }
@@ -826,7 +900,53 @@
         function saveEditAndClose() { const p = app.players.find(x=>x.id===app.editId); p.name = document.getElementById('edit-name-input').value; p.role = app.editTemp.role; p.align = app.editTemp.align; p.dead = app.editTemp.dead; p.reminders = app.editTemp.reminders; updateToken(p); document.getElementById('modal-edit').classList.add('hidden'); }
         function openRolePicker() { const grid = document.getElementById('role-picker-grid'); grid.innerHTML = ''; const allRoles = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allRoles.push(...app.activeRoles[t])); allRoles.forEach(r => { const item = document.createElement('div'); item.className = 'picker-item'; if(app.editTemp.role === r) item.classList.add('active'); item.innerHTML = `<img src="${getIconUrl(r)}" class="picker-icon"><span class="picker-name">${r}</span>`; item.onclick = () => { app.editTemp.role = r; document.getElementById('edit-role-text').innerText = r; document.getElementById('edit-role-icon').src = getIconUrl(r); document.getElementById('edit-role-icon').style.display = 'block'; document.getElementById('modal-role-picker').classList.add('hidden'); }; grid.appendChild(item); }); document.getElementById('modal-role-picker').classList.remove('hidden'); }
         function distributePlayers() { if(app.players.length === 0) return; const b = document.getElementById('game-board').getBoundingClientRect(); const cx = b.width/2; const cy = b.height/2; const r = 250; app.players.forEach((p, i) => { const a = (i/app.players.length)*2*Math.PI-(Math.PI/2); p.x = cx+r*Math.cos(a)-55; p.y = cy+r*Math.sin(a)-55; const el=document.getElementById(`token-${p.id}`); el.style.left=p.x+'px'; el.style.top=p.y+'px'; }); }
-        function showCard(e, name, type) { if(e) e.stopPropagation(); const d = DB.find(x=>x.n===name) || {d:"..."}; document.getElementById('cv-name').innerText = name; document.getElementById('cv-type').innerText = type; document.getElementById('cv-desc').innerText = d.d; const img = document.getElementById('cv-img'); img.src = getIconUrl(name); img.style.display = 'block'; img.onerror = () => { img.style.display = 'none'; }; document.getElementById('modal-card').classList.remove('hidden'); }
+        
+        function showCard(e, name, type) { 
+            if(e) e.stopPropagation(); 
+            const d = DB.find(x=>x.n===name) || {d:"..."}; 
+            document.getElementById('cv-name').innerText = name; 
+            document.getElementById('cv-type').innerText = type; 
+            document.getElementById('cv-desc').innerText = d.d; 
+            const img = document.getElementById('cv-img'); 
+            img.src = getIconUrl(name); 
+            img.style.display = 'block'; 
+            img.onerror = () => { img.style.display = 'none'; }; 
+            
+            // Set Color Style
+            const col = getColorByType(type);
+            document.querySelector('.card-view').style.borderColor = col;
+            document.getElementById('cv-type').style.color = col;
+
+            document.getElementById('modal-card').classList.remove('hidden'); 
+        }
+
+        // --- NEW HOVER LOGIC ---
+        function showHover(e, name, type) {
+            if(!name) return;
+            const tt = document.getElementById('hover-tooltip');
+            const d = DB.find(x=>x.n===name) || {d:"..."};
+            
+            document.getElementById('ht-name').innerText = name;
+            document.getElementById('ht-type').innerText = type;
+            document.getElementById('ht-desc').innerText = d.d;
+            
+            const img = document.getElementById('ht-img');
+            img.src = getIconUrl(name);
+            
+            // Color Coding
+            const col = getColorByType(type);
+            tt.style.borderColor = col;
+            document.getElementById('ht-type').style.color = col;
+            document.getElementById('ht-name').style.color = col;
+
+            // Initial Position
+            tt.classList.remove('hidden');
+        }
+
+        function hideHover() {
+            document.getElementById('hover-tooltip').classList.add('hidden');
+        }
+
         function showBluffsModal() { if(!app.bluffs || app.bluffs.length === 0) return alert("No Bluffs."); const cont = document.getElementById('bluff-cards-cont'); cont.innerHTML = ''; app.bluffs.forEach(b => { const type = getRoleType(b); const d = DB.find(x=>x.n===b); const card = document.createElement('div'); card.className = 'mini-card'; card.innerHTML = `<img src="${getIconUrl(b)}" style="width:60px; height:60px; object-fit:contain; margin-bottom:10px;"><div style="font-weight:900; text-transform:uppercase;">${b}</div><div style="font-size:0.8rem; margin:5px 0 10px; color:#555;">${type}</div><div style="font-size:0.9rem; font-style:italic;">${d?d.d:''}</div>`; cont.appendChild(card); }); document.getElementById('modal-bluffs').classList.remove('hidden'); }
         function getRoleType(n) { const r = DB.find(x => x.n === n); return r ? r.t : 'Townsfolk'; }
         function log(t) { const d=document.createElement('div'); d.innerText=t; d.style.borderBottom="1px solid #222"; document.getElementById('game-log').prepend(d); }
