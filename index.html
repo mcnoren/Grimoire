@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V26 - Organized Builder</title>
+    <title>Grimoire V27 - Expanded Roles</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -17,6 +17,9 @@
             --out-color: #2be9e9;
             --min-color: #e9952b;
             --dem-color: #e92b2b;
+            --trav-color: #d12be9;
+            --fab-color: #e9e22b;
+            --lor-color: #e96b2b;
             --rem-color: #ffd700;
         }
 
@@ -97,11 +100,11 @@
         .library-panel { width: 340px; display: flex; flex-direction: column; border-right: 1px solid var(--border); padding-right: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; }
         
         /* Library Tabs */
-        .lib-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+        .lib-tabs { display: flex; gap: 5px; border-bottom: 1px solid var(--border); margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px; }
         .lib-tab { 
-            flex: 1; background: transparent; border: none; color: #888; 
-            padding: 8px 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem;
-            border-bottom: 2px solid transparent; transition: 0.2s;
+            background: transparent; border: none; color: #888; white-space: nowrap;
+            padding: 8px 10px; cursor: pointer; font-weight: bold; font-size: 0.8rem;
+            border-bottom: 2px solid transparent; transition: 0.2s; flex-shrink: 0;
         }
         .lib-tab:hover { color: white; background: rgba(255,255,255,0.05); }
         .lib-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(255,255,255,0.05); }
@@ -110,7 +113,7 @@
         
         /* New Library Styles */
         .lib-section { margin-bottom: 20px; }
-        .lib-header { font-size: 1rem; font-weight: bold; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; display: none; /* Hidden now due to tabs */ }
+        .lib-header { font-size: 1rem; font-weight: bold; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; display: none; }
         .lib-type-header { font-size: 0.75rem; color: var(--text-muted); margin: 8px 0 4px 5px; font-weight: bold; text-transform: uppercase; }
         
         .build-item { 
@@ -125,7 +128,9 @@
         .build-eye:hover { opacity: 1; color: var(--accent); }
 
         .script-panel { flex-grow: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; overflow-y: auto; padding-left: 10px; }
-        .script-col { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; }
+        /* Expanded Grid for Builder to 7 cols if needed, but we scroll horizontally? No, lets stack Trav/Fab/Lor */
+        
+        .script-col { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; min-width: 150px; }
         .script-col h4 { margin-top: 0; color: var(--text-muted); border-bottom: 1px solid #333; padding-bottom: 5px; text-align: center; }
         .script-col div { padding: 5px; border-bottom: 1px solid #222; font-size: 0.9rem; }
 
@@ -227,6 +232,9 @@
         .b-out { background: linear-gradient(135deg, #2be9e9, #1a8f8f); color: #000; }
         .b-min { background: linear-gradient(135deg, #e9952b, #8f5a1a); }
         .b-dem { background: linear-gradient(135deg, #e92b2b, #8f1a1a); }
+        .b-trav { background: linear-gradient(135deg, #d12be9, #8f1a8f); }
+        .b-fab { background: linear-gradient(135deg, #e9e22b, #8f8f1a); color: #000; }
+        .b-lor { background: linear-gradient(135deg, #e96b2b, #8f3a1a); }
 
         /* Role Picker in Modal */
         #modal-role-picker .role-grid-full {
@@ -271,6 +279,7 @@
         // --- DATABASE LOADED FIRST ---
         // * = First Night Wake
         const DB = [
+            // Trouble Brewing
             {n:"Washerwoman",t:"Townsfolk",d:"Start knowing* that 1 of 2 players is a specific Townsfolk.",f:true},
             {n:"Librarian",t:"Townsfolk",d:"Start knowing* that 1 of 2 players is a specific Outsider.",f:true},
             {n:"Investigator",t:"Townsfolk",d:"Start knowing* that 1 of 2 players is a specific Minion.",f:true},
@@ -348,13 +357,83 @@
             {n:"No Dashii",t:"Demon",d:"Each night*, choose a player: they die. Your 2 Townsfolk neighbors are poisoned."},
             {n:"Vigormortis",t:"Demon",d:"Each night*, choose a player: they die. Minions you kill keep abilities & poison 1 neighbor."},
             
-            // Experimental / Other
+            // Travelers
+            {n:"Scapegoat",t:"Traveler",d:"If a player of your alignment is executed, you might be executed instead."},
+            {n:"Gunslinger",t:"Traveler",d:"Each day, after the 1st vote has been tallied, you may choose a player that voted: they die."},
+            {n:"Beggar",t:"Traveler",d:"You must use a vote token to vote. If a dead player gives you theirs, you learn their alignment. You are sober & healthy."},
+            {n:"Bureaucrat",t:"Traveler",d:"Each night, choose a player (not yourself): their vote counts as 3 votes tomorrow."},
+            {n:"Thief",t:"Traveler",d:"Each night, choose a player (not yourself): their vote counts negatively tomorrow."},
+            {n:"Butcher",t:"Traveler",d:"Each day, after the 1st execution, you nominate again."},
+            {n:"Bone Collector",t:"Traveler",d:"Once per game, at night*, choose a dead player; they regain their ability until dusk."},
+            {n:"Harlot",t:"Traveler",d:"Each night*, choose a living player: if they agree, you learn their character, but you both might die."},
+            {n:"Barista",t:"Traveler",d:"Each night, until dusk, 1) a player becomes sober, healthy, & gets true info, or 2) their ability works twice. They learn which."},
+            {n:"Deviant",t:"Traveler",d:"If you were funny today, you cannot be exiled."},
+            {n:"Apprentice",t:"Traveler",d:"On your 1st night, you gain a Townsfolk ability (if good), or a Minion ability (if evil)."},
+            {n:"Matron",t:"Traveler",d:"Players may not leave their seats to talk in private. Each day, you may choose up to 3 sets of 2 players to swap seats."},
+            {n:"Voudon",t:"Traveler",d:"Only you & the dead can vote. They don't need a vote token to do so. A 50% majority is not required."},
+            {n:"Judge",t:"Traveler",d:"Once per game, if another player nominated, you may choose to force the current execution to pass or fail."},
+            {n:"Bishop",t:"Traveler",d:"Only the Storyteller can nominate. At least 1 opposing player must be nominated each day."},
+            {n:"Gangster",t:"Traveler",d:"Each day, you may choose to kill a living neighbour, if your other living neighbour agrees."},
+            
+            // Fabled
+            {n:"Doomsayer",t:"Fabled",d:"If 4 or more players live, each living player may publicly choose (once per game) that a player of their own alignment dies."},
+            {n:"Angel",t:"Fabled",d:"Something bad might happen to whomever is most responsible for the death of a new player."},
+            {n:"Buddhist",t:"Fabled",d:"For the first 2 minutes of each day, veteran players may not talk."},
+            {n:"Hell's Librarian",t:"Fabled",d:"Something bad might happen to whomever talks when the Storyteller has asked for silence."},
+            {n:"Revolutionary",t:"Fabled",d:"2 neighbouring players are known to be the same alignment. Once per game, 1 of them registers falsely."},
+            {n:"Fiddler",t:"Fabled",d:"Once per game, the Demon secretly chooses an opposing player: all players choose which of these 2 players win."},
+            {n:"Toymaker",t:"Fabled",d:"The Demon may choose not to attack & must do this at least once per game. Evil players get normal starting info."},
+            {n:"Fibbin",t:"Fabled",d:"Once per game, 1 good player might get incorrect information."},
+            {n:"Duchess",t:"Fabled",d:"Each day, 3 players may choose to visit you. At night*, each visitor learns how many visitors are evil, but 1 gets false info."},
+            {n:"Sentinel",t:"Fabled",d:"There might be 1 extra or 1 fewer Outsider in play."},
+            {n:"Spirit of Ivory",t:"Fabled",d:"There can't be more than 1 extra evil player."},
+            {n:"Djinn",t:"Fabled",d:"Use the Djinn's special rule. All players know what it is."},
+            
+            // Loric
+            {n:"Big Wig",t:"Loric",d:"Each nominee chooses a player: until voting, only they may speak & they are mad the nominee is good or they might die."},
+            {n:"Tor",t:"Loric",d:"Players don't know their character or alignment. They learn them when they die."},
+            {n:"Bootlegger",t:"Loric",d:"Homebrew characters may be in play."},
+            {n:"Gardener",t:"Loric",d:"The Storyteller assigns characters & alignments."},
+            {n:"Storm Catcher",t:"Loric",d:"Name a character. If in play, they are safe from the Demon, but the Demon learns who they are."},
+
+            // Experimental
             {n:"Noble",t:"Townsfolk",d:"Start knowing* 3 players, 1 is evil.",f:true},
             {n:"Bounty Hunter",t:"Townsfolk",d:"Start knowing* 1 evil player. If the good player you know dies, you learn another.",f:true},
             {n:"Balloonist",t:"Townsfolk",d:"Each night, learn a player of a different character type than last night. [+1 Outsider]",mod:"+1 Outsider"},
             {n:"Al-Hadikhia",t:"Demon",d:"Each night*, choose 3 players. They act. If all live, all die. Else, those who chose death die."},
             {n:"Atheist",t:"Townsfolk",d:"The Storyteller can break the rules. If executed, good wins if there is no Demon."},
-            {n:"Heretic",t:"Outsider",d:"Whoever wins, loses & whoever loses, wins."}
+            {n:"Heretic",t:"Outsider",d:"Whoever wins, loses & whoever loses, wins."},
+            {n:"Amnesiac",t:"Townsfolk",d:"You do not know your ability. Each day, guess your ability: you learn if you are correct."},
+            {n:"Engineer",t:"Townsfolk",d:"Once per game, at night, choose which Minions or which Demon is in play."},
+            {n:"Huntsman",t:"Townsfolk",d:"Once per game, at night, choose a player: if they are the Damsel, they become a not-in-play Townsfolk."},
+            {n:"Legion",t:"Demon",d:"Each night*, a player might die. Executions fail if only evil voted. You register as a Minion too. (Most players are Legion).",f:true},
+            {n:"Lil' Monsta",t:"Demon",d:"Each night, Minions choose who babysits Lil' Monsta & \"is the Demon\". A player dies each night*.",f:true},
+            {n:"Riot",t:"Demon",d:"Nominees die, but nominate again immediately. Day 3, evil wins."},
+            {n:"Widow",t:"Minion",d:"Start knowing the Grimoire. Each night, choose a player: they are poisoned. A good player knows a Widow is in play.",f:true},
+            {n:"Vizier",t:"Minion",d:"You can choose to execute immediately. You know the Demon. Good players know you are the Vizier.",f:true},
+            {n:"Organ Grinder",t:"Minion",d:"You cannot die. Eyes closed voting."},
+            {n:"Summoner",t:"Minion",d:"Night 3, choose a player: they become a Demon. You are evil."},
+            {n:"Marionette",t:"Minion",d:"You think you are a good character but you are not. The Demon knows who you are.",f:true},
+            {n:"Damsel",t:"Outsider",d:"All Minions know you are in play. If a Minion guesses you, your team loses.",f:true},
+            {n:"Politician",t:"Outsider",d:"If you were the player most responsible for your team losing, you win."},
+            {n:"Snitch",t:"Outsider",d:"Minions get 3 bluffs.",f:true},
+            {n:"Golem",t:"Outsider",d:"You can only kill once."},
+            {n:"King",t:"Townsfolk",d:"Each night, if the dead outnumber the living, you learn a living character.",f:true},
+            {n:"Choirboy",t:"Townsfolk",d:"If the King dies, you learn the Demon."},
+            {n:"High Priestess",t:"Townsfolk",d:"Each opening night, learn a player. They are good.",f:true},
+            {n:"General",t:"Townsfolk",d:"Start knowing which team is winning.",f:true},
+            {n:"Farmer",t:"Townsfolk",d:"If you die at night, an alive good player becomes a Farmer."},
+            {n:"Magician",t:"Townsfolk",d:"The Demon thinks you are a Minion. Minions think you are a Minion.",f:true},
+            {n:"Pixie",t:"Townsfolk",d:"Start knowing 1 in-play Townsfolk. If you were mad you were them, you gain their ability when they die.",f:true},
+            {n:"Acrobat",t:"Townsfolk",d:"Each night*, if a neighbor is drunk or poisoned, you die."},
+            {n:"Cult Leader",t:"Townsfolk",d:"Each night, choose a player: they join your cult. If all players are cult, you win."},
+            {n:"Lycanthrope",t:"Townsfolk",d:"Each night*, choose a player: they die. Good players can only die this way."},
+            {n:"Alchemist",t:"Townsfolk",d:"You have a Minion ability.",f:true},
+            {n:"Knight",t:"Townsfolk",d:"You start knowing 2 players that are not the Demon.",f:true},
+            {n:"Steward",t:"Townsfolk",d:"You start knowing 1 good player.",f:true},
+            {n:"Village Idiot",t:"Townsfolk",d:"Each night, choose a player: you learn their alignment. +2 Village Idiots. One is drunk."},
+            {n:"Puzzlemaster",t:"Outsider",d:"1 player is drunk, even if you die. If you guess who, you learn the Demon."},
+            {n:"Plague Doctor",t:"Outsider",d:"If you die, the Storyteller gains a Minion ability."}
         ];
     </script>
 </head>
@@ -421,15 +500,21 @@
                     <button class="lib-tab active" id="tab-TB" onclick="switchLibTab('Trouble Brewing', this)">TB</button>
                     <button class="lib-tab" id="tab-BM" onclick="switchLibTab('Bad Moon Rising', this)">BMR</button>
                     <button class="lib-tab" id="tab-SV" onclick="switchLibTab('Sects & Violets', this)">SV</button>
+                    <button class="lib-tab" id="tab-Trav" onclick="switchLibTab('Traveler', this)">Trav</button>
+                    <button class="lib-tab" id="tab-Fab" onclick="switchLibTab('Fabled', this)">Fab</button>
+                    <button class="lib-tab" id="tab-Lor" onclick="switchLibTab('Loric', this)">Lor</button>
                     <button class="lib-tab" id="tab-Exp" onclick="switchLibTab('Experimental', this)">Exp</button>
                 </div>
                 <div class="library-list" id="build-lib"></div>
             </div>
-            <div class="script-panel">
+            <div class="script-panel" style="grid-template-columns: repeat(7, 1fr);">
                 <div class="script-col" id="b-town"><h4>Townsfolk</h4></div>
                 <div class="script-col" id="b-out"><h4>Outsider</h4></div>
                 <div class="script-col" id="b-min"><h4>Minion</h4></div>
                 <div class="script-col" id="b-dem"><h4>Demon</h4></div>
+                <div class="script-col" id="b-trav"><h4>Traveler</h4></div>
+                <div class="script-col" id="b-fab"><h4>Fabled</h4></div>
+                <div class="script-col" id="b-lor"><h4>Loric</h4></div>
             </div>
         </div>
     </div>
@@ -532,7 +617,13 @@
             return `./icons/${cleanName(roleName)}.png`;
         }
         const getBadgeHtml = (name, type) => {
-            let cClass = 'b-town'; if(type==='Outsider') cClass='b-out'; if(type==='Minion') cClass='b-min'; if(type==='Demon') cClass='b-dem';
+            let cClass = 'b-town'; 
+            if(type==='Outsider') cClass='b-out'; 
+            if(type==='Minion') cClass='b-min'; 
+            if(type==='Demon') cClass='b-dem';
+            if(type==='Traveler') cClass='b-trav';
+            if(type==='Fabled') cClass='b-fab';
+            if(type==='Loric') cClass='b-lor';
             return `<div class="badge-icon ${cClass}"><span>${name ? name.charAt(0) : '?'}</span></div>`;
         };
         const getColorByType = (type) => {
@@ -540,6 +631,9 @@
             if(type==='Outsider') return 'var(--out-color)';
             if(type==='Minion') return 'var(--min-color)';
             if(type==='Demon') return 'var(--dem-color)';
+            if(type==='Traveler') return 'var(--trav-color)';
+            if(type==='Fabled') return 'var(--fab-color)';
+            if(type==='Loric') return 'var(--lor-color)';
             return '#555';
         }
 
@@ -608,7 +702,10 @@
             document.getElementById('prev-title').innerText = scriptData.title;
             const con = document.getElementById('prev-lists'); con.innerHTML = '';
             
-            ['Townsfolk','Outsider','Minion','Demon'].forEach(type => {
+            // Render all categories present
+            ['Townsfolk','Outsider','Minion','Demon','Traveler','Fabled','Loric'].forEach(type => {
+                if(!scriptData.content[type] || scriptData.content[type].length === 0) return;
+                
                 const col = document.createElement('div'); col.className='preview-col';
                 col.innerHTML = `<h4>${type}</h4>`;
                 scriptData.content[type].forEach(rName => {
@@ -639,7 +736,7 @@
             if(id==='BM') list = ["Grandmother","Sailor","Chambermaid","Exorcist","Innkeeper","Gambler","Gossip","Courtier","Professor","Minstrel","Tea Lady","Pacifist","Fool","Tinker","Moonchild","Goon","Lunatic","Godfather","Devils Advocate","Assassin","Mastermind","Zombuul","Pukka","Shabaloth","Po"];
             if(id==='SV') list = ["Clockmaker","Dreamer","Snake Charmer","Mathematician","Flowergirl","Town Crier","Oracle","Savant","Seamstress","Philosopher","Artist","Juggler","Sage","Mutant","Sweetheart","Barber","Klutz","Witch","Cerebus","Pit-Hag","Evil Twin","Fang Gu","Vortox","No Dashii","Vigormortis"];
             
-            const res = {Townsfolk:[], Outsider:[], Minion:[], Demon:[]};
+            const res = {Townsfolk:[], Outsider:[], Minion:[], Demon:[], Traveler:[], Fabled:[], Loric:[]};
             list.forEach(n => { const r = DB.find(x=>x.n===n); if(r) res[r.t].push(r.n); });
             return res;
         }
@@ -653,9 +750,9 @@
         }
 
         // --- BUILDER ---
-        let builderData = { Townsfolk:[], Outsider:[], Minion:[], Demon:[] };
+        let builderData = { Townsfolk:[], Outsider:[], Minion:[], Demon:[], Traveler:[], Fabled:[], Loric:[] };
         function openBuilder() {
-            builderData = { Townsfolk:[], Outsider:[], Minion:[], Demon:[] };
+            builderData = { Townsfolk:[], Outsider:[], Minion:[], Demon:[], Traveler:[], Fabled:[], Loric:[] };
             document.getElementById('build-title').value = "";
             document.getElementById('screen-splash').classList.add('hidden');
             document.getElementById('screen-builder').classList.remove('hidden');
@@ -688,6 +785,9 @@
                 { name: "Trouble Brewing", roles: tbRoles },
                 { name: "Bad Moon Rising", roles: bmRoles },
                 { name: "Sects & Violets", roles: svRoles },
+                { name: "Traveler", roles: getRolesByType('Traveler') },
+                { name: "Fabled", roles: getRolesByType('Fabled') },
+                { name: "Loric", roles: getRolesByType('Loric') },
                 { name: "Experimental", roles: getExperimentalRoles() }
             ];
 
@@ -698,9 +798,7 @@
                 const section = document.createElement('div');
                 section.className = 'lib-section';
                 
-                // (Optional Header removed since tabs exist, but keeping struct)
-
-                ['Townsfolk', 'Outsider', 'Minion', 'Demon'].forEach(t => {
+                ['Townsfolk', 'Outsider', 'Minion', 'Demon', 'Traveler', 'Fabled', 'Loric'].forEach(t => {
                     let roleNames = activeSource.roles[t] || []; 
                     roleNames = roleNames.filter(n => n.toLowerCase().includes(f));
                     
@@ -713,7 +811,7 @@
                         roleNames.forEach(rName => {
                             const r = DB.find(x => x.n === rName) || {n:rName, t:t};
                             const el = document.createElement('div');
-                            const isAdded = builderData[r.t].includes(r.n);
+                            const isAdded = builderData[r.t] && builderData[r.t].includes(r.n);
                             el.className = `build-item ${isAdded ? 'added' : ''}`;
                             el.innerHTML = `
                                 <div class="build-left">
@@ -733,17 +831,28 @@
         }
 
         function getExperimentalRoles() {
-            // All roles NOT in the official 3
+            // All roles NOT in the official 3 AND not in Trav/Fab/Lor categories
             const officials = [
                 ...getOfficialContent('TB').Townsfolk, ...getOfficialContent('TB').Outsider, ...getOfficialContent('TB').Minion, ...getOfficialContent('TB').Demon,
                 ...getOfficialContent('BM').Townsfolk, ...getOfficialContent('BM').Outsider, ...getOfficialContent('BM').Minion, ...getOfficialContent('BM').Demon,
                 ...getOfficialContent('SV').Townsfolk, ...getOfficialContent('SV').Outsider, ...getOfficialContent('SV').Minion, ...getOfficialContent('SV').Demon
             ];
-            const exp = { Townsfolk:[], Outsider:[], Minion:[], Demon:[] };
+            const exp = { Townsfolk:[], Outsider:[], Minion:[], Demon:[], Traveler:[], Fabled:[], Loric:[] };
             DB.forEach(r => {
-                if(!officials.includes(r.n)) exp[r.t].push(r.n);
+                // If it's a base type and not in official lists, it's Experimental
+                if(['Townsfolk','Outsider','Minion','Demon'].includes(r.t) && !officials.includes(r.n)) {
+                    exp[r.t].push(r.n);
+                }
             });
             return exp;
+        }
+
+        function getRolesByType(targetType) {
+            const res = { Townsfolk:[], Outsider:[], Minion:[], Demon:[], Traveler:[], Fabled:[], Loric:[] };
+            DB.forEach(r => {
+                if(r.t === targetType) res[targetType].push(r.n);
+            });
+            return res;
         }
 
         function toggleBuilderRole(r) {
@@ -753,8 +862,8 @@
         }
         
         function renderBuilderCols() {
-            const map = {Townsfolk:'b-town', Outsider:'b-out', Minion:'b-min', Demon:'b-dem'};
-            ['Townsfolk','Outsider','Minion','Demon'].forEach(t => {
+            const map = {Townsfolk:'b-town', Outsider:'b-out', Minion:'b-min', Demon:'b-dem', Traveler:'b-trav', Fabled:'b-fab', Loric:'b-lor'};
+            ['Townsfolk','Outsider','Minion','Demon','Traveler','Fabled','Loric'].forEach(t => {
                 const col = document.getElementById(map[t]);
                 // Clear but keep header
                 col.innerHTML = `<h4>${t}</h4>` + builderData[t].map(n=>`<div>${n}</div>`).join('');
@@ -789,6 +898,11 @@
         }
         function editCustomScript() {
             builderData = JSON.parse(JSON.stringify(previewScript.content)); // Clone
+            // Ensure all keys exist
+            ['Townsfolk','Outsider','Minion','Demon','Traveler','Fabled','Loric'].forEach(k => {
+                if(!builderData[k]) builderData[k] = [];
+            });
+
             document.getElementById('build-title').value = previewScript.title;
             document.getElementById('modal-preview').classList.add('hidden');
             document.getElementById('screen-builder').classList.remove('hidden');
@@ -800,6 +914,7 @@
         function renderStep1() {
             const con = document.getElementById('role-grid-1'); con.innerHTML = '';
             for(let type in app.activeRoles) {
+                if(app.activeRoles[type].length === 0) continue;
                 const col = document.createElement('div'); col.className = 'role-col'; col.innerHTML = `<h3>${type}</h3>`;
                 app.activeRoles[type].forEach(rName => {
                     const rData = DB.find(x=>x.n===rName) || {n:rName, mod:null};
@@ -811,18 +926,29 @@
             }
         }
         function toggleRoleStep1(type, name, el) {
+            if(!app.sel[type]) app.sel[type] = []; // Safety init
             const list = app.sel[type]; const i = list.indexOf(name);
             if(i > -1) { list.splice(i, 1); el.classList.remove('selected'); } else { list.push(name); el.classList.add('selected'); }
             updateCalc();
         }
         function updateCalc() {
             let req = [...(baseDist[app.count] || [3,0,1,1])];
-            if(app.sel.Minion.includes("Baron")) { req[0]-=2; req[1]+=2; }
-            if(app.sel.Minion.includes("Godfather")) { req[0]-=1; req[1]+=1; }
-            if(app.sel.Demon.includes("Fang Gu")) { req[0]-=1; req[1]+=1; }
-            if(app.sel.Townsfolk.includes("Balloonist")) { req[0]-=1; req[1]+=1; }
-            checkCat('req-town', app.sel.Townsfolk.length, req[0]); checkCat('req-out', app.sel.Outsider.length, req[1]); checkCat('req-min', app.sel.Minion.length, req[2]); checkCat('req-dem', app.sel.Demon.length, req[3]);
-            document.getElementById('btn-next').disabled = !(app.sel.Townsfolk.length===req[0] && app.sel.Outsider.length===req[1] && app.sel.Minion.length===req[2] && app.sel.Demon.length===req[3]);
+            if(app.sel.Minion && app.sel.Minion.includes("Baron")) { req[0]-=2; req[1]+=2; }
+            if(app.sel.Minion && app.sel.Minion.includes("Godfather")) { req[0]-=1; req[1]+=1; }
+            if(app.sel.Demon && app.sel.Demon.includes("Fang Gu")) { req[0]-=1; req[1]+=1; }
+            if(app.sel.Townsfolk && app.sel.Townsfolk.includes("Balloonist")) { req[0]-=1; req[1]+=1; }
+            
+            const cTown = app.sel.Townsfolk ? app.sel.Townsfolk.length : 0;
+            const cOut = app.sel.Outsider ? app.sel.Outsider.length : 0;
+            const cMin = app.sel.Minion ? app.sel.Minion.length : 0;
+            const cDem = app.sel.Demon ? app.sel.Demon.length : 0;
+
+            checkCat('req-town', cTown, req[0]); 
+            checkCat('req-out', cOut, req[1]); 
+            checkCat('req-min', cMin, req[2]); 
+            checkCat('req-dem', cDem, req[3]);
+            
+            document.getElementById('btn-next').disabled = !(cTown===req[0] && cOut===req[1] && cMin===req[2] && cDem===req[3]);
         }
         function checkCat(id, cur, req) { const el = document.getElementById(id); el.innerText = `${id.split('-')[1].toUpperCase()}: ${cur}/${req}`; if(cur===req){el.classList.add('valid');el.classList.remove('invalid')}else{el.classList.add('invalid');el.classList.remove('valid')} }
         function handleStep1Next() { if(app.sel.Outsider.includes("Drunk")) gotoDrunkSetup(); else gotoSetupBluffs(); }
@@ -831,20 +957,27 @@
         function gotoDrunkSetup() {
             document.getElementById('screen-setup').classList.add('hidden'); document.getElementById('screen-setup-drunk').classList.remove('hidden');
             const con = document.getElementById('role-grid-drunk'); con.innerHTML = '';
-            const allSel = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allSel.push(...app.sel[t]));
-            app.activeRoles.Townsfolk.forEach(rName => {
-                const r = DB.find(x=>x.n===rName);
-                const el = createRoleItem(r, 'Townsfolk', false);
-                if(allSel.includes(r.n)) { el.classList.add('in-play'); el.querySelector('span').innerText += " (In Play)"; }
-                el.onclick = (e) => { if(e.target.classList.contains('eye-btn')) return; document.querySelectorAll('#role-grid-drunk .selected').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); app.setupDrunkRole=r.n; document.getElementById('btn-drunk-confirm').disabled=false; };
-                con.appendChild(el);
-            });
+            const allSel = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => { if(app.sel[t]) allSel.push(...app.sel[t]); });
+            
+            if(app.activeRoles.Townsfolk) {
+                app.activeRoles.Townsfolk.forEach(rName => {
+                    const r = DB.find(x=>x.n===rName);
+                    const el = createRoleItem(r, 'Townsfolk', false);
+                    if(allSel.includes(r.n)) { el.classList.add('in-play'); el.querySelector('span').innerText += " (In Play)"; }
+                    el.onclick = (e) => { if(e.target.classList.contains('eye-btn')) return; document.querySelectorAll('#role-grid-drunk .selected').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); app.setupDrunkRole=r.n; document.getElementById('btn-drunk-confirm').disabled=false; };
+                    con.appendChild(el);
+                });
+            }
         }
         function gotoSetupBluffs() {
             document.getElementById('screen-setup').classList.add('hidden'); document.getElementById('screen-setup-drunk').classList.add('hidden'); document.getElementById('screen-setup-bluffs').classList.remove('hidden');
             const con = document.getElementById('role-grid-bluffs'); con.innerHTML = '';
-            const allSel = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allSel.push(...app.sel[t]));
+            const allSel = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => { if(app.sel[t]) allSel.push(...app.sel[t]); });
+            
             for(let type in app.activeRoles) {
+                // Bluffs usually only T/O/M/D, skipping Trav/Fab/Lor
+                if(['Traveler','Fabled','Loric'].includes(type)) continue;
+                
                 app.activeRoles[type].forEach(rName => {
                     const r = DB.find(x=>x.n===rName);
                     const inPlay = allSel.includes(r.n);
@@ -885,7 +1018,7 @@
         function getPlayerRoleType(id) { const n = getPlayerRoleName(id); if(!n) return 'Townsfolk'; return getRoleType(n); }
         
         function randomizeRoles() {
-            let pool = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => pool.push(...app.sel[t]));
+            let pool = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => { if(app.sel[t]) pool.push(...app.sel[t]); });
             for(let i=pool.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
             app.players.forEach((p, i) => { if(pool[i]) { p.role = pool[i]; p.fake = (p.role === "Drunk") ? app.setupDrunkRole : ""; if(p.role==="Drunk"&&!p.reminders.includes("Drunk"))p.reminders.push("Drunk"); const type = getRoleType(p.role); p.align = (type==='Minion'||type==='Demon') ? 'evil' : 'good'; updateToken(p); } });
         }
@@ -896,7 +1029,11 @@
             const rShow = (p.role === "Drunk" && p.fake) ? p.fake : p.role;
             const type = getRoleType(rShow) || 'Townsfolk';
             const img = el.querySelector('.token-img'); const badge = el.querySelector('.badge-icon');
-            if(rShow) { img.src = getIconUrl(rShow); img.style.display='block'; img.onerror = () => { img.style.display='none'; badge.style.display='flex'; }; badge.innerHTML = `<span>${rShow.charAt(0)}</span>`; badge.className = `badge-icon ${type==='Demon'?'b-dem':type==='Minion'?'b-min':type==='Outsider'?'b-out':'b-town'}`; } else { img.style.display='none'; badge.style.display='none'; }
+            if(rShow) { img.src = getIconUrl(rShow); img.style.display='block'; img.onerror = () => { img.style.display='none'; badge.style.display='flex'; }; badge.innerHTML = `<span>${rShow.charAt(0)}</span>`; badge.className = `badge-icon ${type==='Demon'?'b-dem':type==='Minion'?'b-min':type==='Outsider'?'b-out':'b-town'}`; 
+                // Color override for Badge
+                const col = getColorByType(type);
+                // Badge color classes handle gradients, but we set classes above in getBadgeHtml
+            } else { img.style.display='none'; badge.style.display='none'; }
             const v = el.querySelector('.ctrl-vote'); if(p.dead) v.style.display='block'; else { v.style.display='none'; v.classList.remove('used'); }
             el.querySelector('.token-reminders').innerHTML = p.reminders.map(r => `<div class="reminder-tag">${r}</div>`).join('');
             
@@ -917,7 +1054,7 @@
         function toggleAlignSwitch() { app.editTemp.align = (app.editTemp.align === 'good') ? 'evil' : 'good'; document.getElementById('toggle-align').classList.toggle('evil-state'); }
         function toggleRem(btn, txt) { const idx = app.editTemp.reminders.indexOf(txt); if(idx > -1) { app.editTemp.reminders.splice(idx,1); btn.classList.remove('selected'); } else { app.editTemp.reminders.push(txt); btn.classList.add('selected'); } }
         function saveEditAndClose() { const p = app.players.find(x=>x.id===app.editId); p.name = document.getElementById('edit-name-input').value; p.role = app.editTemp.role; p.align = app.editTemp.align; p.dead = app.editTemp.dead; p.reminders = app.editTemp.reminders; updateToken(p); document.getElementById('modal-edit').classList.add('hidden'); }
-        function openRolePicker() { const grid = document.getElementById('role-picker-grid'); grid.innerHTML = ''; const allRoles = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => allRoles.push(...app.activeRoles[t])); allRoles.forEach(r => { const item = document.createElement('div'); item.className = 'picker-item'; if(app.editTemp.role === r) item.classList.add('active'); item.innerHTML = `<img src="${getIconUrl(r)}" class="picker-icon"><span class="picker-name">${r}</span>`; item.onclick = () => { app.editTemp.role = r; document.getElementById('edit-role-text').innerText = r; document.getElementById('edit-role-icon').src = getIconUrl(r); document.getElementById('edit-role-icon').style.display = 'block'; document.getElementById('modal-role-picker').classList.add('hidden'); }; grid.appendChild(item); }); document.getElementById('modal-role-picker').classList.remove('hidden'); }
+        function openRolePicker() { const grid = document.getElementById('role-picker-grid'); grid.innerHTML = ''; const allRoles = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => { if(app.activeRoles[t]) allRoles.push(...app.activeRoles[t]); }); allRoles.forEach(r => { const item = document.createElement('div'); item.className = 'picker-item'; if(app.editTemp.role === r) item.classList.add('active'); item.innerHTML = `<img src="${getIconUrl(r)}" class="picker-icon"><span class="picker-name">${r}</span>`; item.onclick = () => { app.editTemp.role = r; document.getElementById('edit-role-text').innerText = r; document.getElementById('edit-role-icon').src = getIconUrl(r); document.getElementById('edit-role-icon').style.display = 'block'; document.getElementById('modal-role-picker').classList.add('hidden'); }; grid.appendChild(item); }); document.getElementById('modal-role-picker').classList.remove('hidden'); }
         function distributePlayers() { if(app.players.length === 0) return; const b = document.getElementById('game-board').getBoundingClientRect(); const cx = b.width/2; const cy = b.height/2; const r = 250; app.players.forEach((p, i) => { const a = (i/app.players.length)*2*Math.PI-(Math.PI/2); p.x = cx+r*Math.cos(a)-55; p.y = cy+r*Math.sin(a)-55; const el=document.getElementById(`token-${p.id}`); el.style.left=p.x+'px'; el.style.top=p.y+'px'; }); }
         
         function showCard(e, name, type) { 
