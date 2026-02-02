@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V34 - Compact Setup</title>
+    <title>Grimoire V35 - Refined UI</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -107,9 +107,7 @@
             overflow: hidden; flex-shrink: 0;
         }
         
-        .lib-tools {
-            padding: 10px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;
-        }
+        .lib-tools { padding: 10px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
         .tool-btn {
             background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #ccc;
             padding: 8px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; text-align: center;
@@ -117,10 +115,7 @@
         }
         .tool-btn:hover { background: rgba(255,255,255,0.1); color: white; border-color: #666; }
         
-        .lib-tabs { 
-            display: flex; gap: 5px; background: #15151a; padding: 10px 5px; border-bottom: 1px solid var(--border); 
-            overflow-x: auto; flex-shrink: 0; 
-        }
+        .lib-tabs { display: flex; gap: 5px; background: #15151a; padding: 10px 5px; border-bottom: 1px solid var(--border); overflow-x: auto; flex-shrink: 0; }
         .lib-tabs::-webkit-scrollbar { height: 4px; }
         .lib-tabs::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
@@ -172,18 +167,15 @@
         .script-item-name { font-weight: bold; font-size: 0.95rem; color: #eceff1; }
         .script-item-desc { font-size: 0.75rem; color: #888; font-style: italic; line-height: 1.3; }
 
-        /* 3. SETUP - Redesigned Layout */
+        /* 3. SETUP & GAME */
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--border); }
         .counts-display { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
         
-        /* Step 1: Column View for script overview */
         .setup-columns-container {
             flex-grow: 1; overflow-y: auto; padding: 20px 40px;
             display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;
         }
-        .role-col {
-            background: #1e1e24; border-radius: 8px; padding: 10px; border: 1px solid #333; h-height: fit-content;
-        }
+        .role-col { background: #1e1e24; border-radius: 8px; padding: 10px; border: 1px solid #333; height: fit-content; }
         .role-col h3 { text-align: center; margin: 0 0 10px 0; font-size: 1rem; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 5px; }
         
         .role-item { 
@@ -197,21 +189,23 @@
         .setup-icon { width: 24px; height: 24px; object-fit: contain; }
         .eye-btn { padding: 4px; opacity: 0.5; font-size: 1rem; }
 
-        /* Step 2 & 3: Grid View for Drunk/Bluff selection */
+        /* Updated Card Grid for Bluffs & Drunk */
         .setup-card-grid {
             flex-grow: 1; overflow-y: auto; padding: 20px 40px;
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px;
         }
         .setup-card {
-            background: #2a2a30; border-radius: 8px; padding: 10px;
+            background: #23242a; border-radius: 12px; padding: 15px 10px;
             display: flex; flex-direction: column; align-items: center; text-align: center;
-            cursor: pointer; border: 2px solid transparent; transition: 0.1s;
+            cursor: pointer; border: 2px solid #333; transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .setup-card:hover { background: #333; }
-        .setup-card.selected { border-color: var(--accent); background: #333; }
-        .setup-card.disabled { opacity: 0.2; pointer-events: none; filter: grayscale(1); }
-        .sc-icon { width: 40px; height: 40px; object-fit: contain; margin-bottom: 8px; }
-        .sc-name { font-size: 0.8rem; font-weight: bold; line-height: 1.2; }
+        .setup-card:hover { border-color: var(--accent); background: #2a2a32; transform: translateY(-3px); }
+        .setup-card.selected { border-color: var(--dem-color); background: #331a1a; } /* Bluffs usually red */
+        .setup-card.in-play { opacity: 0.5; filter: grayscale(0.5); pointer-events: none; border-style: dashed; }
+        .sc-icon { width: 50px; height: 50px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        .sc-name { font-size: 0.85rem; font-weight: bold; line-height: 1.2; text-transform: uppercase; }
+        .sc-desc { font-size: 0.7rem; color: #888; margin-top: 5px; display: none; } /* Could show on hover */
 
         /* Stepper & Pills */
         .stepper { display: flex; align-items: center; background: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border); }
@@ -665,7 +659,11 @@
     </div>
 
     <div id="modal-bluffs" class="modal-overlay hidden" onclick="this.classList.add('hidden')">
-        <div style="text-align:center;"><h2 style="color:var(--dem-color);">DEMON BLUFFS</h2><div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;" id="bluff-cards-cont"></div></div>
+        <div class="edit-box" style="width: 500px; max-width:95vw;">
+            <div style="text-align:center; margin-bottom: 20px;"><h2 style="color:var(--dem-color); margin:0;">DEMON BLUFFS</h2></div>
+            <div class="setup-card-grid" id="bluff-cards-cont" style="max-height: 70vh; padding: 0;"></div>
+            <button class="btn" style="width:100%; margin-top:20px;" onclick="document.getElementById('modal-bluffs').classList.add('hidden')">Close</button>
+        </div>
     </div>
 
     <script>
@@ -1150,11 +1148,11 @@
             const p = { id:Date.now(), name:n, role:"", fake:"", align:"good", dead:false, reminders:[], x:0, y:0 };
             app.players.push(p);
             const el = document.createElement('div'); el.id = `token-${p.id}`; el.className = 'token good draggable';
-            el.innerHTML = `<div class="token-reminders"></div><div class="token-icon-wrap"><img class="token-img" src="" style="display:none">${getBadgeHtml('?', 'Townsfolk')}</div><div class="token-name">${n}</div><div class="token-ctrl ctrl-eye" onmousedown="viewPlayerCard(event, ${p.id})" onmouseenter="showHover(event, getPlayerRoleName(${p.id}), getPlayerRoleType(${p.id}))" onmouseleave="hideHover()">👁</div><div class="token-ctrl ctrl-del" onmousedown="delPlayer(event, ${p.id})">✕</div><div class="token-ctrl ctrl-vote" onmousedown="toggleVote(event, ${p.id})"></div>`;
+            el.innerHTML = `<div class="token-reminders"></div><div class="token-icon-wrap"><img class="token-img" src="" style="display:none">${getBadgeHtml('?', 'Townsfolk')}</div><div class="token-name">${n}</div><div class="token-ctrl ctrl-eye" onclick="event.stopPropagation(); viewPlayerCard(event, ${p.id})" ontouchstart="event.stopPropagation()">👁</div><div class="token-ctrl ctrl-del" onclick="event.stopPropagation(); delPlayer(event, ${p.id})" ontouchstart="event.stopPropagation()">✕</div><div class="token-ctrl ctrl-vote" onclick="event.stopPropagation(); toggleVote(event, ${p.id})" ontouchstart="event.stopPropagation()"></div>`;
             const board = document.getElementById('game-board'); p.x = board.offsetWidth/2 - 55; p.y = board.offsetHeight/2 - 55; el.style.left = p.x+'px'; el.style.top = p.y+'px';
             el.onmousedown = (e) => startDrag(e, el, p);
-            el.ontouchstart = (e) => startDrag(e, el, p); // TOUCH EVENT
-            el.onclick = (e) => { if(!e.target.classList.contains('token-ctrl') && !e.target.classList.contains('ctrl-vote')) { if(app.locked) openEdit(p.id); } };
+            el.ontouchstart = (e) => startDrag(e, el, p); 
+            el.onclick = (e) => { if(app.locked) openEdit(p.id); };
             board.appendChild(el); document.getElementById('input-name').value = ''; updateToken(p);
         }
         function getPlayerRoleName(id) { const p = app.players.find(x=>x.id===id); if(!p) return null; return (p.role==="Drunk" && p.fake) ? p.fake : p.role; }
@@ -1172,18 +1170,9 @@
             const rShow = (p.role === "Drunk" && p.fake) ? p.fake : p.role;
             const type = getRoleType(rShow) || 'Townsfolk';
             const img = el.querySelector('.token-img'); const badge = el.querySelector('.badge-icon');
-            if(rShow) { img.src = getIconUrl(rShow); img.style.display='block'; img.onerror = () => { img.style.display='none'; badge.style.display='flex'; }; badge.innerHTML = `<span>${rShow.charAt(0)}</span>`; badge.className = `badge-icon ${type==='Demon'?'b-dem':type==='Minion'?'b-min':type==='Outsider'?'b-out':'b-town'}`; 
-                // Color override for Badge
-                const col = getColorByType(type);
-                // Badge color classes handle gradients, but we set classes above in getBadgeHtml
-            } else { img.style.display='none'; badge.style.display='none'; }
+            if(rShow) { img.src = getIconUrl(rShow); img.style.display='block'; img.onerror = () => { img.style.display='none'; badge.style.display='flex'; }; badge.innerHTML = `<span>${rShow.charAt(0)}</span>`; badge.className = `badge-icon ${type==='Demon'?'b-dem':type==='Minion'?'b-min':type==='Outsider'?'b-out':'b-town'}`; } else { img.style.display='none'; badge.style.display='none'; }
             const v = el.querySelector('.ctrl-vote'); if(p.dead) v.style.display='block'; else { v.style.display='none'; v.classList.remove('used'); }
             el.querySelector('.token-reminders').innerHTML = p.reminders.map(r => `<div class="reminder-tag">${r}</div>`).join('');
-            
-            // Re-bind hover event with new role data
-            const eye = el.querySelector('.ctrl-eye');
-            eye.onmouseenter = (e) => showHover(e, rShow, type);
-            eye.onmouseleave = () => hideHover();
         }
         function startDrag(e, el, p) { 
             if(app.locked || e.target.classList.contains('token-ctrl')) return; 
@@ -1200,7 +1189,7 @@
         }
         function onDrag(e) { 
             if(!drag) return; 
-            if(e.touches) e.preventDefault(); // Stop scrolling while dragging
+            if(e.touches) e.preventDefault(); 
             const b = document.getElementById('game-board').getBoundingClientRect(); 
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -1272,7 +1261,22 @@
             document.getElementById('hover-tooltip').classList.add('hidden');
         }
 
-        function showBluffsModal() { if(!app.bluffs || app.bluffs.length === 0) return alert("No Bluffs."); const cont = document.getElementById('bluff-cards-cont'); cont.innerHTML = ''; app.bluffs.forEach(b => { const type = getRoleType(b); const d = DB.find(x=>x.n===b); const card = document.createElement('div'); card.className = 'mini-card'; card.innerHTML = `<img src="${getIconUrl(b)}" style="width:60px; height:60px; object-fit:contain; margin-bottom:10px;"><div style="font-weight:900; text-transform:uppercase;">${b}</div><div style="font-size:0.8rem; margin:5px 0 10px; color:#555;">${type}</div><div style="font-size:0.9rem; font-style:italic;">${d?d.d:''}</div>`; cont.appendChild(card); }); document.getElementById('modal-bluffs').classList.remove('hidden'); }
+        function showBluffsModal() { 
+            if(!app.bluffs || app.bluffs.length === 0) return alert("No Bluffs."); 
+            const cont = document.getElementById('bluff-cards-cont'); 
+            cont.innerHTML = ''; 
+            app.bluffs.forEach(b => { 
+                const type = getRoleType(b); 
+                const d = DB.find(x=>x.n===b); 
+                const card = document.createElement('div'); 
+                card.className = 'setup-card'; 
+                card.innerHTML = `<img src="${getIconUrl(b)}" class="sc-icon"><div class="sc-name">${b}</div>`; 
+                // Set special border for evil/demon context
+                card.style.borderColor = "var(--dem-color)";
+                cont.appendChild(card); 
+            }); 
+            document.getElementById('modal-bluffs').classList.remove('hidden'); 
+        }
         function getRoleType(n) { const r = DB.find(x => x.n === n); return r ? r.t : 'Townsfolk'; }
         function log(t) { const d=document.createElement('div'); d.innerText=t; d.style.borderBottom="1px solid #222"; document.getElementById('game-log').prepend(d); }
         function nextPhase() { app.phase++; const t = (app.phase%2!==0)?`Night ${Math.ceil(app.phase/2)}`:`Day ${Math.ceil(app.phase/2)}`; document.getElementById('phase-disp').innerText = t; }
