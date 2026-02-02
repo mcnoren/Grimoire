@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grimoire V30 - Complete Role List</title>
+    <title>Grimoire V31 - Horizontal Builder</title>
     <style>
         :root {
             --bg-dark: #0f0f13;
@@ -102,13 +102,16 @@
         .builder-body { display: flex; gap: 20px; flex-grow: 1; overflow: hidden; height: 100%; }
         
         .library-panel { 
-            width: 340px; display: flex; flex-direction: column; border-right: 1px solid var(--border); 
-            padding-right: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; overflow: hidden; 
+            width: 320px; display: flex; flex-direction: column; border-right: 1px solid var(--border); 
+            padding-right: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; 
+            overflow: hidden; /* Important for scroll */
+            flex-shrink: 0;
         }
         
+        /* Tabs - Fixed at top */
         .lib-tabs { 
-            display: flex; gap: 5px; background: #15151a; padding: 8px; border-bottom: 1px solid var(--border); 
-            overflow-x: auto; flex-shrink: 0; 
+            display: flex; gap: 5px; background: #15151a; padding: 10px 5px; border-bottom: 1px solid var(--border); 
+            overflow-x: auto; flex-shrink: 0; /* Ensures it doesn't shrink */
         }
         .lib-tabs::-webkit-scrollbar { height: 4px; }
         .lib-tabs::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
@@ -120,10 +123,12 @@
         .lib-tab:hover { color: white; background: rgba(255,255,255,0.05); }
         .lib-tab.active { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(124, 77, 255, 0.3); }
 
-        .library-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
+        .library-list { flex-grow: 1; overflow-y: auto; padding: 10px 5px 10px 0; }
+        
         .lib-section { margin-bottom: 20px; }
         .lib-type-header { font-size: 0.75rem; color: var(--text-muted); margin: 8px 0 4px 5px; font-weight: bold; text-transform: uppercase; }
         
+        /* Builder Items (Left Side) */
         .build-item { 
             padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; font-size: 0.9rem; 
             display: flex; align-items: center; justify-content: space-between; 
@@ -136,20 +141,40 @@
         .build-eye { padding: 6px; cursor: pointer; opacity: 0.4; font-size: 1rem; border-radius: 4px; }
         .build-eye:hover { opacity: 1; color: var(--accent); background: rgba(255,255,255,0.1); }
 
-        .script-panel { flex-grow: 1; display: grid; grid-template-columns: repeat(7, 1fr); gap: 15px; overflow-y: auto; padding-left: 10px; }
-        .script-col { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; min-width: 150px; display: flex; flex-direction: column; gap: 2px; }
-        .script-col h4 { margin: 0 0 10px 0; color: var(--text-muted); border-bottom: 1px solid #333; padding-bottom: 5px; text-align: center; }
-        
-        /* 3. SETUP & GAME (Shared Styles) */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--border); }
-        
-        /* Horizontal Counts */
-        .counts-display { 
-            display: flex; 
-            gap: 15px; 
-            align-items: center;
+        /* SCRIPT PANEL (Right Side) - 2 Columns */
+        .script-panel { 
+            flex-grow: 1; 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; /* Two columns per row */
+            gap: 20px; 
+            overflow-y: auto; 
+            padding: 10px; 
+            align-content: start;
         }
+        .script-col { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--border); }
+        .script-col h4 { margin: 0 0 10px 0; color: var(--text-muted); border-bottom: 1px solid #333; padding-bottom: 10px; text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+        
+        /* Expanded Script Item with Description */
+        .script-item-box {
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            border: 1px solid transparent;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .script-item-box:hover { background: rgba(255,255,255,0.05); border-color: #444; }
+        .script-item-content { flex: 1; }
+        .script-item-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+        .script-item-name { font-weight: bold; font-size: 1rem; color: #eceff1; }
+        .script-item-desc { font-size: 0.85rem; color: #888; font-style: italic; line-height: 1.4; }
+        .script-item-actions { display: flex; flex-direction: column; gap: 5px; justify-content: flex-start; }
 
+        /* 3. SETUP & GAME */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--border); }
+        .counts-display { display: flex; gap: 15px; align-items: center; }
         .grid-scroll-area { flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px 40px; }
         .role-item { padding: 8px 12px; margin-bottom: 8px; background: #23242a; border-radius: 6px; cursor: pointer; border: 1px solid transparent; display: flex; align-items: center; justify-content: space-between; }
         .role-item.selected { background: var(--accent); color: white; }
@@ -158,19 +183,11 @@
         .setup-icon { width: 30px; height: 30px; object-fit: contain; }
         .eye-btn { padding: 5px; opacity: 0.5; font-size: 1.2rem; }
 
-        /* Stepper & Pills */
         .stepper { display: flex; align-items: center; background: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border); }
         .stepper button { background: transparent; border: none; color: white; font-size: 1.5rem; padding: 5px 20px; cursor: pointer; }
         .stepper span { font-size: 1.5rem; font-weight: bold; min-width: 50px; text-align: center; }
         
-        .count-pill { 
-            background: var(--bg-panel); 
-            padding: 8px 16px; 
-            border-radius: 20px; 
-            border: 1px solid var(--border); 
-            font-weight: bold; 
-            white-space: nowrap; 
-        }
+        .count-pill { background: var(--bg-panel); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); font-weight: bold; white-space: nowrap; }
         .count-pill.valid { color: var(--town-color); border-color: var(--town-color); }
         .count-pill.invalid { color: var(--dem-color); border-color: var(--dem-color); opacity: 0.6; }
 
@@ -210,13 +227,8 @@
         /* Card View Styles */
         .card-view { 
             width: 90vw; max-width: 400px; 
-            background: #23242a; 
-            color: #eceff1; 
-            border-radius: 16px; 
-            padding: 30px; 
-            text-align: center; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            border: 3px solid #444; 
+            background: #23242a; color: #eceff1; border-radius: 16px; padding: 30px; text-align: center; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); border: 3px solid #444; 
         }
         .card-img-lg { width: 120px; height: 120px; object-fit: contain; margin: 0 auto 15px auto; display: block; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
         .card-title { font-size: 2rem; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
@@ -542,7 +554,7 @@
                 </div>
                 <div class="library-list" id="build-lib"></div>
             </div>
-            <div class="script-panel" style="grid-template-columns: repeat(7, 1fr);">
+            <div class="script-panel">
                 <div class="script-col" id="b-town"><h4>Townsfolk</h4></div>
                 <div class="script-col" id="b-out"><h4>Outsider</h4></div>
                 <div class="script-col" id="b-min"><h4>Minion</h4></div>
@@ -902,18 +914,22 @@
                 col.innerHTML = `<h4>${t}</h4>`;
                 
                 builderData[t].forEach(rName => {
-                    const r = DB.find(x => x.n === rName) || {n:rName, t:t};
+                    const r = DB.find(x => x.n === rName) || {n:rName, t:t, d:"..."};
+                    
                     const item = document.createElement('div');
-                    item.className = 'build-item';
+                    item.className = 'script-item-box';
                     item.innerHTML = `
-                        <div class="build-left">
-                            <img src="${getIconUrl(r.n)}" class="build-icon">
-                            <span>${r.n}</span>
+                        <div class="script-item-content" onclick="toggleBuilderRole({n:'${r.n}', t:'${r.t}'}); renderLibrary(''); renderBuilderCols();">
+                            <div class="script-item-head">
+                                <img src="${getIconUrl(r.n)}" style="width:30px; height:30px; object-fit:contain;">
+                                <div class="script-item-name">${r.n}</div>
+                            </div>
+                            <div class="script-item-desc">${r.d}</div>
                         </div>
-                        <div class="build-eye" onclick="showCard(event, '${r.n}', '${r.t}')" onmouseenter="showHover(event, '${r.n}', '${r.t}')" onmouseleave="hideHover()">👁</div>
+                        <div class="script-item-actions">
+                            <div class="build-eye" onclick="showCard(event, '${r.n}', '${r.t}')">👁</div>
+                        </div>
                     `;
-                    // Clicking removes it
-                    item.querySelector('.build-left').onclick = () => { toggleBuilderRole(r); renderLibrary(''); renderBuilderCols(); };
                     col.appendChild(item);
                 });
             });
@@ -1054,8 +1070,6 @@
             checkCat('req-min', cMin, req[2]); 
             checkCat('req-dem', cDem, req[3]);
             
-            // REMOVED HARD DISABLE: Button is always active now
-            // document.getElementById('btn-next').disabled = !(cTown===req[0] && cOut===req[1] && cMin===req[2] && cDem===req[3]);
             document.getElementById('btn-next').disabled = false;
         }
         function checkCat(id, cur, req) { const el = document.getElementById(id); el.innerText = `${id.split('-')[1].toUpperCase()}: ${cur}/${req}`; if(cur===req){el.classList.add('valid');el.classList.remove('invalid')}else{el.classList.add('invalid');el.classList.remove('valid')} }
@@ -1083,7 +1097,6 @@
             const allSel = []; ['Townsfolk','Outsider','Minion','Demon'].forEach(t => { if(app.sel[t]) allSel.push(...app.sel[t]); });
             
             for(let type in app.activeRoles) {
-                // Bluffs usually only T/O/M/D, skipping Trav/Fab/Lor
                 if(['Traveler','Fabled','Loric'].includes(type)) continue;
                 
                 app.activeRoles[type].forEach(rName => {
